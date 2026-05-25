@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://dvgnbfay36u2n"]
+
+[ext_resource type="Script" uid="uid://cdilbeuv7qktk" path="res://typing_indicator.gd" id="1_a7ydu"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i464l"]
+bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 2
+
+[node name="TypingIndicator" type="PanelContainer" unique_id=514951283]
+offset_right = 40.0
+offset_bottom = 40.0
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_i464l")
+script = ExtResource("1_a7ydu")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=545043771]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=376555647]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="Dot1" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1527203587]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 10
+text = "●"
+
+[node name="Dot2" type="Label" parent="MarginContainer/HBoxContainer" unique_id=958471939]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 10
+text = "●"
+
+[node name="Dot3" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1900682946]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 10
+text = "●"
