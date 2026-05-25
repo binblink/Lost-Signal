@@ -61,16 +61,30 @@ func play_scene(scene_id: String) -> void:
 		var msg = current_scene["messages_in"][i]
 		var requires = msg.get("requires_flag", null)
 		if requires == null or flags.get(requires, false):
+			# Pause before the message
+			var pause = msg.get("pause", null)
+			if pause != null:
+				await do_pause(pause)
 			await show_typing(msg["text"])
-			receive_message(msg["text"], msg["time"])
-			await get_tree().create_timer(0.5).timeout
+			var bubble = receive_message(msg["text"], msg["time"])
+			# Message edit
+			var edit = msg.get("edit", null)
+			if edit != null:
+				await get_tree().create_timer(edit.get("delay", 1.5)).timeout
+				if is_instance_valid(bubble):
+					if edit["type"] == "delete":
+						bubble.queue_free()
+					elif edit["type"] == "correct":
+						bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
+			else:
+				await get_tree().create_timer(0.5).timeout
 
 		# IMPORTANT :
 		# We save after the message is really displayed
 		current_message_index = i + 1
 		save_game()
 
-	# Tous les messages sont passés
+	# All the messages for the current scene are displayed
 	waiting_for_choice = true
 	save_game()
 
@@ -102,27 +116,28 @@ func _on_choice_pressed(index: int) -> void:
 	# Display player's message
 	await type_message(text)
 
-	# Prépare la scène suivante AVANT la sauvegarde
+	# Prepapre the next scene BEFORE the save
 	var next_scene_id = choice.get("next", null)
 
 	if next_scene_id != null and dialogue.has(next_scene_id):
 		current_scene = dialogue[next_scene_id]
 
-	# Sauvegarde maintenant le BON état
+	# Saving the good state
 	save_game()
 	
 	choice_made.emit()
 
-	# Lance ensuite la scène suivante
+	# Launch the next scene
 	if next_scene_id != null:
 		await play_scene(next_scene_id)
 
-func receive_message(text: String, time: String) -> void:
+func receive_message(text: String, time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	messages_list.add_child(bubble)
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = text
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = get_current_time()
 	scroll_to_bottom()
+	return bubble
 
 func show_choices(options: Array) -> void:
 	for i in range(choice_buttons.size()):
@@ -336,3 +351,16 @@ func _on_recommencer_pressed() -> void:
 
 	# Clean reboot
 	await play_scene("scene_01")
+	
+func do_pause(type: String) -> void:
+	var duration: float
+	match type:
+		"short":
+			duration = randf_range(1.0, 4.0)
+		"medium":
+			duration = randf_range(5.0, 15.0)
+		"long":
+			duration = randf_range(15.0, 40.0)
+		_:
+			duration = 0.5
+	await get_tree().create_timer(duration).timeout
