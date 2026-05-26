@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://hxomeubw8de1"]
 
-[ext_resource type="Script" uid="uid://buhvxgik33s7" path="res://messageswidth.gd" id="1_k46sk"]
-[ext_resource type="Script" uid="uid://doufuncei6gsp" path="res://fade_msg_in.gd" id="2_dscnc"]
+[ext_resource type="Script" uid="uid://buhvxgik33s7" path="res://scripts/ui/messageswidth.gd" id="1_k46sk"]
+[ext_resource type="Script" uid="uid://doufuncei6gsp" path="res://animations/fade_msg_in.gd" id="2_dscnc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w720v"]
 content_margin_left = 12.0

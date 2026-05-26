@@ -11,9 +11,14 @@ config_version=5
 [application]
 
 config/name="Maeve // Lost Signal"
-run/main_scene="res://Main.tscn"
+run/main_scene="uid://1pdc36rgl1a4"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SaveManager="*res://scripts/autoloads/save_manager.gd"
+DialogueLoader="*res://scripts/autoloads/dialogue_loader.gd"
 
 [display]
 

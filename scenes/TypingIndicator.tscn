@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dvgnbfay36u2n"]
 
-[ext_resource type="Script" uid="uid://cdilbeuv7qktk" path="res://typing_indicator.gd" id="1_a7ydu"]
+[ext_resource type="Script" uid="uid://cdilbeuv7qktk" path="res://scripts/ui/typing_indicator.gd" id="1_a7ydu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i464l"]
 bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)

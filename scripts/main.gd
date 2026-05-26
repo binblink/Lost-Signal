@@ -2,9 +2,9 @@ extends Control
 
 signal choice_made
 
-const BubbleIn = preload("res://MessageBubbleIn.tscn")
-const BubbleOut = preload("res://MessageBubbleOut.tscn")
-const TypingIndicator = preload("res://TypingIndicator.tscn")
+const BubbleIn = preload("res://scenes/MessageBubbleIn.tscn")
+const BubbleOut = preload("res://scenes/MessageBubbleOut.tscn")
+const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 
 @onready var messages_list = $VBoxContainer/Messages/MessagesList
 @onready var input_bar = $VBoxContainer/InputBar
@@ -19,7 +19,6 @@ const TypingIndicator = preload("res://TypingIndicator.tscn")
 var choice_buttons: Array = []
 var _choices_spacer: Control = null
 var typing_speed: float = 0.05
-var dialogue: Dictionary = {}
 var current_scene: Dictionary = {}
 var flags: Dictionary = {}
 var is_restarting: bool = false
@@ -38,39 +37,35 @@ func _ready() -> void:
 	btn_annuler.pressed.connect(_on_annuler_pressed)
 	btn_recommencer.pressed.connect(_on_recommencer_pressed)
 	choices_layer.gui_input.connect(_on_choices_layer_gui_input)
-	load_dialogue()
-	if FileAccess.file_exists("user://savegame.json"):
+	if SaveManager.has_save():
 		await load_game()
 	else:
 		await play_scene("scene_01")
 
-func load_dialogue() -> void:
-	var file = FileAccess.open("res://dialogue.json", FileAccess.READ)
-	var json = JSON.new()
-	json.parse(file.get_as_text())
-	file.close()
-	var data = json.get_data()
-	for scene in data["scenes"]:
-		dialogue[scene["id"]] = scene
-
 func play_scene(scene_id: String) -> void:
-	if not dialogue.has(scene_id):
+	if not DialogueLoader.has_scene(scene_id):
 		return
-	current_scene = dialogue[scene_id]
+	current_scene = DialogueLoader.get_scene(scene_id)
 	for i in range(current_message_index, current_scene["messages_in"].size()):
+		if is_restarting:
+			return
 		var msg = current_scene["messages_in"][i]
 		var requires = msg.get("requires_flag", null)
 		if requires == null or flags.get(requires, false):
-			# Pause before the message
 			var pause = msg.get("pause", null)
 			if pause != null:
 				await do_pause(pause)
-			await show_typing(msg["text"])
+				if is_restarting:
+					return
+			var typing_ok = await show_typing(msg["text"])
+			if not typing_ok:
+				return
 			var bubble = receive_message(msg["text"], msg["time"])
-			# Message edit
 			var edit = msg.get("edit", null)
 			if edit != null:
 				await get_tree().create_timer(edit.get("delay", 1.5)).timeout
+				if is_restarting:
+					return
 				if is_instance_valid(bubble):
 					if edit["type"] == "delete":
 						bubble.queue_free()
@@ -78,13 +73,12 @@ func play_scene(scene_id: String) -> void:
 						bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
 			else:
 				await get_tree().create_timer(0.5).timeout
+				if is_restarting:
+					return
 
-		# IMPORTANT :
-		# We save after the message is really displayed
 		current_message_index = i + 1
 		save_game()
 
-	# All the messages for the current scene are displayed
 	waiting_for_choice = true
 	save_game()
 
@@ -92,6 +86,8 @@ func play_scene(scene_id: String) -> void:
 		await show_choices(
 			current_scene["choices"].map(func(c): return c["text"])
 		)
+		if is_restarting:
+			return
 		await choice_made
 
 func _on_choice_pressed(index: int) -> void:
@@ -100,34 +96,27 @@ func _on_choice_pressed(index: int) -> void:
 	if _choices_spacer:
 		_choices_spacer.queue_free()
 		_choices_spacer = null
-	# Security
 	if not current_scene.has("choices"):
 		return
 	var choice = current_scene["choices"][index]
 	waiting_for_choice = false
 	current_message_index = 0
-	# Add a flag if needed
 	if choice.has("flag") and choice["flag"] != null:
 		flags[choice["flag"]] = true
 	var text = choice["text"]
 	choices_layer.visible = false
 	input_bar.visible = true
-	
-	# Display player's message
+
 	await type_message(text)
 
-	# Prepapre the next scene BEFORE the save
 	var next_scene_id = choice.get("next", null)
+	if next_scene_id != null and DialogueLoader.has_scene(next_scene_id):
+		current_scene = DialogueLoader.get_scene(next_scene_id)
 
-	if next_scene_id != null and dialogue.has(next_scene_id):
-		current_scene = dialogue[next_scene_id]
-
-	# Saving the good state
 	save_game()
-	
+
 	choice_made.emit()
 
-	# Launch the next scene
 	if next_scene_id != null:
 		await play_scene(next_scene_id)
 
@@ -183,7 +172,7 @@ func scroll_to_bottom() -> void:
 	var scrollbar = $VBoxContainer/Messages.get_v_scroll_bar()
 	$VBoxContainer/Messages.scroll_vertical = scrollbar.max_value
 
-func show_typing(text: String) -> void:
+func show_typing(text: String) -> bool:
 	var indicator = TypingIndicator.instantiate()
 	messages_list.add_child(indicator)
 	scroll_to_bottom()
@@ -198,7 +187,8 @@ func show_typing(text: String) -> void:
 	await get_tree().create_timer(duration).timeout
 	if is_instance_valid(indicator):
 		indicator.queue_free()
-	
+	return not is_restarting
+
 func get_current_time() -> String:
 	var time = Time.get_time_dict_from_system()
 	return "%02d:%02d" % [time["hour"], time["minute"]]
@@ -209,8 +199,12 @@ func _on_choices_layer_gui_input(event: InputEvent) -> void:
 			$VBoxContainer/Messages.scroll_vertical -= 60
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			$VBoxContainer/Messages.scroll_vertical += 60
-			
-func save_game() -> void:
+
+# ---------------------------------------------------------------------------
+# Save / Load — délèguent à SaveManager
+# ---------------------------------------------------------------------------
+
+func _collect_messages_data() -> Array:
 	var messages_data = []
 	for child in messages_list.get_children():
 		if child is MarginContainer:
@@ -226,98 +220,62 @@ func save_game() -> void:
 			var time = child.get_node(
 				"HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus"
 			).text
-			messages_data.append({
-				"text": text,
-				"time": time,
-				"out": bubble_out
-			})
-	var save_data = {
-		"current_scene_id": current_scene.get("id", ""),
-		"current_message_index": current_message_index,
-		"waiting_for_choice": waiting_for_choice,
-		"flags": flags,
-		"messages": messages_data
-	}
-	var file = FileAccess.open(
-		"user://savegame.json",
-		FileAccess.WRITE
+			messages_data.append({"text": text, "time": time, "out": bubble_out})
+	return messages_data
+
+func save_game() -> void:
+	SaveManager.save(
+		_collect_messages_data(),
+		current_scene.get("id", ""),
+		current_message_index,
+		waiting_for_choice,
+		flags
 	)
-	file.store_string(JSON.stringify(save_data))
-	file.close()
-	print("Partie sauvegardée.")
-	
+
 func load_game() -> void:
-	if not FileAccess.file_exists("user://savegame.json"):
-		print("Aucune sauvegarde trouvée.")
+	var data = SaveManager.load_save()
+	if data.is_empty():
 		return
-	var file = FileAccess.open(
-		"user://savegame.json",
-		FileAccess.READ
-	)
-	var json = JSON.new()
-	json.parse(file.get_as_text())
-	file.close()
-	var data = json.get_data()
-	# Flags
+
 	flags = data.get("flags", {})
-	# Progression state
-	current_message_index = data.get(
-		"current_message_index",
-		0
-	)
-	waiting_for_choice = data.get(
-		"waiting_for_choice",
-		false
-	)
-	# Clean the old messages just in case
+	current_message_index = data.get("current_message_index", 0)
+	waiting_for_choice = data.get("waiting_for_choice", false)
+
 	for child in messages_list.get_children():
 		child.queue_free()
 	await get_tree().process_frame
-	# Restore the messages
+
 	for msg in data.get("messages", []):
 		if msg["out"]:
 			var bubble = BubbleOut.instantiate()
 			messages_list.add_child(bubble)
-			bubble.get_node(
-				"HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message"
-			).text = msg["text"]
-			bubble.get_node(
-				"HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus"
-			).text = msg["time"]
+			bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = msg["text"]
+			bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = msg["time"]
 		else:
 			var bubble = BubbleIn.instantiate()
 			messages_list.add_child(bubble)
-			bubble.get_node(
-				"HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message"
-			).text = msg["text"]
-			bubble.get_node(
-				"HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus"
-			).text = msg["time"]
+			bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = msg["text"]
+			bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = msg["time"]
 	await scroll_to_bottom()
 
-	# Resume
 	var scene_id = data.get("current_scene_id", "")
-	if scene_id == "":
+	if scene_id == "" or not DialogueLoader.has_scene(scene_id):
 		return
-	if not dialogue.has(scene_id):
-		return
-	current_scene = dialogue[scene_id]
-	
-	# Case 1 :
-	# We wait for a choice
+	current_scene = DialogueLoader.get_scene(scene_id)
+
 	if waiting_for_choice:
 		if current_scene.has("choices"):
 			await show_choices(
-				current_scene["choices"].map(
-					func(c): return c["text"]
-				)
+				current_scene["choices"].map(func(c): return c["text"])
 			)
 			await choice_made
-	# Case 2 :
-	# a scene was loading
 	else:
 		await play_scene(scene_id)
-		
+
+# ---------------------------------------------------------------------------
+# UI globale
+# ---------------------------------------------------------------------------
+
 func _on_new_game_pressed() -> void:
 	confirm_dialog.visible = true
 	overlay.visible = true
@@ -331,15 +289,11 @@ func _on_recommencer_pressed() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
 
-	# delete the save
-	if FileAccess.file_exists("user://savegame.json"):
-		DirAccess.remove_absolute("user://savegame.json")
+	SaveManager.delete_save()
 
-	# Clean the messages
 	for child in messages_list.get_children():
 		child.queue_free()
 
-	# Complete delete of the state
 	flags = {}
 	current_scene = {}
 	current_message_index = 0
@@ -349,9 +303,8 @@ func _on_recommencer_pressed() -> void:
 	await get_tree().process_frame
 	is_restarting = false
 
-	# Clean reboot
 	await play_scene("scene_01")
-	
+
 func do_pause(type: String) -> void:
 	var duration: float
 	match type:

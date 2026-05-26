@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://1pdc36rgl1a4"]
 
 [ext_resource type="Script" uid="uid://jdmgl8x2e1tp" path="res://mainscript.gd" id="1_r0du0"]
-[ext_resource type="PackedScene" uid="uid://c364u6luterqx" path="res://ConfirmDialog.tscn" id="2_uu6xs"]
+[ext_resource type="PackedScene" uid="uid://c364u6luterqx" path="res://scenes/ConfirmDialog.tscn" id="2_uu6xs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rxg2q"]
 bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
