@@ -285,25 +285,9 @@ func _on_annuler_pressed() -> void:
 	overlay.visible = false
 
 func _on_recommencer_pressed() -> void:
-	is_restarting = true
-	confirm_dialog.visible = false
-	overlay.visible = false
-
 	SaveManager.delete_save()
-
-	for child in messages_list.get_children():
-		child.queue_free()
-
-	flags = {}
-	current_scene = {}
-	current_message_index = 0
-	waiting_for_choice = false
-	choices_layer.visible = false
-	input_bar.visible = true
 	await get_tree().process_frame
-	is_restarting = false
-
-	await play_scene("scene_01")
+	get_tree().reload_current_scene()
 
 func do_pause(type: String) -> void:
 	var duration: float
