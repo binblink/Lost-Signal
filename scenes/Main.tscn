@@ -1,7 +1,9 @@
 [gd_scene format=3 uid="uid://1pdc36rgl1a4"]
 
 [ext_resource type="Script" uid="uid://jdmgl8x2e1tp" path="res://scripts/main.gd" id="1_r0du0"]
+[ext_resource type="Script" uid="uid://cmkyok6ojx52b" path="res://scripts/ui/message_display.gd" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://c364u6luterqx" path="res://scenes/ConfirmDialog.tscn" id="2_uu6xs"]
+[ext_resource type="Script" uid="uid://b17cgpt81fkki" path="res://scripts/ui/choices_manager.gd" id="3_rarhs"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rxg2q"]
 bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
@@ -142,6 +144,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_constants/separation = 8
+script = ExtResource("2_0bbpv")
 
 [node name="InputBar" type="PanelContainer" parent="VBoxContainer" unique_id=1417374414]
 custom_minimum_size = Vector2(0, 60)
@@ -178,6 +181,7 @@ anchor_bottom = 1.0
 mouse_filter = 0
 theme_override_constants/separation = 8
 alignment = 2
+script = ExtResource("3_rarhs")
 
 [node name="MarginContainer" type="MarginContainer" parent="ChoicesLayer" unique_id=1280705696]
 layout_mode = 2
