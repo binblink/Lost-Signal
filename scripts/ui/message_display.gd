@@ -48,6 +48,7 @@ func type_message(text: String) -> void:
 	if line_edit:
 		line_edit.text = ""
 	for i in range(text.length()):
+		AudioManager.play_typing_click()
 		if line_edit:
 			line_edit.text = text.substr(0, i + 1)
 		var delay = typing_speed

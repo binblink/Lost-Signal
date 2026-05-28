@@ -19,7 +19,8 @@ func save(
 	waiting_for_choice: bool,
 	flags: Dictionary,
 	secondary_histories: Dictionary,
-	played_secondary_scenes: Array = []
+	played_secondary_scenes: Array = [],
+	pending_choices: Dictionary = {}
 ) -> void:
 	var save_data = {
 		"current_scene_id": current_scene_id,
@@ -28,7 +29,8 @@ func save(
 		"flags": flags,
 		"messages": messages_data,
 		"secondary_histories": secondary_histories,
-		"played_secondary_scenes": played_secondary_scenes
+		"played_secondary_scenes": played_secondary_scenes,
+		"pending_choices": pending_choices
 	}
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify(save_data))
