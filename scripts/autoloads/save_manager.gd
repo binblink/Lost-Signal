@@ -2,36 +2,40 @@ extends Node
 
 const SAVE_PATH = "user://savegame.json"
 
-# Sauvegarde l'état complet de la partie.
-# messages_data : Array de dicts { text, time, out }
-# current_scene_id : String
-# current_message_index : int
-# waiting_for_choice : bool
-# flags : Dictionary
+# Structure de la sauvegarde :
+# {
+#   "current_scene_id": String,
+#   "current_message_index": int,
+#   "waiting_for_choice": bool,
+#   "flags": Dictionary,
+#   "messages": { contact_id: Array de { text, time, out } },
+#   "secondary_histories": { contact_id: Array de { text, time } }
+# }
+
 func save(
-	messages_data: Array,
+	messages_data: Dictionary,
 	current_scene_id: String,
 	current_message_index: int,
 	waiting_for_choice: bool,
-	flags: Dictionary
+	flags: Dictionary,
+	secondary_histories: Dictionary,
+	played_secondary_scenes: Array = []
 ) -> void:
 	var save_data = {
 		"current_scene_id": current_scene_id,
 		"current_message_index": current_message_index,
 		"waiting_for_choice": waiting_for_choice,
 		"flags": flags,
-		"messages": messages_data
+		"messages": messages_data,
+		"secondary_histories": secondary_histories,
+		"played_secondary_scenes": played_secondary_scenes
 	}
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	file.store_string(JSON.stringify(save_data))
 	file.close()
-	print("Partie sauvegardée.")
 
-# Retourne les données de sauvegarde sous forme de Dictionary,
-# ou {} si aucune sauvegarde n'existe.
 func load_save() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH):
-		print("Aucune sauvegarde trouvée.")
 		return {}
 	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
 	var json = JSON.new()
@@ -45,4 +49,3 @@ func has_save() -> bool:
 func delete_save() -> void:
 	if FileAccess.file_exists(SAVE_PATH):
 		DirAccess.remove_absolute(SAVE_PATH)
-		print("Sauvegarde supprimée.")

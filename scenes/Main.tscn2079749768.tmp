@@ -4,13 +4,6 @@
 [ext_resource type="Script" uid="uid://cmkyok6ojx52b" path="res://scripts/ui/message_display.gd" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://c364u6luterqx" path="res://scenes/ConfirmDialog.tscn" id="2_uu6xs"]
 [ext_resource type="Script" uid="uid://b17cgpt81fkki" path="res://scripts/ui/choices_manager.gd" id="3_rarhs"]
-[ext_resource type="Script" uid="uid://btw65xojsvp5c" path="res://scripts/ui/contact_panel.gd" id="4_panel"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_bg"]
-bg_color = Color(0.08, 0.11, 0.13, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_topbar"]
-bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rxg2q"]
 bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
@@ -69,7 +62,7 @@ offset_right = 1152.0
 offset_bottom = 648.0
 color = Color(0.043137256, 0.05490196, 0.06666667, 1)
 
-[node name="RootHBox" type="HBoxContainer" parent="." unique_id=1111111111]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1643707630]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -78,68 +71,13 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 0
 
-[node name="ContactPanel" type="PanelContainer" parent="RootHBox" unique_id=-2072745074]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel_bg")
-script = ExtResource("4_panel")
-
-[node name="VBoxContainer" type="VBoxContainer" parent="RootHBox/ContactPanel" unique_id=-961633963]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 0
-
-[node name="TopBar" type="Panel" parent="RootHBox/ContactPanel/VBoxContainer" unique_id=149477148]
-custom_minimum_size = Vector2(0, 56)
-layout_mode = 2
-size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_panel_topbar")
-
-[node name="MarginContainer" type="MarginContainer" parent="RootHBox/ContactPanel/VBoxContainer/TopBar" unique_id=1260588259]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 8
-
-[node name="HBoxContainer" type="HBoxContainer" parent="RootHBox/ContactPanel/VBoxContainer/TopBar/MarginContainer" unique_id=-1923267926]
-layout_mode = 2
-
-[node name="Title" type="Label" parent="RootHBox/ContactPanel/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=-812156815]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 15
-text = "Messages"
-
-[node name="CloseButton" type="Button" parent="RootHBox/ContactPanel/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=298954296]
-custom_minimum_size = Vector2(32, 32)
-layout_mode = 2
-text = "✕"
-
-[node name="ContactList" type="VBoxContainer" parent="RootHBox/ContactPanel/VBoxContainer" unique_id=1410065407]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="RootHBox" unique_id=1643707630]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 0
-
-[node name="TopBar" type="Panel" parent="RootHBox/VBoxContainer" unique_id=1358790673]
+[node name="TopBar" type="Panel" parent="VBoxContainer" unique_id=1358790673]
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_rxg2q")
 
-[node name="MarginContainer" type="MarginContainer" parent="RootHBox/VBoxContainer/TopBar" unique_id=601523016]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/TopBar" unique_id=601523016]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -151,89 +89,85 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="RootHBox/VBoxContainer/TopBar/MarginContainer" unique_id=515379612]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/TopBar/MarginContainer" unique_id=515379612]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="Avatar" type="TextureRect" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=92779810]
+[node name="Avatar" type="TextureRect" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=92779810]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="ColorRect" type="Panel" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Avatar" unique_id=84683777]
+[node name="ColorRect" type="Panel" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/Avatar" unique_id=84683777]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 40.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_3dxm6")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=338257921]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=338257921]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 2
 
-[node name="ContactName" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1523205111]
+[node name="ContactName" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1523205111]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 text = "Maeve"
 
-[node name="Status" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507849539]
+[node name="Status" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507849539]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 12
 text = "en ligne"
 
-[node name="Time" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1701066795]
+[node name="Time" type="Label" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1701066795]
 layout_mode = 2
 size_flags_horizontal = 10
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 12
 text = "14:26"
 
-[node name="PanelButton" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1111222233]
-layout_mode = 2
-text = "☰"
-
-[node name="Reset" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=2142189066]
+[node name="Button" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=2142189066]
 layout_mode = 2
 text = "⟳"
 
-[node name="Messages" type="ScrollContainer" parent="RootHBox/VBoxContainer" unique_id=1896642000]
+[node name="Messages" type="ScrollContainer" parent="VBoxContainer" unique_id=1896642000]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_glv2v")
 
-[node name="MessagesList" type="VBoxContainer" parent="RootHBox/VBoxContainer/Messages" unique_id=1082466417]
+[node name="MessagesList" type="VBoxContainer" parent="VBoxContainer/Messages" unique_id=1082466417]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 theme_override_constants/separation = 8
 script = ExtResource("2_0bbpv")
 
-[node name="InputBar" type="PanelContainer" parent="RootHBox/VBoxContainer" unique_id=1417374414]
+[node name="InputBar" type="PanelContainer" parent="VBoxContainer" unique_id=1417374414]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_vertical = 8
 theme_override_styles/panel = SubResource("StyleBoxFlat_uu6xs")
 
-[node name="MarginContainer" type="MarginContainer" parent="RootHBox/VBoxContainer/InputBar" unique_id=917119856]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/InputBar" unique_id=917119856]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 8
 
-[node name="HBoxContainer" type="HBoxContainer" parent="RootHBox/VBoxContainer/InputBar/MarginContainer" unique_id=1887437513]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/InputBar/MarginContainer" unique_id=1887437513]
 layout_mode = 2
 
-[node name="TextInput" type="LineEdit" parent="RootHBox/VBoxContainer/InputBar/MarginContainer/HBoxContainer" unique_id=394993284]
+[node name="TextInput" type="LineEdit" parent="VBoxContainer/InputBar/MarginContainer/HBoxContainer" unique_id=394993284]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Message…"
 
-[node name="SendButton" type="Button" parent="RootHBox/VBoxContainer/InputBar/MarginContainer/HBoxContainer" unique_id=1296296251]
+[node name="SendButton" type="Button" parent="VBoxContainer/InputBar/MarginContainer/HBoxContainer" unique_id=1296296251]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "➤"

@@ -2,13 +2,17 @@ extends Control
 
 signal choice_made
 
-@onready var message_display = $VBoxContainer/Messages/MessagesList
-@onready var input_bar = $VBoxContainer/InputBar
-@onready var line_edit = $VBoxContainer/InputBar/MarginContainer/HBoxContainer/TextInput
+@onready var message_display = $RootHBox/VBoxContainer/Messages/MessagesList
+@onready var input_bar = $RootHBox/VBoxContainer/InputBar
+@onready var line_edit = $RootHBox/VBoxContainer/InputBar/MarginContainer/HBoxContainer/TextInput
 @onready var choices_layer = $ChoicesLayer
 @onready var confirm_dialog = $ConfirmDialog
 @onready var overlay = $Overlay
-@onready var new_game_button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/Button
+@onready var reset_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Reset
+@onready var panel_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/PanelButton
+var _total_unread: int = 0
+@onready var contact_name_label = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/ContactName
+@onready var _contact_panel = $RootHBox/ContactPanel
 @onready var btn_annuler = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Annuler
 @onready var btn_recommencer = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Recommencer
 
@@ -16,11 +20,19 @@ var current_scene: Dictionary = {}
 var flags: Dictionary = {}
 var current_message_index: int = 0
 var waiting_for_choice: bool = false
+var secondary_histories: Dictionary = {}
+var _played_secondary_scenes: Array = []
+
+# Contact actif
+var _active_contact_id: String = ""
+# Historiques en mémoire { contact_id: Array[{text, time, out}] }
+var _contact_histories: Dictionary = {}
+
 
 func _ready() -> void:
 	# Câblage ChoicesManager
 	choices_layer.message_display = message_display
-	choices_layer.scroll_container = $VBoxContainer/Messages
+	choices_layer.scroll_container = $RootHBox/VBoxContainer/Messages
 	choices_layer.input_bar = input_bar
 	choices_layer.choice_selected.connect(_on_choice_pressed)
 	# Câblage MessageDisplay
@@ -28,14 +40,74 @@ func _ready() -> void:
 	# UI globale
 	confirm_dialog.visible = false
 	overlay.visible = false
-	new_game_button.pressed.connect(_on_new_game_pressed)
+	reset_button.pressed.connect(_on_new_game_pressed)
+	panel_button.pressed.connect(_on_contacts_button_pressed)
 	btn_annuler.pressed.connect(_on_annuler_pressed)
 	btn_recommencer.pressed.connect(_on_recommencer_pressed)
+	# Panneau contacts
+	_contact_panel.contact_selected.connect(_on_contact_selected)
+	# Contact principal par défaut
+	_active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
+	_update_topbar(_active_contact_id)
+	# Panneau ouvert par défaut
+	_contact_panel.show_panel()
 	# Démarrage
 	if SaveManager.has_save():
 		await load_game()
 	else:
 		await play_scene("scene_01")
+
+# ---------------------------------------------------------------------------
+# Topbar
+# ---------------------------------------------------------------------------
+
+func _update_topbar(contact_id: String) -> void:
+	var contact = DialogueLoader.get_contact(contact_id)
+	if contact.is_empty():
+		contact = DialogueLoader.get_main_contact()
+	contact_name_label.text = contact.get("name", "")
+
+# ---------------------------------------------------------------------------
+# Panneau contacts
+# ---------------------------------------------------------------------------
+
+func _on_contacts_button_pressed() -> void:
+	if _contact_panel._is_open:
+		_contact_panel.hide_panel()
+	else:
+		_contact_panel.show_panel()
+
+func _update_panel_button() -> void:
+	if _total_unread > 0:
+		panel_button.text = "☰●"
+	else:
+		panel_button.text = "☰"
+
+func _on_contact_selected(contact_id: String, unread_count: int) -> void:
+	if unread_count > 0:
+		_total_unread = max(0, _total_unread - unread_count)
+		_update_panel_button()
+	if contact_id == _active_contact_id:
+		return
+	# Sauvegarder l'historique du contact actif avant de switcher
+	_contact_histories[_active_contact_id] = _collect_messages_data()
+	_active_contact_id = contact_id
+	_update_topbar(contact_id)
+	# Afficher l'historique du contact sélectionné
+	message_display.clear_messages()
+	await get_tree().process_frame
+	var history = _contact_histories.get(contact_id, [])
+	for msg in history:
+		if msg["out"]:
+			await message_display.send_message(msg["text"])
+		else:
+			await message_display.receive_message(msg["text"], msg["time"])
+	await message_display.scroll_to_bottom()
+	# Cacher l'input si contact secondaire
+	var contact = DialogueLoader.get_contact(contact_id)
+	var is_main = contact.get("is_main", false)
+	input_bar.visible = is_main
+	choices_layer.visible = false
 
 # ---------------------------------------------------------------------------
 # Progression narrative
@@ -45,6 +117,14 @@ func play_scene(scene_id: String) -> void:
 	if not DialogueLoader.has_scene(scene_id):
 		return
 	current_scene = DialogueLoader.get_scene(scene_id)
+	var scene_contact = current_scene.get("contact_id", _active_contact_id)
+
+	# Si la scène appartient à un contact secondaire, l'ajouter à son historique
+	if scene_contact != DialogueLoader.get_main_contact().get("id", "maeve"):
+		_play_secondary_scene(current_scene)
+		_trigger_next_scenes(scene_id)
+		return
+
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
 		var requires = msg.get("requires_flag", null)
@@ -70,13 +150,43 @@ func play_scene(scene_id: String) -> void:
 		save_game()
 
 	waiting_for_choice = true
-	save_game()
+	save_game(false)
 
 	if current_scene.has("choices"):
 		await choices_layer.show_choices(
 			current_scene["choices"].map(func(c): return c["text"])
 		)
 		await choice_made
+
+	_trigger_next_scenes(scene_id)
+
+func _play_secondary_scene(scene: Dictionary) -> void:
+	var scene_id = scene.get("id", "")
+	# Ne pas rejouer une scène secondaire déjà jouée
+	if scene_id in _played_secondary_scenes:
+		return
+	_played_secondary_scenes.append(scene_id)
+	var contact_id = scene.get("contact_id", "")
+	if not _contact_histories.has(contact_id):
+		_contact_histories[contact_id] = []
+	for msg in scene.get("messages_in", []):
+		_contact_histories[contact_id].append({
+			"text": msg["text"],
+			"time": msg["time"],
+			"out": false
+		})
+	# Notifier le panneau
+	if _contact_panel:
+		_contact_panel.mark_unread(contact_id)
+		_contact_panel.update_history(contact_id, _contact_histories.get(contact_id, []))
+		_total_unread += 1
+		_update_panel_button()
+	save_game()
+
+func _trigger_next_scenes(scene_id: String) -> void:
+	var triggered = DialogueLoader.get_triggered_scenes(scene_id)
+	for triggered_id in triggered:
+		await play_scene(triggered_id)
 
 func _on_choice_pressed(index: int) -> void:
 	if not current_scene.has("choices"):
@@ -88,7 +198,8 @@ func _on_choice_pressed(index: int) -> void:
 		flags[choice["flag"]] = true
 	choices_layer.hide_choices()
 	input_bar.visible = true
-	await message_display.type_message(choice["text"])
+	var message_text = choice.get("message", choice["text"])
+	await message_display.type_message(message_text)
 	var next_scene_id = choice.get("next", null)
 	if next_scene_id != null and DialogueLoader.has_scene(next_scene_id):
 		current_scene = DialogueLoader.get_scene(next_scene_id)
@@ -125,14 +236,20 @@ func _collect_messages_data() -> Array:
 			messages_data.append({"text": text, "time": time, "out": bubble_out})
 	return messages_data
 
-func save_game() -> void:
+func save_game(notify_panel: bool = true) -> void:
+	_contact_histories[_active_contact_id] = _collect_messages_data()
 	SaveManager.save(
-		_collect_messages_data(),
+		_contact_histories,
 		current_scene.get("id", ""),
 		current_message_index,
 		waiting_for_choice,
-		flags
+		flags,
+		secondary_histories,
+		_played_secondary_scenes
 	)
+	if notify_panel:
+		_contact_panel.update_history(_active_contact_id, _contact_histories.get(_active_contact_id, []))
+
 
 func load_game() -> void:
 	var data = SaveManager.load_save()
@@ -141,9 +258,14 @@ func load_game() -> void:
 	flags = data.get("flags", {})
 	current_message_index = data.get("current_message_index", 0)
 	waiting_for_choice = data.get("waiting_for_choice", false)
+	secondary_histories = data.get("secondary_histories", {})
+	_played_secondary_scenes = data.get("played_secondary_scenes", [])
+	_contact_histories = data.get("messages", {})
+	_active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
+	_update_topbar(_active_contact_id)
 	message_display.clear_messages()
 	await get_tree().process_frame
-	for msg in data.get("messages", []):
+	for msg in _contact_histories.get(_active_contact_id, []):
 		if msg["out"]:
 			await message_display.send_message(msg["text"])
 		else:
@@ -153,6 +275,9 @@ func load_game() -> void:
 	if scene_id == "" or not DialogueLoader.has_scene(scene_id):
 		return
 	current_scene = DialogueLoader.get_scene(scene_id)
+	# Mettre à jour les aperçus dans le panneau pour tous les contacts
+	for cid in _contact_histories:
+		_contact_panel.update_history(cid, _contact_histories.get(cid, []))
 	if waiting_for_choice:
 		if current_scene.has("choices"):
 			await choices_layer.show_choices(
