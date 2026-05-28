@@ -18,6 +18,7 @@ var _total_unread: int = 0
 
 var current_scene: Dictionary = {}
 var flags: Dictionary = {}
+var vars: Dictionary = {}
 var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var _is_player_typing: bool = false
@@ -149,8 +150,7 @@ func play_scene(scene_id: String) -> void:
 
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
-		var requires = msg.get("requires_flag", null)
-		if requires == null or flags.get(requires, false):
+		if _eval_condition(msg):
 			var pause = msg.get("pause", null)
 			if pause != null:
 				await do_pause(pause)
@@ -220,8 +220,7 @@ func _on_choice_pressed(index: int) -> void:
 	var choice = current_scene["choices"][index]
 	waiting_for_choice = false
 	current_message_index = 0
-	if choice.has("flag") and choice["flag"] != null:
-		flags[choice["flag"]] = true
+	_apply_effects(choice)
 	choices_layer.hide_choices()
 	input_bar.visible = true
 	# Effacer le pending choice pour ce contact
@@ -276,6 +275,7 @@ func save_game(notify_panel: bool = true) -> void:
 		current_message_index,
 		waiting_for_choice,
 		flags,
+		vars,
 		secondary_histories,
 		_played_secondary_scenes,
 		_pending_choices
@@ -289,6 +289,7 @@ func load_game() -> void:
 	if data.is_empty():
 		return
 	flags = data.get("flags", {})
+	vars = data.get("vars", {})
 	current_message_index = data.get("current_message_index", 0)
 	waiting_for_choice = data.get("waiting_for_choice", false)
 	secondary_histories = data.get("secondary_histories", {})
@@ -337,3 +338,34 @@ func _on_recommencer_pressed() -> void:
 	SaveManager.delete_save()
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
+
+# ---------------------------------------------------------------------------
+# État narratif
+# ---------------------------------------------------------------------------
+
+func _eval_condition(msg: Dictionary) -> bool:
+	var req_flag = msg.get("requires_flag", null)
+	if req_flag != null and not flags.get(req_flag, false):
+		return false
+	var cond = msg.get("condition", null)
+	if cond != null:
+		var val = vars.get(cond["var"], 0)
+		var target = cond["value"]
+		match cond["op"]:
+			"eq":  if val != target: return false
+			"neq": if val == target: return false
+			"gt":  if not val > target: return false
+			"gte": if not val >= target: return false
+			"lt":  if not val < target: return false
+			"lte": if not val <= target: return false
+	return true
+
+func _apply_effects(choice: Dictionary) -> void:
+	if choice.get("flag", null) != null:
+		flags[choice["flag"]] = true
+	for effect in choice.get("effects", []):
+		var v: String = effect["var"]
+		match effect["op"]:
+			"set": vars[v] = effect["value"]
+			"add": vars[v] = vars.get(v, 0) + effect["value"]
+			"sub": vars[v] = vars.get(v, 0) - effect["value"]

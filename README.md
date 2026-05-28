@@ -12,10 +12,11 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 4. [Messages (`messages_in`)](#4-messages-messages_in)
 5. [Choix (`choices`)](#5-choix-choices)
 6. [Modifications de message (`edit`)](#6-modifications-de-message-edit)
-7. [Flags](#7-flags)
-8. [Déclencheurs (`trigger_after_scene`)](#8-déclencheurs-trigger_after_scene)
-9. [Exemple complet annoté](#9-exemple-complet-annoté)
-10. [Export web (Itch.io)](#10-export-web-itchio)
+7. [Flags (booléens)](#7-flags-booléens)
+8. [Variables numériques (`vars`)](#8-variables-numériques-vars)
+9. [Déclencheurs (`trigger_after_scene`)](#9-déclencheurs-trigger_after_scene)
+10. [Exemple complet annoté](#10-exemple-complet-annoté)
+11. [Export web (Itch.io)](#11-export-web-itchio)
 
 ---
 
@@ -163,23 +164,77 @@ Le message s'affiche puis disparaît après `delay` secondes.
 
 ---
 
-## 7. Flags
+## 7. Flags (booléens)
 
-Les flags permettent de conditionner l'affichage de certains messages selon les choix passés.
+Les flags sont des interrupteurs vrai/faux. Ils persistent dans la sauvegarde.
 
-**Activer un flag** : dans un choix, renseigner `"flag": "nom_du_flag"`.
-
-**Utiliser un flag** : dans un message, renseigner `"requires_flag": "nom_du_flag"`. Le message ne s'affiche que si le flag a été activé.
-
+**Activer un flag** via un choix :
 ```json
-{ "text": "On a appelé la police.", "requires_flag": "alerted_police", "pause": null, "edit": null, "time": "15:10" }
+{ "text": "...", "message": "...", "next": "...", "flag": "alerted_police" }
 ```
 
-Les flags persistent dans la sauvegarde et sont remis à zéro lors d'une nouvelle partie.
+**Conditionner un message** à un flag actif :
+```json
+{ "text": "On a appelé la police.", "requires_flag": "alerted_police", ... }
+```
 
 ---
 
-## 8. Déclencheurs (`trigger_after_scene`)
+## 8. Variables numériques (`vars`)
+
+Les variables permettent de stocker des valeurs entières (compteurs, scores, niveaux de confiance…). Elles persistent dans la sauvegarde.
+
+### Modifier une variable via un choix — `effects`
+
+Ajouter un tableau `"effects"` à un choix. Chaque effet spécifie `var`, `op` et `value`.
+
+```json
+{
+  "text": "Je vous crois.",
+  "message": "OK, je vous crois.",
+  "next": "scene_04",
+  "flag": null,
+  "effects": [
+    { "var": "confiance", "op": "add", "value": 1 }
+  ]
+}
+```
+
+| `op` | Effet |
+|------|-------|
+| `"set"` | Fixe la variable à `value` |
+| `"add"` | Ajoute `value` |
+| `"sub"` | Soustrait `value` |
+
+Un choix peut cumuler plusieurs effets dans le tableau, et peut utiliser `flag` et `effects` en même temps.
+
+### Conditionner un message à une variable — `condition`
+
+```json
+{
+  "text": "Tu m'as fait confiance dès le début...",
+  "time": "15:00",
+  "requires_flag": null,
+  "pause": null,
+  "edit": null,
+  "condition": { "var": "confiance", "op": "gte", "value": 3 }
+}
+```
+
+| `op` | Signification |
+|------|---------------|
+| `"eq"` | égal à |
+| `"neq"` | différent de |
+| `"gt"` | strictement supérieur |
+| `"gte"` | supérieur ou égal |
+| `"lt"` | strictement inférieur |
+| `"lte"` | inférieur ou égal |
+
+`requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** conditions sont vraies.
+
+---
+
+## 9. Déclencheurs (`trigger_after_scene`)
 
 Permet de déclencher une scène (typiquement d'un contact secondaire) automatiquement après qu'une autre scène s'est terminée.
 
@@ -199,7 +254,7 @@ Ici, `alex_01` se déclenche dès que `scene_02a` est terminée.
 
 ---
 
-## 9. Exemple complet annoté
+## 10. Exemple complet annoté
 
 ```json
 {
@@ -248,7 +303,7 @@ Ici, `alex_01` se déclenche dès que `scene_02a` est terminée.
 
 ---
 
-## 10. Export web (Itch.io)
+## 11. Export web (Itch.io)
 
 ### Prérequis
 
