@@ -10,9 +10,13 @@ signal choice_made
 @onready var overlay = $Overlay
 @onready var reset_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Reset
 @onready var panel_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/PanelButton
+@onready var mute_button  = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/MuteButton
 var _total_unread: int = 0
-@onready var contact_name_label = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/ContactName
-@onready var _contact_panel = $RootHBox/ContactPanel
+@onready var contact_name_label  = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/ContactName
+@onready var _status_dot         = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusDot
+@onready var _status_text        = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusText
+@onready var _status_warning     = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusWarning
+@onready var _contact_panel      = $RootHBox/ContactPanel
 @onready var btn_annuler = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Annuler
 @onready var btn_recommencer = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Recommencer
 
@@ -20,9 +24,12 @@ var current_scene: Dictionary = {}
 var flags: Dictionary = {}
 var vars: Dictionary = {}
 var contact_names: Dictionary = {}
+var contact_statuses: Dictionary = {}
+var _blink_tween: Tween = null
 var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var _is_player_typing: bool = false
+var _is_receiving: bool = false
 var secondary_histories: Dictionary = {}
 var _played_secondary_scenes: Array = []
 
@@ -47,8 +54,10 @@ func _ready() -> void:
 	overlay.visible = false
 	reset_button.pressed.connect(_on_new_game_pressed)
 	panel_button.pressed.connect(_on_contacts_button_pressed)
-	btn_annuler.pressed.connect(_on_annuler_pressed)
-	btn_recommencer.pressed.connect(_on_recommencer_pressed)
+	mute_button.pressed.connect(_on_mute_pressed)
+	_update_mute_button()
+	btn_annuler.pressed.connect(_on_cancel_pressed)
+	btn_recommencer.pressed.connect(_on_startover_pressed)
 	# Panneau contacts
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	# Contact principal par défaut
@@ -76,10 +85,49 @@ func _get_display_name(contact_id: String) -> String:
 
 func _update_topbar(contact_id: String) -> void:
 	contact_name_label.text = _get_display_name(contact_id)
+	_apply_status_ui(contact_id)
+
+func _get_status(contact_id: String) -> String:
+	if contact_statuses.has(contact_id):
+		return contact_statuses[contact_id]
+	return DialogueLoader.get_contact(contact_id).get("status", "online")
+
+func _apply_status_ui(contact_id: String) -> void:
+	if _blink_tween:
+		_blink_tween.kill()
+		_blink_tween = null
+	_status_dot.modulate.a = 1.0
+	match _get_status(contact_id):
+		"online":
+			_status_dot.add_theme_color_override("font_color", Color(0.2, 0.85, 0.4))
+			_status_text.text = "en ligne"
+			_status_warning.visible = false
+		"away":
+			_status_dot.add_theme_color_override("font_color", Color(1.0, 0.80, 0.1))
+			_status_text.text = "absent"
+			_status_warning.visible = false
+		"offline":
+			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
+			_status_text.text = "hors ligne"
+			_status_warning.visible = false
+		"network_issue":
+			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
+			_status_text.text = "problème réseau"
+			_status_warning.visible = true
+			_blink_tween = create_tween().set_loops()
+			_blink_tween.tween_property(_status_dot, "modulate:a", 0.1, 0.5)
+			_blink_tween.tween_property(_status_dot, "modulate:a", 1.0, 0.5)
 
 # ---------------------------------------------------------------------------
 # Panneau contacts
 # ---------------------------------------------------------------------------
+
+func _on_mute_pressed() -> void:
+	AudioManager.toggle_mute()
+	_update_mute_button()
+
+func _update_mute_button() -> void:
+	mute_button.text = "🔇" if AudioManager.is_muted else "🔊"
 
 func _on_contacts_button_pressed() -> void:
 	if _contact_panel._is_open:
@@ -94,7 +142,7 @@ func _update_panel_button() -> void:
 		panel_button.text = "☰"
 
 func _on_contact_selected(contact_id: String, unread_count: int) -> void:
-	if _is_player_typing:
+	if _is_player_typing or _is_receiving:
 		return
 	if unread_count > 0:
 		_total_unread = max(0, _total_unread - unread_count)
@@ -154,28 +202,34 @@ func play_scene(scene_id: String) -> void:
 		_trigger_next_scenes(scene_id)
 		return
 
+	_is_receiving = true
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
 		if _eval_condition(msg):
 			var pause = msg.get("pause", null)
 			if pause != null:
 				await do_pause(pause)
-			var typing_ok = await message_display.show_typing(msg["text"])
-			if not typing_ok:
-				return
-			var bubble = await message_display.receive_message(msg["text"], msg["time"])
-			var edit = msg.get("edit", null)
-			if edit != null:
-				await get_tree().create_timer(edit.get("delay", 1.5)).timeout
-				if is_instance_valid(bubble):
-					if edit["type"] == "delete":
-						bubble.queue_free()
-					elif edit["type"] == "correct":
-						bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
-			else:
-				await get_tree().create_timer(0.5).timeout
+			_run_effects(msg.get("effects", []))
+			var text = msg.get("text", null)
+			if text != null:
+				var typing_ok = await message_display.show_typing(text)
+				if not typing_ok:
+					_is_receiving = false
+					return
+				var bubble = await message_display.receive_message(text, msg["time"])
+				var edit = msg.get("edit", null)
+				if edit != null:
+					await get_tree().create_timer(edit.get("delay", 1.5)).timeout
+					if is_instance_valid(bubble):
+						if edit["type"] == "delete":
+							bubble.queue_free()
+						elif edit["type"] == "correct":
+							bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
+				else:
+					await get_tree().create_timer(0.5).timeout
 		current_message_index = i + 1
 		save_game()
+	_is_receiving = false
 
 	waiting_for_choice = true
 	save_game(false)
@@ -222,6 +276,8 @@ func _trigger_next_scenes(scene_id: String) -> void:
 
 func _on_choice_pressed(index: int) -> void:
 	if not current_scene.has("choices"):
+		return
+	if index >= current_scene["choices"].size():
 		return
 	var choice = current_scene["choices"][index]
 	waiting_for_choice = false
@@ -283,6 +339,7 @@ func save_game(notify_panel: bool = true) -> void:
 		flags,
 		vars,
 		contact_names,
+		contact_statuses,
 		secondary_histories,
 		_played_secondary_scenes,
 		_pending_choices
@@ -300,6 +357,7 @@ func load_game() -> void:
 	contact_names = data.get("contact_names", {})
 	for cid in contact_names:
 		_contact_panel.set_contact_name(cid, contact_names[cid])
+	contact_statuses = data.get("contact_statuses", {})
 	current_message_index = data.get("current_message_index", 0)
 	waiting_for_choice = data.get("waiting_for_choice", false)
 	secondary_histories = data.get("secondary_histories", {})
@@ -340,11 +398,11 @@ func _on_new_game_pressed() -> void:
 	confirm_dialog.visible = true
 	overlay.visible = true
 
-func _on_annuler_pressed() -> void:
+func _on_cancel_pressed() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
 
-func _on_recommencer_pressed() -> void:
+func _on_startover_pressed() -> void:
 	SaveManager.delete_save()
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
@@ -373,7 +431,10 @@ func _eval_condition(msg: Dictionary) -> bool:
 func _apply_effects(choice: Dictionary) -> void:
 	if choice.get("flag", null) != null:
 		flags[choice["flag"]] = true
-	for effect in choice.get("effects", []):
+	_run_effects(choice.get("effects", []))
+
+func _run_effects(effects: Array) -> void:
+	for effect in effects:
 		match effect["op"]:
 			"set":    vars[effect["var"]] = effect["value"]
 			"add":    vars[effect["var"]] = vars.get(effect["var"], 0) + effect["value"]
@@ -386,3 +447,10 @@ func _apply_effects(choice: Dictionary) -> void:
 					_contact_panel.set_contact_name(cid, new_name)
 					if cid == _active_contact_id:
 						_update_topbar(cid)
+			"set_status":
+				var cid: String = effect.get("contact", "")
+				var new_status: String = str(effect.get("value", "online"))
+				if cid != "":
+					contact_statuses[cid] = new_status
+					if cid == _active_contact_id:
+						_apply_status_ui(cid)

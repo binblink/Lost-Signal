@@ -122,12 +122,13 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 
 | Champ | Type | Description |
 |-------|------|-------------|
-| `text` | string | Contenu du message. |
+| `text` | string \| null | Contenu du message. `null` = événement silencieux : aucune bulle n'est affichée, seuls la pause et les effets s'exécutent. |
 | `time` | string | Horodatage affiché (`"HH:MM"`). Valeur indicative — le jeu affiche l'heure système réelle. |
 | `requires_flag` | string \| null | Le message ne s'affiche que si ce flag booléen est actif. `null` = toujours affiché. |
 | `pause` | string \| null | Délai **avant** l'affichage de ce message : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s), `null` (aucune pause). |
 | `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [§6](#6-modifications-de-message-edit). |
 | `condition` | object \| null | Condition sur une variable numérique. Voir [§8](#8-variables-numériques-vars). |
+| `effects` | array | Effets à exécuter au moment où ce message est joué. Même format que les effets de choix. `[]` ou absent = aucun effet. |
 
 `requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** sont vraies.
 
@@ -227,8 +228,34 @@ Les variables stockent des valeurs entières (compteur, score, niveau de confian
 | `"add"` | `"var"`, `"value"` | Ajoute `value` |
 | `"sub"` | `"var"`, `"value"` | Soustrait `value` |
 | `"rename"` | `"contact"`, `"value"` | Change le nom affiché d'un contact |
+| `"set_status"` | `"contact"`, `"value"` | Change le statut affiché d'un contact |
 
 Un choix peut cumuler plusieurs effets et utiliser `flag` et `effects` simultanément.
+
+### Statut d'un contact — `story.json`
+
+Le statut initial se déclare dans `story.json` :
+
+```json
+{ "id": "maeve", "name": "Maeve", "is_main": true, "avatar": null, "status": "network_issue" }
+```
+
+| Valeur | Indicateur | Texte affiché |
+|--------|------------|---------------|
+| `"online"` | ● vert | en ligne |
+| `"away"` | ● jaune | absent |
+| `"offline"` | ● rouge | hors ligne |
+| `"network_issue"` | ● rouge clignotant + ⚠ | problème réseau |
+
+Si `"status"` est absent, le contact est considéré `"online"` par défaut.
+
+### Changer le statut en cours de jeu — `"set_status"`
+
+```json
+"effects": [{ "op": "set_status", "contact": "maeve", "value": "offline" }]
+```
+
+Le changement est immédiat dans la topbar et persiste dans la sauvegarde.
 
 ### Renommer un contact — `"rename"`
 

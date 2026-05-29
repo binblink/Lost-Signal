@@ -49,17 +49,33 @@ shadow_color = Color(0, 0, 0, 0.3)
 shadow_size = 5
 shadow_offset = Vector2(0, 3)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fos0i"]
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+bg_color = Color(0, 0.36, 0.28, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0.55, 0.44, 0.9)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cm0pq"]
 content_margin_left = 24.0
 content_margin_top = 14.0
 content_margin_right = 24.0
 content_margin_bottom = 14.0
-bg_color = Color(0.0, 0.50, 0.41, 0.92)
+bg_color = Color(0, 0.5, 0.41, 0.92)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.0, 0.72, 0.58, 0.85)
+border_color = Color(0, 0.72, 0.58, 0.85)
 corner_radius_top_left = 16
 corner_radius_top_right = 16
 corner_radius_bottom_right = 16
@@ -67,22 +83,6 @@ corner_radius_bottom_left = 16
 shadow_color = Color(0, 0.45, 0.38, 0.3)
 shadow_size = 8
 shadow_offset = Vector2(0, 4)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fos0i"]
-content_margin_left = 24.0
-content_margin_top = 14.0
-content_margin_right = 24.0
-content_margin_bottom = 14.0
-bg_color = Color(0.0, 0.36, 0.28, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.0, 0.55, 0.44, 0.9)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
 
 [node name="Chat" type="Control" unique_id=932900252]
 layout_mode = 3
@@ -209,11 +209,28 @@ theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 text = "Maeve"
 
-[node name="Status" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507849539]
+[node name="StatusRow" type="HBoxContainer" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer" unique_id=507849539]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="StatusDot" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow" unique_id=507849540]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 10
+text = "●"
+
+[node name="StatusText" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow" unique_id=507849541]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 12
 text = "en ligne"
+
+[node name="StatusWarning" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow" unique_id=507849542]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.72, 0.1, 1)
+theme_override_font_sizes/font_size = 12
+text = "⚠"
 
 [node name="Time" type="Label" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1701066795]
 layout_mode = 2
@@ -225,6 +242,10 @@ text = "14:26"
 [node name="PanelButton" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1111222233]
 layout_mode = 2
 text = "☰"
+
+[node name="MuteButton" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=999888777]
+layout_mode = 2
+text = "🔊"
 
 [node name="Reset" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=2142189066]
 layout_mode = 2
@@ -295,12 +316,11 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
-alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
-theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
@@ -308,12 +328,11 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
-alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
-theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
@@ -321,12 +340,11 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
-alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
-theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
@@ -334,12 +352,11 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
-alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
-theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 

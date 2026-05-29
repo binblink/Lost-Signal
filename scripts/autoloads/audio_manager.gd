@@ -1,7 +1,10 @@
 extends Node
 
 const NOTIFICATION_VOL_DB = -8.0
-const TYPING_VOL_DB = -20.0
+const TYPING_VOL_DB       = -20.0
+const SETTINGS_PATH       = "user://settings.json"
+
+var is_muted: bool = false
 
 var _notif_player: AudioStreamPlayer
 var _typing_player: AudioStreamPlayer
@@ -9,6 +12,8 @@ var _typing_player: AudioStreamPlayer
 const _SAMPLE_RATE: int = 22050
 
 func _ready() -> void:
+	_load_settings()
+
 	_notif_player = AudioStreamPlayer.new()
 	_notif_player.volume_db = NOTIFICATION_VOL_DB
 	add_child(_notif_player)
@@ -19,6 +24,26 @@ func _ready() -> void:
 
 	_notif_player.stream = _make_notification_beep()
 	_typing_player.stream = _make_typing_click()
+
+func toggle_mute() -> void:
+	is_muted = not is_muted
+	AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), is_muted)
+	_save_settings()
+
+func _load_settings() -> void:
+	if not FileAccess.file_exists(SETTINGS_PATH):
+		return
+	var file = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
+	var json  = JSON.new()
+	if json.parse(file.get_as_text()) == OK:
+		is_muted = json.get_data().get("muted", false)
+		AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), is_muted)
+	file.close()
+
+func _save_settings() -> void:
+	var file = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify({ "muted": is_muted }))
+	file.close()
 
 func play_notification() -> void:
 	_notif_player.play()
