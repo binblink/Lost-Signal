@@ -1,13 +1,13 @@
 # Maeve // Lost Signal — Guide de contenu
 
-Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif est défini dans un seul fichier JSON, sans toucher au code.
+Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif est défini dans des fichiers JSON, sans toucher au code.
 
 ---
 
 ## Sommaire
 
-1. [Structure du fichier `dialogue.json`](#1-structure-du-fichier-dialoguejson)
-2. [Contacts](#2-contacts)
+1. [Organisation des fichiers](#1-organisation-des-fichiers)
+2. [Contacts (`story.json`)](#2-contacts-storyjson)
 3. [Scènes](#3-scènes)
 4. [Messages (`messages_in`)](#4-messages-messages_in)
 5. [Choix (`choices`)](#5-choix-choices)
@@ -20,39 +20,63 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 
 ---
 
-## 1. Structure du fichier `dialogue.json`
+## 1. Organisation des fichiers
 
 ```
-dialogue.json
-├── contacts   → liste des personnages
-└── scenes     → liste de toutes les scènes de dialogue
+projet/
+├── story.json          ← configuration du jeu (contacts, scène de départ)
+└── dialogues/
+    ├── acte1.json      ← scènes de l'acte 1
+    ├── acte2.json      ← scènes de l'acte 2
+    └── arc_alex.json   ← arc narratif secondaire (exemple)
 ```
+
+### `story.json` — à configurer une fois, ne plus toucher
+
+Ce fichier déclare les personnages et la scène par laquelle commence le jeu. Il n'a pas besoin d'être modifié pour ajouter du contenu.
 
 ```json
 {
-  "contacts": [ ... ],
-  "scenes":   [ ... ]
+  "start_scene": "scene_01",
+  "contacts": [
+    { "id": "maeve", "name": "Maeve", "is_main": true,  "avatar": null },
+    { "id": "alex",  "name": "Alex",  "is_main": false, "avatar": null }
+  ]
 }
 ```
+
+### `dialogues/` — tout le contenu narratif
+
+Chaque fichier dans ce dossier est chargé automatiquement. Il suffit d'y déposer un nouveau `.json` pour que ses scènes soient disponibles dans le jeu — aucune déclaration supplémentaire n'est nécessaire.
+
+Un fichier de dialogues ne contient qu'un tableau `"scenes"` :
+
+```json
+{
+  "scenes": [
+    { ... },
+    { ... }
+  ]
+}
+```
+
+> **ID en double** : si deux fichiers définissent une scène avec le même `id`, le second est ignoré et un avertissement apparaît dans la console Godot.
+
+> **Notes internes** : un champ `"_notes"` peut être ajouté sur n'importe quel objet (scène, message, choix). Il est ignoré par le jeu et sert uniquement à documenter l'intention de l'auteur.
 
 ---
 
-## 2. Contacts
+## 2. Contacts (`story.json`)
 
-Chaque contact représente un personnage avec qui le joueur peut recevoir des messages.
+Chaque contact représente un personnage avec qui le joueur échange des messages.
 
 ```json
-{
-  "id":      "maeve",
-  "name":    "Maeve",
-  "is_main": true,
-  "avatar":  null
-}
+{ "id": "maeve", "name": "Maeve", "is_main": true, "avatar": null }
 ```
 
 | Champ | Type | Description |
 |-------|------|-------------|
-| `id` | string | Identifiant unique, utilisé dans les scènes. Ne pas changer après coup. |
+| `id` | string | Identifiant unique, référencé dans les scènes. Ne pas modifier après coup. |
 | `name` | string | Nom affiché dans la barre supérieure et le panneau contacts. |
 | `is_main` | bool | `true` pour le contact principal (celui que le joueur peut répondre activement). Un seul contact `is_main: true`. |
 | `avatar` | string \| null | Chemin vers une image (`"res://assets/maeve.png"`) ou `null` pour afficher l'initiale. |
@@ -77,9 +101,9 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 |-------|------|-------------|-------------|
 | `id` | string | oui | Identifiant unique de la scène. |
 | `contact_id` | string | non | Quel contact envoie ces messages. Par défaut : le contact `is_main`. |
-| `trigger_after_scene` | string \| null | non | ID de la scène après laquelle cette scène se déclenche automatiquement. Voir [Déclencheurs](#8-déclencheurs-trigger_after_scene). |
+| `trigger_after_scene` | string \| null | non | ID de la scène après laquelle cette scène se déclenche automatiquement. Voir [§9](#9-déclencheurs-trigger_after_scene). |
 | `messages_in` | array | oui | Liste des messages à afficher. |
-| `choices` | array | non | Liste des options de réponse pour le joueur. Si absent, la scène passe directement à la suivante. |
+| `choices` | array | non | Choix proposés au joueur. Si absent, la narration s'arrête à cette scène. |
 
 ---
 
@@ -91,7 +115,8 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
   "time":          "14:24",
   "requires_flag": null,
   "pause":         "short",
-  "edit":          null
+  "edit":          null,
+  "condition":     null
 }
 ```
 
@@ -99,9 +124,12 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 |-------|------|-------------|
 | `text` | string | Contenu du message. |
 | `time` | string | Horodatage affiché (`"HH:MM"`). Valeur indicative — le jeu affiche l'heure système réelle. |
-| `requires_flag` | string \| null | Nom d'un flag. Le message n'est affiché que si ce flag est actif. `null` = toujours affiché. |
-| `pause` | string \| null | Délai **avant** l'affichage de ce message. Valeurs : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s), `null` (aucune pause). |
-| `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [ci-dessous](#6-modifications-de-message-edit). `null` = message définitif. |
+| `requires_flag` | string \| null | Le message ne s'affiche que si ce flag booléen est actif. `null` = toujours affiché. |
+| `pause` | string \| null | Délai **avant** l'affichage de ce message : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s), `null` (aucune pause). |
+| `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [§6](#6-modifications-de-message-edit). |
+| `condition` | object \| null | Condition sur une variable numérique. Voir [§8](#8-variables-numériques-vars). |
+
+`requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** sont vraies.
 
 ---
 
@@ -112,9 +140,10 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 ```json
 {
   "text":    "Qui est-ce ?",
-  "message": "Euh... qui êtes-vous exactement ? Comment avez-vous eu ce numéro ?",
+  "message": "Euh... qui êtes-vous exactement ?",
   "next":    "scene_02a",
-  "flag":    null
+  "flag":    null,
+  "effects": []
 }
 ```
 
@@ -123,7 +152,8 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 | `text` | string | Label du bouton de choix. |
 | `message` | string | Ce que le joueur "tape" et envoie (animation de frappe + bulle sortante). |
 | `next` | string | ID de la scène à jouer après ce choix. |
-| `flag` | string \| null | Nom du flag à activer quand ce choix est sélectionné. `null` = aucun flag. |
+| `flag` | string \| null | Nom du flag booléen à activer. `null` = aucun. |
+| `effects` | array | Liste d'effets sur des variables numériques. Voir [§8](#8-variables-numériques-vars). `[]` = aucun. |
 
 > **Maximum 3 choix par scène** (contrainte UI actuelle).
 
@@ -131,27 +161,20 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 
 ## 6. Modifications de message (`edit`)
 
-Permet de simuler une correction de faute de frappe ou la suppression d'un message.
+Permet de simuler une correction de faute de frappe ou la suppression d'un message après envoi.
 
 ### Correction
 
 ```json
-"edit": {
-  "type":           "correct",
-  "corrected_text": "Désolée",
-  "delay":          1.5
-}
+"edit": { "type": "correct", "corrected_text": "Désolée", "delay": 1.5 }
 ```
 
-Le texte original s'affiche d'abord, puis est remplacé par `corrected_text` après `delay` secondes.
+Le texte original s'affiche, puis est remplacé par `corrected_text` après `delay` secondes.
 
 ### Suppression
 
 ```json
-"edit": {
-  "type":  "delete",
-  "delay": 2.0
-}
+"edit": { "type": "delete", "delay": 2.0 }
 ```
 
 Le message s'affiche puis disparaît après `delay` secondes.
@@ -166,27 +189,25 @@ Le message s'affiche puis disparaît après `delay` secondes.
 
 ## 7. Flags (booléens)
 
-Les flags sont des interrupteurs vrai/faux. Ils persistent dans la sauvegarde.
+Les flags sont des interrupteurs vrai/faux. Ils persistent dans la sauvegarde et sont remis à zéro à la nouvelle partie.
 
 **Activer un flag** via un choix :
 ```json
-{ "text": "...", "message": "...", "next": "...", "flag": "alerted_police" }
+{ "text": "...", "message": "...", "next": "...", "flag": "a_appele_police" }
 ```
 
 **Conditionner un message** à un flag actif :
 ```json
-{ "text": "On a appelé la police.", "requires_flag": "alerted_police", ... }
+{ "text": "On a appelé la police.", "requires_flag": "a_appele_police", ... }
 ```
 
 ---
 
 ## 8. Variables numériques (`vars`)
 
-Les variables permettent de stocker des valeurs entières (compteurs, scores, niveaux de confiance…). Elles persistent dans la sauvegarde.
+Les variables stockent des valeurs entières (compteur, score, niveau de confiance…). Elles persistent dans la sauvegarde.
 
 ### Modifier une variable via un choix — `effects`
-
-Ajouter un tableau `"effects"` à un choix. Chaque effet spécifie `var`, `op` et `value`.
 
 ```json
 {
@@ -200,24 +221,46 @@ Ajouter un tableau `"effects"` à un choix. Chaque effet spécifie `var`, `op` e
 }
 ```
 
-| `op` | Effet |
-|------|-------|
-| `"set"` | Fixe la variable à `value` |
-| `"add"` | Ajoute `value` |
-| `"sub"` | Soustrait `value` |
+| `op` | Champ requis | Effet |
+|------|-------------|-------|
+| `"set"` | `"var"`, `"value"` | Fixe la variable à `value` |
+| `"add"` | `"var"`, `"value"` | Ajoute `value` |
+| `"sub"` | `"var"`, `"value"` | Soustrait `value` |
+| `"rename"` | `"contact"`, `"value"` | Change le nom affiché d'un contact |
 
-Un choix peut cumuler plusieurs effets dans le tableau, et peut utiliser `flag` et `effects` en même temps.
+Un choix peut cumuler plusieurs effets et utiliser `flag` et `effects` simultanément.
+
+### Renommer un contact — `"rename"`
+
+Permet de révéler le vrai nom d'un contact initialement connu sous un numéro ou un pseudonyme.
+
+Dans `story.json`, déclarer le contact avec son nom initial :
+```json
+{ "id": "maeve", "name": "+33 6 12 34 56 78", "is_main": true, "avatar": null }
+```
+
+Dans un choix, déclencher la révélation :
+```json
+{
+  "text": "Vous avez un prénom ?",
+  "message": "Attendez... vous avez un prénom ?",
+  "next": "scene_04",
+  "flag": null,
+  "effects": [
+    { "op": "rename", "contact": "maeve", "value": "Maeve" }
+  ]
+}
+```
+
+Le nom est mis à jour immédiatement dans la barre supérieure et le panneau contacts, et persiste dans la sauvegarde.
 
 ### Conditionner un message à une variable — `condition`
 
 ```json
 {
   "text": "Tu m'as fait confiance dès le début...",
-  "time": "15:00",
-  "requires_flag": null,
-  "pause": null,
-  "edit": null,
-  "condition": { "var": "confiance", "op": "gte", "value": 3 }
+  "condition": { "var": "confiance", "op": "gte", "value": 3 },
+  ...
 }
 ```
 
@@ -230,73 +273,88 @@ Un choix peut cumuler plusieurs effets dans le tableau, et peut utiliser `flag` 
 | `"lt"` | strictement inférieur |
 | `"lte"` | inférieur ou égal |
 
-`requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** conditions sont vraies.
-
 ---
 
 ## 9. Déclencheurs (`trigger_after_scene`)
 
-Permet de déclencher une scène (typiquement d'un contact secondaire) automatiquement après qu'une autre scène s'est terminée.
+Déclenche automatiquement une scène dès qu'une autre est terminée. Utile pour les contacts secondaires qui réagissent en parallèle.
 
 ```json
 {
   "id":                  "alex_01",
   "contact_id":          "alex",
   "trigger_after_scene": "scene_02a",
-  ...
+  "messages_in":         [ ... ]
 }
 ```
 
-Ici, `alex_01` se déclenche dès que `scene_02a` est terminée.
+`alex_01` se déclenche dès que `scene_02a` se termine. Si le joueur est sur une autre conversation, les messages arrivent silencieusement et un badge "non lu" apparaît dans le panneau contacts.
 
-- Si le contact `alex` n'est pas celui affiché, les messages vont silencieusement dans son historique et un badge "non lu" apparaît dans le panneau contacts.
-- Plusieurs scènes peuvent avoir le même `trigger_after_scene` : elles se jouent toutes dans l'ordre.
+Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se jouent toutes dans l'ordre de chargement.
 
 ---
 
 ## 10. Exemple complet annoté
 
+`story.json` :
+
 ```json
 {
+  "start_scene": "ch1_intro",
   "contacts": [
     { "id": "maeve", "name": "Maeve", "is_main": true,  "avatar": null },
     { "id": "alex",  "name": "Alex",  "is_main": false, "avatar": null }
-  ],
-  "scenes": [
+  ]
+}
+```
 
+`dialogues/acte1.json` :
+
+```json
+{
+  "scenes": [
     {
-      "id": "scene_01",
+      "_notes": "Scène d'ouverture — 2 choix qui affectent la variable confiance",
+      "id": "ch1_intro",
       "messages_in": [
-        { "text": "...Hello?",                        "time": "14:23", "requires_flag": null, "pause": null,    "edit": null },
-        { "text": "Je sais pas si ce message va partir.", "time": "14:24", "requires_flag": null, "pause": "short", "edit": null },
-        { "text": "Y a quelqu'un ?",                  "time": "14:24", "requires_flag": null, "pause": "short", "edit": null }
+        { "text": "...Hello?",          "time": "14:23", "requires_flag": null, "pause": null,    "edit": null, "condition": null },
+        { "text": "Y a quelqu'un là ?", "time": "14:24", "requires_flag": null, "pause": "short", "edit": null, "condition": null }
       ],
       "choices": [
-        { "text": "Qui est-ce ?",        "message": "Euh... qui êtes-vous ?", "next": "scene_02a", "flag": null },
-        { "text": "Oui. Tout va bien ?", "message": "Oui, je suis là.",       "next": "scene_02b", "flag": null }
+        { "text": "Je vous crois.",     "message": "OK, racontez-moi.", "next": "ch1_a", "flag": "approche_douce", "effects": [{ "var": "confiance", "op": "add", "value": 2 }] },
+        { "text": "Qui êtes-vous ?",    "message": "Qui est-ce ?",      "next": "ch1_b", "flag": null,             "effects": [{ "var": "confiance", "op": "add", "value": 1 }] }
       ]
     },
-
     {
-      "id": "scene_02a",
+      "_notes": "edit:correct — faute de frappe corrigée après 1.5s",
+      "id": "ch1_a",
       "messages_in": [
-        { "text": "Desole",                   "time": "14:27", "requires_flag": null, "pause": null, "edit": { "type": "correct", "corrected_text": "Désolée", "delay": 1.5 } },
-        { "text": "J'ai un problème !!",      "time": "14:27", "requires_flag": null, "pause": "short", "edit": null }
+        { "text": "Desole",              "time": "14:26", "requires_flag": null,           "pause": null,    "edit": { "type": "correct", "corrected_text": "Désolée", "delay": 1.5 }, "condition": null },
+        { "text": "Ta douceur m'aide.",  "time": "14:26", "requires_flag": "approche_douce", "pause": "short", "edit": null, "condition": null },
+        { "text": "J'ai besoin d'aide.", "time": "14:27", "requires_flag": null,           "pause": null,    "edit": null, "condition": { "var": "confiance", "op": "gte", "value": 2 } }
       ]
     },
-
     {
+      "_notes": "Arc Alex déclenché en parallèle après ch1_a",
       "id": "alex_01",
       "contact_id": "alex",
-      "trigger_after_scene": "scene_02a",
+      "trigger_after_scene": "ch1_a",
       "messages_in": [
-        { "text": "T'as des nouvelles de Maeve ?", "time": "14:35", "requires_flag": null, "pause": null, "edit": null }
+        { "text": "T'as des nouvelles de Maeve ?", "time": "14:35", "requires_flag": null, "pause": null, "edit": null, "condition": null }
       ],
       "choices": [
-        { "text": "Oui, elle a des ennuis.", "message": "Oui. Tu vas pas aimer…", "next": "alex_02a", "flag": "told_alex" }
+        { "text": "Oui, elle m'écrit.", "message": "Je parle avec elle là.", "next": "alex_02", "flag": null, "effects": [{ "var": "alex_info", "op": "set", "value": 1 }] },
+        { "text": "Non.",              "message": "Aucune idée.",            "next": "alex_02", "flag": null, "effects": [{ "var": "alex_info", "op": "set", "value": 0 }] }
+      ]
+    },
+    {
+      "id": "alex_02",
+      "contact_id": "alex",
+      "messages_in": [
+        { "text": "Tant mieux !",              "time": "14:36", "requires_flag": null, "pause": null, "edit": null, "condition": { "var": "alex_info", "op": "eq", "value": 1 } },
+        { "text": "Je commence à m'inquiéter.", "time": "14:36", "requires_flag": null, "pause": null, "edit": null, "condition": { "var": "alex_info", "op": "eq", "value": 0 } }
       ]
     }
-
   ]
 }
 ```
@@ -320,18 +378,18 @@ Les fichiers sont générés dans `exports/web/`. Créer ce dossier si nécessai
 
 ### Mettre en ligne sur Itch.io
 
-1. Zipper le contenu du dossier `exports/web/` (pas le dossier lui-même, son contenu).
+1. Zipper le **contenu** du dossier `exports/web/` (pas le dossier lui-même).
 2. Sur Itch.io : **Upload files** → cocher **"This file will be played in the browser"**.
-3. Dans les paramètres du projet Itch.io, activer **"SharedArrayBuffer support"** si disponible, ou laisser désactivé (l'export est configuré pour fonctionner sans).
+3. Laisser "SharedArrayBuffer support" désactivé — l'export est configuré pour fonctionner sans.
 
 > **Résolution** : le jeu est en 1920×1080 avec `stretch/mode = canvas_items`. Il s'adapte à toutes les tailles d'écran automatiquement.
 
 ---
 
-## Flux de travail recommandé
+## Flux de travail
 
-1. Ouvrir `dialogue.json` dans n'importe quel éditeur de texte.
-2. Ajouter ou modifier scènes et messages.
+1. Configurer `story.json` une fois : `start_scene` et liste des contacts.
+2. Créer un fichier `.json` dans `dialogues/` et y écrire un tableau `"scenes"`.
 3. Lancer le jeu dans Godot (F5) pour tester.
 4. Vérifier la console Godot pour les erreurs de parsing JSON.
-5. Supprimer `user://savegame.json` (ou utiliser le bouton Reset en jeu) pour repartir du début.
+5. Utiliser le bouton **Reset** en jeu (ou supprimer `user://savegame.json`) pour repartir du début.

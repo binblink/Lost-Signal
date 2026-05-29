@@ -13,6 +13,7 @@ const MAX_PREVIEW_LENGTH = 80
 var _unread: Dictionary = {}
 var _is_open: bool = false
 var _last_messages: Dictionary = {}
+var _display_names: Dictionary = {}
 var _rebuilding: bool = false
 
 func _ready() -> void:
@@ -53,6 +54,11 @@ func clear_unread(contact_id: String) -> void:
 	if _is_open:
 		_rebuild_list()
 
+func set_contact_name(contact_id: String, display_name: String) -> void:
+	_display_names[contact_id] = display_name
+	if _is_open:
+		_rebuild_list()
+
 func update_history(contact_id: String, history: Array) -> void:
 	if history.size() > 0:
 		_last_messages[contact_id] = history[history.size() - 1]
@@ -73,8 +79,11 @@ func _rebuild_list() -> void:
 			continue
 		var item = ContactItem.instantiate()
 		contact_list.add_child(item)
+		var display_contact = contact.duplicate()
+		if _display_names.has(contact_id):
+			display_contact["name"] = _display_names[contact_id]
 		item.setup(
-			contact,
+			display_contact,
 			_last_messages.get(contact_id, {}),
 			_unread.get(contact_id, 0) > 0
 		)

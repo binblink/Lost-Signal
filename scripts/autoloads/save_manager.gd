@@ -19,6 +19,7 @@ func save(
 	waiting_for_choice: bool,
 	flags: Dictionary,
 	vars: Dictionary,
+	contact_names: Dictionary,
 	secondary_histories: Dictionary,
 	played_secondary_scenes: Array = [],
 	pending_choices: Dictionary = {}
@@ -29,6 +30,7 @@ func save(
 		"waiting_for_choice": waiting_for_choice,
 		"flags": flags,
 		"vars": vars,
+		"contact_names": contact_names,
 		"messages": messages_data,
 		"secondary_histories": secondary_histories,
 		"played_secondary_scenes": played_secondary_scenes,

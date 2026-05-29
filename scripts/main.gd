@@ -19,6 +19,7 @@ var _total_unread: int = 0
 var current_scene: Dictionary = {}
 var flags: Dictionary = {}
 var vars: Dictionary = {}
+var contact_names: Dictionary = {}
 var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var _is_player_typing: bool = false
@@ -59,17 +60,22 @@ func _ready() -> void:
 	if SaveManager.has_save():
 		await load_game()
 	else:
-		await play_scene("scene_01")
+		await play_scene(DialogueLoader.get_start_scene())
 
 # ---------------------------------------------------------------------------
 # Topbar
 # ---------------------------------------------------------------------------
 
-func _update_topbar(contact_id: String) -> void:
+func _get_display_name(contact_id: String) -> String:
+	if contact_names.has(contact_id):
+		return contact_names[contact_id]
 	var contact = DialogueLoader.get_contact(contact_id)
 	if contact.is_empty():
 		contact = DialogueLoader.get_main_contact()
-	contact_name_label.text = contact.get("name", "")
+	return contact.get("name", "")
+
+func _update_topbar(contact_id: String) -> void:
+	contact_name_label.text = _get_display_name(contact_id)
 
 # ---------------------------------------------------------------------------
 # Panneau contacts
@@ -276,6 +282,7 @@ func save_game(notify_panel: bool = true) -> void:
 		waiting_for_choice,
 		flags,
 		vars,
+		contact_names,
 		secondary_histories,
 		_played_secondary_scenes,
 		_pending_choices
@@ -290,6 +297,9 @@ func load_game() -> void:
 		return
 	flags = data.get("flags", {})
 	vars = data.get("vars", {})
+	contact_names = data.get("contact_names", {})
+	for cid in contact_names:
+		_contact_panel.set_contact_name(cid, contact_names[cid])
 	current_message_index = data.get("current_message_index", 0)
 	waiting_for_choice = data.get("waiting_for_choice", false)
 	secondary_histories = data.get("secondary_histories", {})
@@ -364,8 +374,15 @@ func _apply_effects(choice: Dictionary) -> void:
 	if choice.get("flag", null) != null:
 		flags[choice["flag"]] = true
 	for effect in choice.get("effects", []):
-		var v: String = effect["var"]
 		match effect["op"]:
-			"set": vars[v] = effect["value"]
-			"add": vars[v] = vars.get(v, 0) + effect["value"]
-			"sub": vars[v] = vars.get(v, 0) - effect["value"]
+			"set":    vars[effect["var"]] = effect["value"]
+			"add":    vars[effect["var"]] = vars.get(effect["var"], 0) + effect["value"]
+			"sub":    vars[effect["var"]] = vars.get(effect["var"], 0) - effect["value"]
+			"rename":
+				var cid: String = effect.get("contact", "")
+				var new_name: String = str(effect.get("value", ""))
+				if cid != "" and new_name != "":
+					contact_names[cid] = new_name
+					_contact_panel.set_contact_name(cid, new_name)
+					if cid == _active_contact_id:
+						_update_topbar(cid)
