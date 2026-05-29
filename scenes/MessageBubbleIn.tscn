@@ -4,23 +4,31 @@
 [ext_resource type="Script" uid="uid://doufuncei6gsp" path="res://animations/fade_msg_in.gd" id="2_dscnc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w720v"]
-content_margin_left = 12.0
-content_margin_top = 8.0
-content_margin_right = 12.0
-content_margin_bottom = 8.0
-bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 2
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
+bg_color = Color(0.13, 0.19, 0.24, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.28, 0.36, 0.5)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
 
 [node name="MarginContainer" type="MarginContainer" unique_id=139671022]
 offset_right = 40.0
 offset_bottom = 40.0
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 4
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 5
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=2091572105]
 layout_mode = 2
@@ -43,14 +51,14 @@ layout_mode = 2
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 text = "Tu es encore là fdfd dffd dfd fdfd dfd dfdfd dfdf d fdf df d?"
 autowrap_mode = 2
 
 [node name="TimeAndStatus" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer" unique_id=1596007385]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 12
 text = "14:23"
 horizontal_alignment = 2
 

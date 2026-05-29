@@ -31,28 +31,58 @@ border_width_top = 1
 border_color = Color(0.16470589, 0.22352941, 0.25882354, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r0du0"]
-content_margin_left = 20.0
-content_margin_top = 6.0
-content_margin_right = 20.0
-content_margin_bottom = 6.0
-bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+bg_color = Color(0.09, 0.14, 0.18, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.12, 0.38, 0.46, 0.5)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cm0pq"]
-bg_color = Color(0.16470589, 0.22352941, 0.25882354, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+bg_color = Color(0.0, 0.50, 0.41, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.0, 0.72, 0.58, 0.85)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0.45, 0.38, 0.3)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fos0i"]
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+bg_color = Color(0.0, 0.36, 0.28, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.0, 0.55, 0.44, 0.9)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="Chat" type="Control" unique_id=932900252]
 layout_mode = 3
@@ -241,8 +271,9 @@ text = "➤"
 [node name="ChoicesLayer" type="VBoxContainer" parent="." unique_id=480744512]
 layout_mode = 1
 anchors_preset = -1
+anchor_left = 0.25
 anchor_top = 0.1
-anchor_right = 1.0
+anchor_right = 0.75
 anchor_bottom = 1.0
 mouse_filter = 0
 theme_override_constants/separation = 8
@@ -251,49 +282,66 @@ script = ExtResource("3_rarhs")
 
 [node name="MarginContainer" type="MarginContainer" parent="ChoicesLayer" unique_id=1280705696]
 layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 32
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ChoicesLayer/MarginContainer" unique_id=1587659719]
 layout_mode = 2
+theme_override_constants/separation = 10
 
 [node name="ChoiceButton1" type="Button" parent="ChoicesLayer/MarginContainer/VBoxContainer" unique_id=1578915749]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
+alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
 [node name="ChoiceButton2" type="Button" parent="ChoicesLayer/MarginContainer/VBoxContainer" unique_id=710292552]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
+alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
 [node name="ChoiceButton3" type="Button" parent="ChoicesLayer/MarginContainer/VBoxContainer" unique_id=2796277]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
+alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
 [node name="ChoiceButton4" type="Button" parent="ChoicesLayer/MarginContainer/VBoxContainer" unique_id=1656465982]
-custom_minimum_size = Vector2(0, 40)
+custom_minimum_size = Vector2(0, 56)
 layout_mode = 2
 size_flags_vertical = 8
+alignment = 1
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 15
 theme_override_styles/normal = SubResource("StyleBoxFlat_r0du0")
 theme_override_styles/hover = SubResource("StyleBoxFlat_cm0pq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_fos0i")
 theme_override_styles/hover_pressed = SubResource("StyleBoxFlat_fos0i")
+theme_override_styles/focus = SubResource("StyleBoxFlat_r0du0")
 
 [node name="Overlay" type="ColorRect" parent="." unique_id=1462992062]
 visible = false
