@@ -11,6 +11,8 @@ signal choice_made
 @onready var reset_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Reset
 @onready var panel_button = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/PanelButton
 @onready var mute_button  = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/MuteButton
+@onready var photo_overlay = $PhotoOverlay
+@onready var photo_image   = $PhotoOverlay/MarginContainer/PhotoImage
 var _total_unread: int = 0
 @onready var contact_name_label  = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/ContactName
 @onready var _status_dot         = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusDot
@@ -30,6 +32,8 @@ var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var _is_player_typing: bool = false
 var _is_receiving: bool = false
+var _deferred_scenes: Dictionary = {}
+var _pending_resumes: Array = []
 var secondary_histories: Dictionary = {}
 var _played_secondary_scenes: Array = []
 
@@ -56,6 +60,8 @@ func _ready() -> void:
 	panel_button.pressed.connect(_on_contacts_button_pressed)
 	mute_button.pressed.connect(_on_mute_pressed)
 	_update_mute_button()
+	message_display.image_clicked.connect(_on_image_clicked)
+	photo_overlay.gui_input.connect(_on_photo_overlay_input)
 	btn_annuler.pressed.connect(_on_cancel_pressed)
 	btn_recommencer.pressed.connect(_on_startover_pressed)
 	# Panneau contacts
@@ -122,6 +128,15 @@ func _apply_status_ui(contact_id: String) -> void:
 # Panneau contacts
 # ---------------------------------------------------------------------------
 
+func _on_image_clicked(path: String) -> void:
+	if ResourceLoader.exists(path):
+		photo_image.texture = load(path)
+	photo_overlay.visible = true
+
+func _on_photo_overlay_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		photo_overlay.visible = false
+
 func _on_mute_pressed() -> void:
 	AudioManager.toggle_mute()
 	_update_mute_button()
@@ -162,8 +177,10 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	await get_tree().process_frame
 	var history = _contact_histories.get(contact_id, [])
 	for msg in history:
-		if msg["out"]:
+		if msg.get("out", false):
 			await message_display.send_message(msg["text"])
+		elif msg.has("media") and msg["media"].get("type") == "image":
+			await message_display.receive_image_message(msg["media"]["path"], msg.get("time", ""))
 		else:
 			await message_display.receive_message(msg["text"], msg["time"])
 	await message_display.scroll_to_bottom()
@@ -202,6 +219,11 @@ func play_scene(scene_id: String) -> void:
 		_trigger_next_scenes(scene_id)
 		return
 
+	var resume_flag = current_scene.get("resume_after_flag", null)
+	if resume_flag != null and not flags.get(resume_flag, false):
+		_deferred_scenes[resume_flag] = scene_id
+		return
+
 	_is_receiving = true
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
@@ -210,8 +232,13 @@ func play_scene(scene_id: String) -> void:
 			if pause != null:
 				await do_pause(pause)
 			_run_effects(msg.get("effects", []))
-			var text = msg.get("text", null)
-			if text != null:
+			var media = msg.get("media", null)
+			var text  = msg.get("text", null)
+			if media != null and media.get("type") == "image":
+				await get_tree().create_timer(randf_range(0.3, 0.8)).timeout
+				await message_display.receive_image_message(media["path"], msg.get("time", ""))
+				await get_tree().create_timer(0.3).timeout
+			elif text != null:
 				var typing_ok = await message_display.show_typing(text)
 				if not typing_ok:
 					_is_receiving = false
@@ -252,11 +279,11 @@ func _play_secondary_scene(scene: Dictionary) -> void:
 	if not _contact_histories.has(contact_id):
 		_contact_histories[contact_id] = []
 	for msg in scene.get("messages_in", []):
-		_contact_histories[contact_id].append({
-			"text": msg["text"],
-			"time": msg["time"],
-			"out": false
-		})
+		var media = msg.get("media", null)
+		if media != null:
+			_contact_histories[contact_id].append({ "text": null, "time": msg.get("time", ""), "out": false, "media": media })
+		elif msg.get("text", null) != null:
+			_contact_histories[contact_id].append({ "text": msg["text"], "time": msg["time"], "out": false })
 	# Si la scène a des choix, les mettre en attente
 	if scene.has("choices") and scene["choices"].size() > 0:
 		_pending_choices[contact_id] = scene["id"]
@@ -300,6 +327,10 @@ func _on_choice_pressed(index: int) -> void:
 	choice_made.emit()
 	if next_scene_id != null:
 		await play_scene(next_scene_id)
+	var resumes = _pending_resumes.duplicate()
+	_pending_resumes.clear()
+	for resume_id in resumes:
+		await play_scene(resume_id)
 
 func do_pause(type: String) -> void:
 	var duration: float
@@ -317,16 +348,23 @@ func do_pause(type: String) -> void:
 func _collect_messages_data() -> Array:
 	var messages_data = []
 	for child in message_display.get_children():
-		if child is MarginContainer:
-			var hbox = child.get_node("HBoxContainer")
+		if not child is MarginContainer:
+			continue
+		if child.has_meta("msg_data"):
+			messages_data.append(child.get_meta("msg_data"))
+		else:
+			# Fallback pour les bulles texte sans métadonnées (compatibilité)
+			var hbox = child.get_node_or_null("HBoxContainer")
+			if hbox == null:
+				continue
 			var spacer_index = -1
 			for i in range(hbox.get_child_count()):
 				if hbox.get_child(i) is Control and not hbox.get_child(i) is PanelContainer:
 					spacer_index = i
-			var bubble_out = spacer_index == 0
-			var text = child.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text
-			var time = child.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text
-			messages_data.append({"text": text, "time": time, "out": bubble_out})
+			var msg_node = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
+			var time_node = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus")
+			if msg_node and time_node:
+				messages_data.append({"text": msg_node.text, "time": time_node.text, "out": spacer_index == 0})
 	return messages_data
 
 func save_game(notify_panel: bool = true) -> void:
@@ -340,6 +378,7 @@ func save_game(notify_panel: bool = true) -> void:
 		vars,
 		contact_names,
 		contact_statuses,
+		_deferred_scenes,
 		secondary_histories,
 		_played_secondary_scenes,
 		_pending_choices
@@ -358,6 +397,7 @@ func load_game() -> void:
 	for cid in contact_names:
 		_contact_panel.set_contact_name(cid, contact_names[cid])
 	contact_statuses = data.get("contact_statuses", {})
+	_deferred_scenes = data.get("deferred_scenes", {})
 	current_message_index = data.get("current_message_index", 0)
 	waiting_for_choice = data.get("waiting_for_choice", false)
 	secondary_histories = data.get("secondary_histories", {})
@@ -430,7 +470,11 @@ func _eval_condition(msg: Dictionary) -> bool:
 
 func _apply_effects(choice: Dictionary) -> void:
 	if choice.get("flag", null) != null:
-		flags[choice["flag"]] = true
+		var flag_name: String = choice["flag"]
+		flags[flag_name] = true
+		if _deferred_scenes.has(flag_name):
+			_pending_resumes.append(_deferred_scenes[flag_name])
+			_deferred_scenes.erase(flag_name)
 	_run_effects(choice.get("effects", []))
 
 func _run_effects(effects: Array) -> void:

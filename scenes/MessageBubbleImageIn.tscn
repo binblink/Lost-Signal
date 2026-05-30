@@ -1,0 +1,69 @@
+[gd_scene format=3 uid="uid://imgbubblein1"]
+
+[ext_resource type="Script" uid="uid://buhvxgik33s7" path="res://scripts/ui/messageswidth.gd" id="1_k46sk"]
+[ext_resource type="Script" uid="uid://doufuncei6gsp" path="res://animations/fade_msg_in.gd" id="2_dscnc"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_imgbbl"]
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 10.0
+bg_color = Color(0.13, 0.19, 0.24, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.28, 0.36, 0.5)
+corner_radius_top_left = 18
+corner_radius_top_right = 18
+corner_radius_bottom_right = 18
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 4
+shadow_offset = Vector2(0, 2)
+
+[node name="MarginContainer" type="MarginContainer" unique_id=139671023]
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=2091572106]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Bubble" type="PanelContainer" parent="HBoxContainer" unique_id=997739695]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_imgbbl")
+script = ExtResource("1_k46sk")
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Bubble" unique_id=1666569542]
+layout_mode = 2
+script = ExtResource("2_dscnc")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Bubble/MarginContainer" unique_id=294778590]
+layout_mode = 2
+
+[node name="Thumbnail" type="TextureRect" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer" unique_id=111333444]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+expand_mode = 1
+stretch_mode = 6
+mouse_default_cursor_shape = 2
+mouse_filter = 0
+
+[node name="TimeAndStatus" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer" unique_id=1596007386]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 12
+text = "14:23"
+horizontal_alignment = 2
+
+[node name="Spacer" type="Control" parent="HBoxContainer" unique_id=1013092598]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3

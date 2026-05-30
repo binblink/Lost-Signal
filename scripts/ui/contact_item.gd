@@ -31,7 +31,15 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 	else:
 		contact_time.text = last_message.get("time", "")
 		var prefix = "Vous : " if last_message.get("out", false) else ""
-		var text = last_message.get("text", "")
+		var raw = last_message.get("text", null)
+		var media = last_message.get("media", null)
+		var text: String
+		if raw != null:
+			text = str(raw)
+		elif media != null:
+			text = "📷 Photo"
+		else:
+			text = ""
 		if text.length() > MAX_PREVIEW_LENGTH:
 			text = text.substr(0, MAX_PREVIEW_LENGTH) + "…"
 		contact_preview.text = prefix + text

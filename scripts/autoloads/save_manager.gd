@@ -21,6 +21,7 @@ func save(
 	vars: Dictionary,
 	contact_names: Dictionary,
 	contact_statuses: Dictionary,
+	deferred_scenes: Dictionary,
 	secondary_histories: Dictionary,
 	played_secondary_scenes: Array = [],
 	pending_choices: Dictionary = {}
@@ -33,6 +34,7 @@ func save(
 		"vars": vars,
 		"contact_names": contact_names,
 		"contact_statuses": contact_statuses,
+		"deferred_scenes": deferred_scenes,
 		"messages": messages_data,
 		"secondary_histories": secondary_histories,
 		"played_secondary_scenes": played_secondary_scenes,

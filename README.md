@@ -102,6 +102,7 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 | `id` | string | oui | Identifiant unique de la scène. |
 | `contact_id` | string | non | Quel contact envoie ces messages. Par défaut : le contact `is_main`. |
 | `trigger_after_scene` | string \| null | non | ID de la scène après laquelle cette scène se déclenche automatiquement. Voir [§9](#9-déclencheurs-trigger_after_scene). |
+| `resume_after_flag` | string \| null | non | Nom d'un flag. La scène est mise en attente jusqu'à ce que ce flag soit posé par un choix. |
 | `messages_in` | array | oui | Liste des messages à afficher. |
 | `choices` | array | non | Choix proposés au joueur. Si absent, la narration s'arrête à cette scène. |
 

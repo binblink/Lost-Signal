@@ -1,27 +1,48 @@
 extends VBoxContainer
 
-const BubbleIn = preload("res://scenes/MessageBubbleIn.tscn")
-const BubbleOut = preload("res://scenes/MessageBubbleOut.tscn")
+signal image_clicked(path: String)
+
+const BubbleIn      = preload("res://scenes/MessageBubbleIn.tscn")
+const BubbleOut     = preload("res://scenes/MessageBubbleOut.tscn")
+const ImageBubbleIn = preload("res://scenes/MessageBubbleImageIn.tscn")
 const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 
-# Référence passée par main.gd au _ready
 var line_edit: LineEdit = null
-
 var typing_speed: float = 0.05
 
 func receive_message(text: String, _time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	add_child(bubble)
+	var t = get_current_time()
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = text
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = get_current_time()
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
+	bubble.set_meta("msg_data", { "text": text, "time": t, "out": false })
+	await scroll_to_bottom()
+	return bubble
+
+func receive_image_message(path: String, _time: String) -> MarginContainer:
+	var bubble = ImageBubbleIn.instantiate()
+	add_child(bubble)
+	var t = get_current_time()
+	var thumbnail = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Thumbnail")
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
+	if ResourceLoader.exists(path):
+		thumbnail.texture = load(path)
+	thumbnail.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			image_clicked.emit(path)
+	)
+	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "media": { "type": "image", "path": path } })
 	await scroll_to_bottom()
 	return bubble
 
 func send_message(text: String) -> void:
 	var bubble = BubbleOut.instantiate()
 	add_child(bubble)
+	var t = get_current_time()
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = text
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = get_current_time()
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
+	bubble.set_meta("msg_data", { "text": text, "time": t, "out": true })
 	if line_edit:
 		line_edit.text = ""
 	await scroll_to_bottom()
@@ -41,7 +62,6 @@ func show_typing(text: String) -> bool:
 	await get_tree().create_timer(duration).timeout
 	if is_instance_valid(indicator):
 		indicator.queue_free()
-	# Retourne false si la scène a été rechargée entre temps
 	return is_instance_valid(self)
 
 func type_message(text: String) -> void:
