@@ -121,3 +121,104 @@ You can build:
 ### 🛠 No-code workflow
 
 Create a full game using only:
+story.json
+dialogues/*.json
+assets/
+
+No scripting required.
+
+---
+
+## 🧩 How it works
+
+1. Define characters in `story.json`
+2. Write story scenes in JSON
+3. Drop files into `/dialogues`
+4. Add images or audio if needed
+5. Run the game in Godot
+
+That’s it.
+
+---
+
+## 📁 Example scene
+
+```json
+{
+  "id": "intro",
+  "messages_in": [
+    { "text": "Are you there?", "time": "02:14" },
+    { "text": "We need to talk.", "pause": "short" }
+  ],
+  "choices": [
+    {
+      "text": "Who is this?",
+      "message": "Who are you?",
+      "next": "scene_2",
+      "effects": [
+        { "var": "trust", "op": "add", "value": 1 }
+      ]
+    }
+  ]
+}
+```
+
+## 🧪 Perfect for
+
+- narrative-driven indie games  
+- interactive fiction projects  
+- experimental storytelling  
+- game jams (fast prototyping)  
+- character-focused drama games  
+- sci-fi / mystery / horror narratives  
+
+---
+
+## 📦 What’s included
+
+- Full Godot 4.6 project  
+- Messaging UI system (Discord-style)  
+- JSON-based narrative engine  
+- Example story scenario  
+- Theme system  
+- Save/load system  
+- Documentation with examples  
+
+---
+
+## 🚀 Why this engine?
+
+Most narrative tools fall into one of these categories:
+
+- too technical (requires programming)  
+- too limited (simple branching only)  
+- too generic (not focused on real-time communication storytelling)  
+
+**Lost Signal is designed specifically for real-time messaging narratives.**
+
+It enables a unique form of storytelling where:
+
+> The story happens through conversations that evolve while the player is reading them.
+
+---
+
+## 🧠 Design philosophy
+
+Lost Signal is built around one idea:
+
+> Communication itself is the narrative system.
+
+Messages are not just dialogue — they are:
+
+- events  
+- systems  
+- interruptions  
+- contradictions  
+- evolving information streams  
+
+---
+
+## ⚠️ Requirements
+
+- Godot 4.6  
+- No external dependencies  
