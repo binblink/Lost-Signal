@@ -11,6 +11,9 @@ var _duration: float = 0.0
 
 func _ready() -> void:
 	player.finished.connect(_on_playback_finished)
+	ThemeManager.restyle_panel($HBoxContainer/Bubble, ThemeManager.bubble_in_color)
+	duration_label.add_theme_color_override("font_color", ThemeManager.time_color)
+	time_label.add_theme_color_override("font_color", ThemeManager.time_color)
 
 
 func setup(path: String, time: String) -> void:

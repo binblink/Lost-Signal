@@ -11,6 +11,9 @@ const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 var line_edit: LineEdit = null
 var typing_speed: float = 0.05
 
+func _ready() -> void:
+	typing_speed = ThemeManager.typing_speed
+
 func receive_message(text: String, _time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	add_child(bubble)

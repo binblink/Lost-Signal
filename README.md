@@ -16,8 +16,9 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 8. [Flags (booléens)](#8-flags-booléens)
 9. [Variables numériques (`vars`)](#9-variables-numériques-vars)
 10. [Déclencheurs (`trigger_after_scene`)](#10-déclencheurs-trigger_after_scene)
-11. [Exemple complet annoté](#11-exemple-complet-annoté)
-12. [Export web (Itch.io)](#12-export-web-itchio)
+11. [Thème visuel (`theme.json`)](#11-thème-visuel-themejson)
+12. [Exemple complet annoté](#12-exemple-complet-annoté)
+13. [Export web (Itch.io)](#13-export-web-itchio)
 
 ---
 
@@ -365,7 +366,41 @@ Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se j
 
 ---
 
-## 11. Exemple complet annoté
+## 11. Thème visuel (`theme.json`)
+
+Créer un fichier `theme.json` à la racine du projet pour personnaliser l'apparence. Supprimer ce fichier revient au thème par défaut.
+
+```json
+{
+  "background_color": "#0B0E11",
+  "topbar_color":     "#1F2C34",
+  "bubble_in_color":  "#21303D",
+  "bubble_out_color": "#00705C",
+  "accent_color":     "#00A884",
+  "text_color":       "#E9EDEF",
+  "time_color":       "#8696A0",
+  "font_size":        15,
+  "typing_speed":     0.05
+}
+```
+
+| Clé | Description |
+|-----|-------------|
+| `background_color` | Fond de l'écran et zone de messages |
+| `topbar_color` | Barre supérieure, panneau contacts, barre de saisie |
+| `bubble_in_color` | Bulles entrantes (texte, image, audio) |
+| `bubble_out_color` | Bulles sortantes (réponses du joueur) |
+| `accent_color` | Avatar, survol des boutons de choix |
+| `text_color` | Texte des messages et des boutons |
+| `time_color` | Horodatages |
+| `font_size` | Taille de police des messages (entier, px) |
+| `typing_speed` | Vitesse de frappe du joueur (secondes par caractère) |
+
+Seules les clés présentes dans le fichier sont appliquées — les autres gardent leur valeur par défaut. Les couleurs sont au format `#RRGGBB`.
+
+---
+
+## 12. Exemple complet annoté
 
 `story.json` :
 
@@ -432,7 +467,7 @@ Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se j
 
 ---
 
-## 12. Export web (Itch.io)
+## 13. Export web (Itch.io)
 
 ### Prérequis
 

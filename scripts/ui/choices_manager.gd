@@ -18,6 +18,7 @@ func _ready() -> void:
 		var btn = _buttons_container.get_child(i)
 		_choice_buttons.append(btn)
 		btn.pressed.connect(_on_button_pressed.bind(i))
+		ThemeManager.restyle_choice_button(btn)
 	gui_input.connect(_on_gui_input)
 
 func show_choices(options: Array) -> void:

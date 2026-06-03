@@ -25,6 +25,7 @@ var _narrative: Node = null
 
 
 func _ready() -> void:
+	_apply_theme()
 	_narrative = preload("res://scripts/narrative_controller.gd").new()
 	add_child(_narrative)
 	_narrative.message_display = message_display
@@ -65,6 +66,28 @@ func _ready() -> void:
 		await load_game()
 	else:
 		await _narrative.play_scene(DialogueLoader.get_start_scene())
+
+
+# ---------------------------------------------------------------------------
+# Thème
+# ---------------------------------------------------------------------------
+
+func _apply_theme() -> void:
+	$ColorRect.color = ThemeManager.background_color
+	ThemeManager.restyle_panel($RootHBox/VBoxContainer/Messages,  ThemeManager.background_color)
+	ThemeManager.restyle_panel($RootHBox/VBoxContainer/TopBar,    ThemeManager.topbar_color)
+	ThemeManager.restyle_panel($RootHBox/VBoxContainer/InputBar,  ThemeManager.topbar_color)
+	ThemeManager.restyle_panel($RootHBox/ContactPanel/VBoxContainer/TopBar, ThemeManager.topbar_color)
+	var tc := ThemeManager.topbar_color
+	ThemeManager.restyle_panel(_contact_panel, Color(tc.r * 0.657, tc.g * 0.657, tc.b * 0.657))
+	ThemeManager.restyle_panel(
+		$RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Avatar/ColorRect,
+		ThemeManager.accent_color
+	)
+	contact_name_label.add_theme_color_override("font_color", ThemeManager.text_color)
+	contact_name_label.add_theme_font_size_override("font_size", ThemeManager.font_size)
+	_status_text.add_theme_color_override("font_color", ThemeManager.time_color)
+	$RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Time.add_theme_color_override("font_color", ThemeManager.time_color)
 
 
 # ---------------------------------------------------------------------------
