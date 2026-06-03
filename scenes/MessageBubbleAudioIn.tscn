@@ -1,0 +1,69 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/audio_bubble.gd" id="1_audio"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bubble"]
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+bg_color = Color(0.12156863, 0.17254902, 0.20392157, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[node name="MessageBubbleAudioIn" type="MarginContainer"]
+script = ExtResource("1_audio")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Bubble" type="PanelContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bubble")
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/Bubble"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/Bubble/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlayerRow" type="HBoxContainer" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlayButton" type="Button" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+text = "▶"
+
+[node name="Progress" type="ProgressBar" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+custom_minimum_size = Vector2(120, 8)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+value = 0.0
+show_percentage = false
+
+[node name="Duration" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 12
+text = "0:00"
+
+[node name="TimeAndStatus" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+theme_override_font_sizes/font_size = 11
+text = ""
+
+[node name="Spacer" type="Control" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]

@@ -2,9 +2,10 @@ extends VBoxContainer
 
 signal image_clicked(path: String)
 
-const BubbleIn      = preload("res://scenes/MessageBubbleIn.tscn")
-const BubbleOut     = preload("res://scenes/MessageBubbleOut.tscn")
-const ImageBubbleIn = preload("res://scenes/MessageBubbleImageIn.tscn")
+const BubbleIn       = preload("res://scenes/MessageBubbleIn.tscn")
+const BubbleOut      = preload("res://scenes/MessageBubbleOut.tscn")
+const ImageBubbleIn  = preload("res://scenes/MessageBubbleImageIn.tscn")
+const AudioBubbleIn  = preload("res://scenes/MessageBubbleAudioIn.tscn")
 const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 
 var line_edit: LineEdit = null
@@ -33,6 +34,15 @@ func receive_image_message(path: String, _time: String) -> MarginContainer:
 			image_clicked.emit(path)
 	)
 	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "media": { "type": "image", "path": path } })
+	await scroll_to_bottom()
+	return bubble
+
+func receive_audio_message(path: String, _time: String) -> MarginContainer:
+	var bubble = AudioBubbleIn.instantiate()
+	add_child(bubble)
+	var t = get_current_time()
+	bubble.setup(path, t)
+	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "media": { "type": "audio", "path": path } })
 	await scroll_to_bottom()
 	return bubble
 
@@ -95,8 +105,10 @@ func render_history(history: Array) -> void:
 	for msg in history:
 		if msg.get("out", false):
 			await send_message(msg["text"])
-		elif msg.has("media") and msg["media"].get("type") == "image":
-			await receive_image_message(msg["media"]["path"], msg.get("time", ""))
+		elif msg.has("media"):
+			match msg["media"].get("type", ""):
+				"image": await receive_image_message(msg["media"]["path"], msg.get("time", ""))
+				"audio": await receive_audio_message(msg["media"]["path"], msg.get("time", ""))
 		else:
 			await receive_message(msg["text"], msg["time"])
 

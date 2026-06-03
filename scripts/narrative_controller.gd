@@ -58,10 +58,16 @@ func play_scene(scene_id: String) -> void:
 			_run_effects(msg.get("effects", []))
 			var media = msg.get("media", null)
 			var text  = msg.get("text", null)
-			if media != null and media.get("type") == "image":
-				await get_tree().create_timer(randf_range(0.3, 0.8)).timeout
-				await message_display.receive_image_message(media["path"], msg.get("time", ""))
-				await get_tree().create_timer(0.3).timeout
+			if media != null:
+				match media.get("type", ""):
+					"image":
+						await get_tree().create_timer(randf_range(0.3, 0.8)).timeout
+						await message_display.receive_image_message(media["path"], msg.get("time", ""))
+						await get_tree().create_timer(0.3).timeout
+					"audio":
+						await get_tree().create_timer(randf_range(0.5, 1.5)).timeout
+						await message_display.receive_audio_message(media["path"], msg.get("time", ""))
+						await get_tree().create_timer(0.3).timeout
 			elif text != null:
 				var typing_ok = await message_display.show_typing(text)
 				if not typing_ok:

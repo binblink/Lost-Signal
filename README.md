@@ -10,13 +10,14 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 2. [Contacts (`story.json`)](#2-contacts-storyjson)
 3. [Scènes](#3-scènes)
 4. [Messages (`messages_in`)](#4-messages-messages_in)
-5. [Choix (`choices`)](#5-choix-choices)
-6. [Modifications de message (`edit`)](#6-modifications-de-message-edit)
-7. [Flags (booléens)](#7-flags-booléens)
-8. [Variables numériques (`vars`)](#8-variables-numériques-vars)
-9. [Déclencheurs (`trigger_after_scene`)](#9-déclencheurs-trigger_after_scene)
-10. [Exemple complet annoté](#10-exemple-complet-annoté)
-11. [Export web (Itch.io)](#11-export-web-itchio)
+5. [Messages médias (images et audio)](#5-messages-médias-images-et-audio)
+6. [Choix (`choices`)](#6-choix-choices)
+7. [Modifications de message (`edit`)](#7-modifications-de-message-edit)
+8. [Flags (booléens)](#8-flags-booléens)
+9. [Variables numériques (`vars`)](#9-variables-numériques-vars)
+10. [Déclencheurs (`trigger_after_scene`)](#10-déclencheurs-trigger_after_scene)
+11. [Exemple complet annoté](#11-exemple-complet-annoté)
+12. [Export web (Itch.io)](#12-export-web-itchio)
 
 ---
 
@@ -25,10 +26,13 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 ```
 projet/
 ├── story.json          ← configuration du jeu (contacts, scène de départ)
-└── dialogues/
-    ├── acte1.json      ← scènes de l'acte 1
-    ├── acte2.json      ← scènes de l'acte 2
-    └── arc_alex.json   ← arc narratif secondaire (exemple)
+├── dialogues/
+│   ├── acte1.json      ← scènes de l'acte 1
+│   ├── acte2.json      ← scènes de l'acte 2
+│   └── arc_alex.json   ← arc narratif secondaire (exemple)
+└── assets/
+    ├── images/         ← images envoyées dans les bulles (PNG, JPG…)
+    └── sounds/         ← messages audio (OGG recommandé, MP3 et WAV supportés)
 ```
 
 ### `story.json` — à configurer une fois, ne plus toucher
@@ -123,19 +127,58 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 
 | Champ | Type | Description |
 |-------|------|-------------|
-| `text` | string \| null | Contenu du message. `null` = événement silencieux : aucune bulle n'est affichée, seuls la pause et les effets s'exécutent. |
+| `text` | string \| null | Contenu du message. `null` = événement silencieux (aucune bulle), ou message média (utiliser `media` à la place). |
 | `time` | string | Horodatage affiché (`"HH:MM"`). Valeur indicative — le jeu affiche l'heure système réelle. |
 | `requires_flag` | string \| null | Le message ne s'affiche que si ce flag booléen est actif. `null` = toujours affiché. |
 | `pause` | string \| null | Délai **avant** l'affichage de ce message : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s), `null` (aucune pause). |
-| `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [§6](#6-modifications-de-message-edit). |
-| `condition` | object \| null | Condition sur une variable numérique. Voir [§8](#8-variables-numériques-vars). |
+| `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [§7](#7-modifications-de-message-edit). |
+| `condition` | object \| null | Condition sur une variable numérique. Voir [§9](#9-variables-numériques-vars). |
 | `effects` | array | Effets à exécuter au moment où ce message est joué. Même format que les effets de choix. `[]` ou absent = aucun effet. |
+| `media` | object \| null | Image ou message audio. Voir [§5](#5-messages-médias-images-et-audio). |
 
 `requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** sont vraies.
 
 ---
 
-## 5. Choix (`choices`)
+## 5. Messages médias (images et audio)
+
+Un message peut envoyer une image ou un message audio à la place d'un texte. Le champ `text` doit être `null` et `media` doit être renseigné.
+
+### Image
+
+```json
+{
+  "text":  null,
+  "time":  "14:43",
+  "pause": "short",
+  "media": { "type": "image", "path": "res://assets/images/lieu.png" }
+}
+```
+
+L'image s'affiche dans une bulle cliquable. Un clic ouvre la photo en plein écran.
+
+Formats supportés : PNG, JPG, WEBP. Placer les fichiers dans `assets/images/`.
+
+### Message audio
+
+```json
+{
+  "text":  null,
+  "time":  "14:44",
+  "pause": "short",
+  "media": { "type": "audio", "path": "res://assets/sounds/voicenote.ogg" }
+}
+```
+
+Une bulle avec un bouton ▶/⏸, une barre de progression et la durée restante est affichée. Le joueur peut démarrer et stopper la lecture.
+
+Formats supportés : OGG (recommandé), MP3, WAV. Placer les fichiers dans `assets/sounds/`.
+
+> Les médias sont sauvegardés dans la progression et réaffichés correctement lors d'un chargement.
+
+---
+
+## 6. Choix (`choices`)
 
 Les choix s'affichent après que tous les `messages_in` de la scène ont été joués.
 
@@ -161,7 +204,7 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 
 ---
 
-## 6. Modifications de message (`edit`)
+## 7. Modifications de message (`edit`)
 
 Permet de simuler une correction de faute de frappe ou la suppression d'un message après envoi.
 
@@ -189,7 +232,7 @@ Le message s'affiche puis disparaît après `delay` secondes.
 
 ---
 
-## 7. Flags (booléens)
+## 8. Flags (booléens)
 
 Les flags sont des interrupteurs vrai/faux. Ils persistent dans la sauvegarde et sont remis à zéro à la nouvelle partie.
 
@@ -205,7 +248,7 @@ Les flags sont des interrupteurs vrai/faux. Ils persistent dans la sauvegarde et
 
 ---
 
-## 8. Variables numériques (`vars`)
+## 9. Variables numériques (`vars`)
 
 Les variables stockent des valeurs entières (compteur, score, niveau de confiance…). Elles persistent dans la sauvegarde.
 
@@ -303,7 +346,7 @@ Le nom est mis à jour immédiatement dans la barre supérieure et le panneau co
 
 ---
 
-## 9. Déclencheurs (`trigger_after_scene`)
+## 10. Déclencheurs (`trigger_after_scene`)
 
 Déclenche automatiquement une scène dès qu'une autre est terminée. Utile pour les contacts secondaires qui réagissent en parallèle.
 
@@ -322,7 +365,7 @@ Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se j
 
 ---
 
-## 10. Exemple complet annoté
+## 11. Exemple complet annoté
 
 `story.json` :
 
@@ -389,7 +432,7 @@ Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se j
 
 ---
 
-## 11. Export web (Itch.io)
+## 12. Export web (Itch.io)
 
 ### Prérequis
 
