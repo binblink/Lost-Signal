@@ -10,6 +10,8 @@ const MAX_PREVIEW_LENGTH = 80
 @onready var contact_list = $VBoxContainer/ContactList
 @onready var close_button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/CloseButton
 
+var contacts: Array = []
+
 var _unread: Dictionary = {}
 var _is_open: bool = false
 var _last_messages: Dictionary = {}
@@ -72,7 +74,7 @@ func _rebuild_list() -> void:
 	for child in contact_list.get_children():
 		child.queue_free()
 	await get_tree().process_frame
-	for contact in DialogueLoader.get_contacts():
+	for contact in contacts:
 		var contact_id = contact.get("id", "")
 		# Ne pas afficher les contacts sans historique
 		if not _last_messages.has(contact_id):

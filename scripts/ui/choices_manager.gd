@@ -7,15 +7,17 @@ var message_display: VBoxContainer = null
 var scroll_container: ScrollContainer = null
 var input_bar: Control = null
 
+@onready var _buttons_container = $MarginContainer/VBoxContainer
+
 var _choice_buttons: Array = []
 var _spacer: Control = null
 
 func _ready() -> void:
 	visible = false
-	var buttons = get_child(0).get_child(0).get_children()
-	for i in range(buttons.size()):
-		_choice_buttons.append(buttons[i])
-		buttons[i].pressed.connect(_on_button_pressed.bind(i))
+	for i in range(_buttons_container.get_child_count()):
+		var btn = _buttons_container.get_child(i)
+		_choice_buttons.append(btn)
+		btn.pressed.connect(_on_button_pressed.bind(i))
 	gui_input.connect(_on_gui_input)
 
 func show_choices(options: Array) -> void:
@@ -30,9 +32,8 @@ func show_choices(options: Array) -> void:
 		input_bar.visible = false
 	await get_tree().process_frame
 	await get_tree().process_frame
-	var buttons_container = get_child(0).get_child(0)
 	_spacer = Control.new()
-	_spacer.custom_minimum_size.y = buttons_container.size.y
+	_spacer.custom_minimum_size.y = _buttons_container.size.y
 	if message_display:
 		message_display.add_child(_spacer)
 		await message_display.scroll_to_bottom()

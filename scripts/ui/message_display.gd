@@ -91,6 +91,15 @@ func get_current_time() -> String:
 	var time = Time.get_time_dict_from_system()
 	return "%02d:%02d" % [time["hour"], time["minute"]]
 
+func render_history(history: Array) -> void:
+	for msg in history:
+		if msg.get("out", false):
+			await send_message(msg["text"])
+		elif msg.has("media") and msg["media"].get("type") == "image":
+			await receive_image_message(msg["media"]["path"], msg.get("time", ""))
+		else:
+			await receive_message(msg["text"], msg["time"])
+
 func clear_messages() -> void:
 	for child in get_children():
 		child.queue_free()
