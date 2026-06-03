@@ -462,5 +462,9 @@ Les fichiers sont générés dans `exports/web/`. Créer ce dossier si nécessai
 1. Configurer `story.json` une fois : `start_scene` et liste des contacts.
 2. Créer un fichier `.json` dans `dialogues/` et y écrire un tableau `"scenes"`.
 3. Lancer le jeu dans Godot (F5) pour tester.
-4. Vérifier la console Godot pour les erreurs de parsing JSON.
+4. Lire la console Godot au démarrage — le validator signale automatiquement :
+   - les références cassées (`next`, `trigger_after_scene`, `contact_id` inexistants) en **rouge**
+   - les flags jamais posés (`requires_flag`, `resume_after_flag`) en **jaune**
+   - les champs manquants ou les valeurs inconnues
+   - en cas de succès : `Validator: N scènes vérifiées — aucune erreur.`
 5. Utiliser le bouton **Reset** en jeu (ou supprimer `user://savegame.json`) pour repartir du début.
