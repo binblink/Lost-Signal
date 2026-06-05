@@ -18,6 +18,7 @@ extends Control
 @onready var _contact_panel     = $RootHBox/ContactPanel
 @onready var btn_annuler        = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Annuler
 @onready var btn_recommencer    = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Recommencer
+@onready var _clock_label       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Time
 
 var _total_unread: int = 0
 var _blink_tween: Tween = null
@@ -59,6 +60,13 @@ func _ready() -> void:
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	_contact_panel.contacts = DialogueLoader.get_contacts()
 
+	_update_clock()
+	var clock_timer := Timer.new()
+	clock_timer.wait_time = 30.0
+	clock_timer.autostart = true
+	clock_timer.timeout.connect(_update_clock)
+	add_child(clock_timer)
+
 	_update_topbar(_narrative.active_contact_id)
 	_contact_panel.show_panel()
 
@@ -87,7 +95,7 @@ func _apply_theme() -> void:
 	contact_name_label.add_theme_color_override("font_color", ThemeManager.text_color)
 	contact_name_label.add_theme_font_size_override("font_size", ThemeManager.font_size)
 	_status_text.add_theme_color_override("font_color", ThemeManager.time_color)
-	$RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Time.add_theme_color_override("font_color", ThemeManager.time_color)
+	_clock_label.add_theme_color_override("font_color", ThemeManager.time_color)
 
 
 # ---------------------------------------------------------------------------
@@ -278,6 +286,11 @@ func load_game() -> void:
 # ---------------------------------------------------------------------------
 # UI globale
 # ---------------------------------------------------------------------------
+
+func _update_clock() -> void:
+	var t := Time.get_time_dict_from_system()
+	_clock_label.text = "%02d:%02d" % [t["hour"], t["minute"]]
+
 
 func _on_new_game_pressed() -> void:
 	confirm_dialog.visible = true

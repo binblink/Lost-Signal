@@ -112,9 +112,11 @@ func handle_choice(index: int) -> void:
 	choices_layer.hide_choices()
 	input_bar.visible = true
 	pending_choices.erase(active_contact_id)
-	var message_text = choice.get("message", choice["text"])
+	var message_data = choice.get("message", choice["text"])
+	var messages: Array = message_data if message_data is Array else [message_data]
 	_is_player_typing = true
-	await message_display.type_message(message_text)
+	for msg in messages:
+		await message_display.type_message(msg)
 	_is_player_typing = false
 	var next_scene_id = choice.get("next", null)
 	if next_scene_id != null and DialogueLoader.has_scene(next_scene_id):

@@ -196,12 +196,26 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 | Champ | Type | Description |
 |-------|------|-------------|
 | `text` | string | Label du bouton de choix. |
-| `message` | string | Ce que le joueur "tape" et envoie (animation de frappe + bulle sortante). |
+| `message` | string \| array | Ce que le joueur "tape" et envoie. Chaîne = un seul message. Tableau de chaînes = plusieurs messages envoyés en séquence, chacun avec son animation de frappe. |
 | `next` | string | ID de la scène à jouer après ce choix. |
 | `flag` | string \| null | Nom du flag booléen à activer. `null` = aucun. |
 | `effects` | array | Liste d'effets sur des variables numériques. Voir [§8](#8-variables-numériques-vars). `[]` = aucun. |
 
 > **Maximum 3 choix par scène** (contrainte UI actuelle).
+
+### Envoyer plusieurs messages avec un choix
+
+```json
+{
+  "text":    "Mouais… curieux quand même.",
+  "message": ["Mouais je suis pas convaincu…", "mais je suis curieux de voir où ça va."],
+  "next":    "scene_02",
+  "flag":    null,
+  "effects": []
+}
+```
+
+Chaque entrée du tableau déclenche une animation de frappe indépendante avant d'afficher la bulle. La scène `next` ne se lance qu'après le dernier message.
 
 ---
 
