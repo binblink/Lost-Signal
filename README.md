@@ -115,29 +115,39 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 
 ## 4. Messages (`messages_in`)
 
+### Forme courte — chaîne simple
+
+Un message sans aucun attribut peut s'écrire directement comme une chaîne :
+
 ```json
-{
-  "text":          "Je sais pas si ce message va partir.",
-  "time":          "14:24",
-  "requires_flag": null,
-  "pause":         "short",
-  "edit":          null,
-  "condition":     null
-}
+"messages_in": [
+  "Bonjour?",
+  { "text": "Je sais pas si ce message va partir.", "pause": "short" }
+]
 ```
 
-| Champ | Type | Description |
-|-------|------|-------------|
-| `text` | string \| null | Contenu du message. `null` = événement silencieux (aucune bulle), ou message média (utiliser `media` à la place). |
-| `time` | string | Horodatage affiché (`"HH:MM"`). Valeur indicative — le jeu affiche l'heure système réelle. |
-| `requires_flag` | string \| null | Le message ne s'affiche que si ce flag booléen est actif. `null` = toujours affiché. |
-| `pause` | string \| null | Délai **avant** l'affichage de ce message : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s), `null` (aucune pause). |
-| `edit` | object \| null | Modification qui apparaît après l'envoi. Voir [§7](#7-modifications-de-message-edit). |
-| `condition` | object \| null | Condition sur une variable numérique. Voir [§9](#9-variables-numériques-vars). |
-| `effects` | array | Effets à exécuter au moment où ce message est joué. Même format que les effets de choix. `[]` ou absent = aucun effet. |
-| `media` | object \| null | Image ou message audio. Voir [§5](#5-messages-médias-images-et-audio). |
+Le moteur le convertit automatiquement en objet `{ "text": "..." }` au chargement. Dès qu'un message a besoin d'au moins un attribut (`pause`, `requires_flag`, `condition`, `edit`, `effects`, `media`), il doit être écrit sous forme d'objet.
 
-`requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** sont vraies.
+### Forme complète — objet
+
+```json
+{ "text": "Je sais pas si ce message va partir.", "pause": "short", "requires_flag": "mon_flag" }
+```
+
+**Tous les champs sont optionnels sauf `text`** (ou `media` pour les messages médias). Les champs absents prennent leur valeur par défaut.
+
+| Champ | Type | Défaut | Description |
+|-------|------|--------|-------------|
+| `text` | string \| null | — | Contenu du message. `null` = événement silencieux (effets uniquement), ou message média. |
+| `pause` | string | aucune | Délai **avant** l'affichage : `"short"` (1–4 s), `"medium"` (5–15 s), `"long"` (15–40 s). |
+| `requires_flag` | string | toujours affiché | Le message ne s'affiche que si ce flag est actif. |
+| `condition` | object | toujours affiché | Condition sur une variable numérique. Voir [§9](#9-variables-numériques-vars). |
+| `edit` | object | aucun | Modification après envoi. Voir [§7](#7-modifications-de-message-edit). |
+| `effects` | array | `[]` | Effets déclenchés au moment où ce message est joué. Même format que les effets de choix. |
+| `media` | object | aucun | Image ou message audio. Voir [§5](#5-messages-médias-images-et-audio). |
+| `time` | string | heure système | Horodatage de la bulle (`"HH:MM"`). Le jeu affiche l'heure réelle — ce champ est rarement utile. |
+
+`requires_flag` et `condition` peuvent être combinés : le message ne s'affiche que si **les deux** conditions sont vraies.
 
 ---
 
@@ -188,18 +198,19 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
   "text":    "Qui est-ce ?",
   "message": "Euh... qui êtes-vous exactement ?",
   "next":    "scene_02a",
-  "flag":    null,
-  "effects": []
+  "flag":    "a_demande_identite"
 }
 ```
 
-| Champ | Type | Description |
-|-------|------|-------------|
-| `text` | string | Label du bouton de choix. |
-| `message` | string \| array | Ce que le joueur "tape" et envoie. Chaîne = un seul message. Tableau de chaînes = plusieurs messages envoyés en séquence, chacun avec son animation de frappe. |
-| `next` | string | ID de la scène à jouer après ce choix. |
-| `flag` | string \| null | Nom du flag booléen à activer. `null` = aucun. |
-| `effects` | array | Liste d'effets sur des variables numériques. Voir [§8](#8-variables-numériques-vars). `[]` = aucun. |
+**Tous les champs sont optionnels sauf `text`** et `next`. Les champs absents prennent leur valeur par défaut.
+
+| Champ | Type | Défaut | Description |
+|-------|------|--------|-------------|
+| `text` | string | — | Label du bouton de choix. |
+| `message` | string \| array | valeur de `text` | Ce que le joueur envoie. Chaîne = un message. Tableau = plusieurs messages envoyés en séquence, chacun avec son animation de frappe. Si absent, `text` est envoyé tel quel. |
+| `next` | string | — | ID de la scène à jouer après ce choix. |
+| `flag` | string | aucun | Flag booléen à activer. |
+| `effects` | array | `[]` | Effets sur variables / contacts. Voir [§9](#9-variables-numériques-vars). |
 
 > **Maximum 3 choix par scène** (contrainte UI actuelle).
 
@@ -210,8 +221,7 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
   "text":    "Mouais… curieux quand même.",
   "message": ["Mouais je suis pas convaincu…", "mais je suis curieux de voir où ça va."],
   "next":    "scene_02",
-  "flag":    null,
-  "effects": []
+  "flag":    "commit_r"
 }
 ```
 

@@ -73,7 +73,7 @@ func play_scene(scene_id: String) -> void:
 				if not typing_ok:
 					_is_receiving = false
 					return
-				var bubble = await message_display.receive_message(text, msg["time"])
+				var bubble = await message_display.receive_message(text, msg.get("time", ""))
 				var edit = msg.get("edit", null)
 				if edit != null:
 					await get_tree().create_timer(edit.get("delay", 1.5)).timeout
@@ -169,7 +169,7 @@ func _play_secondary_scene(scene: Dictionary) -> void:
 		if media != null:
 			contact_histories[contact_id].append({ "text": null, "time": msg.get("time", ""), "out": false, "media": media })
 		elif msg.get("text", null) != null:
-			contact_histories[contact_id].append({ "text": msg["text"], "time": msg["time"], "out": false })
+			contact_histories[contact_id].append({ "text": msg["text"], "time": msg.get("time", ""), "out": false })
 	if scene.has("choices") and scene["choices"].size() > 0:
 		pending_choices[contact_id] = scene["id"]
 	secondary_scene_received.emit(contact_id)

@@ -113,7 +113,7 @@ func render_history(history: Array) -> void:
 				"image": await receive_image_message(msg["media"]["path"], msg.get("time", ""))
 				"audio": await receive_audio_message(msg["media"]["path"], msg.get("time", ""))
 		else:
-			await receive_message(msg["text"], msg["time"])
+			await receive_message(msg["text"], msg.get("time", ""))
 
 func clear_messages() -> void:
 	for child in get_children():

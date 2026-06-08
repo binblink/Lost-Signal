@@ -45,6 +45,11 @@ func _load_scenes_from(path: String) -> void:
 	for scene in data["scenes"]:
 		if not scene.has("contact_id"):
 			scene["contact_id"] = _get_main_contact_id()
+		if scene.has("messages_in"):
+			for i in range(scene["messages_in"].size()):
+				var m = scene["messages_in"][i]
+				if m is String:
+					scene["messages_in"][i] = { "text": m }
 		if _scenes.has(scene["id"]):
 			push_warning("DialogueLoader: ID en double « %s » dans %s — ignoré." % [scene["id"], path])
 			continue
