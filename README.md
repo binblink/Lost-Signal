@@ -207,7 +207,7 @@ Les choix s'affichent après que tous les `messages_in` de la scène ont été j
 | Champ | Type | Défaut | Description |
 |-------|------|--------|-------------|
 | `text` | string | — | Label du bouton de choix. |
-| `message` | string \| array | valeur de `text` | Ce que le joueur envoie. Chaîne = un message. Tableau = plusieurs messages envoyés en séquence, chacun avec son animation de frappe. Si absent, `text` est envoyé tel quel. |
+| `message` | string \| array | valeur de `text` | Ce que le joueur envoie. Chaîne = un message. Tableau = plusieurs messages envoyés en séquence, chacun avec son animation de frappe. **Si absent, `text` est envoyé tel quel** — utile quand le label du bouton et le message sont identiques. |
 | `next` | string | — | ID de la scène à jouer après ce choix. |
 | `flag` | string | aucun | Flag booléen à activer. |
 | `effects` | array | `[]` | Effets sur variables / contacts. Voir [§9](#9-variables-numériques-vars). |

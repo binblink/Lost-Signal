@@ -216,6 +216,14 @@ func _check_choice(choice: Dictionary, ctx: String, j: int, errors: Array, warni
 		var next_id = choice.get("next", null)
 		if next_id != null and not _scenes.has(next_id):
 			errors.append("%s next '%s' introuvable." % [label, next_id])
+	var msg_data = choice.get("message", null)
+	if msg_data != null:
+		if msg_data is Array:
+			for k in range(msg_data.size()):
+				if not msg_data[k] is String:
+					errors.append("%s message[%d] doit être une chaîne." % [label, k])
+		elif not msg_data is String:
+			errors.append("%s 'message' doit être une chaîne ou un tableau de chaînes." % label)
 	var efx: Array = choice.get("effects", [])
 	for k in range(efx.size()):
 		_check_effect(efx[k], "%s effect[%d]" % [label, k], errors, warnings)

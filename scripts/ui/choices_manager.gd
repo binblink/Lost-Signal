@@ -34,7 +34,7 @@ func show_choices(options: Array) -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 	_spacer = Control.new()
-	_spacer.custom_minimum_size.y = _buttons_container.size.y
+	_spacer.custom_minimum_size.y = _buttons_container.get_parent().size.y
 	if message_display:
 		message_display.add_child(_spacer)
 		await message_display.scroll_to_bottom()
