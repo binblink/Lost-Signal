@@ -15,10 +15,12 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 7. [Modifications de message (`edit`)](#7-modifications-de-message-edit)
 8. [Flags (booléens)](#8-flags-booléens)
 9. [Variables numériques (`vars`)](#9-variables-numériques-vars)
-10. [Déclencheurs (`trigger_after_scene`)](#10-déclencheurs-trigger_after_scene)
-11. [Thème visuel (`theme.json`)](#11-thème-visuel-themejson)
-12. [Exemple complet annoté](#12-exemple-complet-annoté)
-13. [Export web (Itch.io)](#13-export-web-itchio)
+10. [Saisie libre du joueur (`free_input`)](#10-saisie-libre-du-joueur-free_input)
+11. [Templates dans les textes](#11-templates-dans-les-textes)
+12. [Déclencheurs (`trigger_after_scene`)](#12-déclencheurs-trigger_after_scene)
+13. [Thème visuel (`theme.json`)](#13-thème-visuel-themejson)
+14. [Exemple complet annoté](#14-exemple-complet-annoté)
+15. [Export web (Itch.io)](#15-export-web-itchio)
 
 ---
 
@@ -106,10 +108,12 @@ Une scène est un bloc de messages entrants, éventuellement suivi de choix.
 |-------|------|-------------|-------------|
 | `id` | string | oui | Identifiant unique de la scène. |
 | `contact_id` | string | non | Quel contact envoie ces messages. Par défaut : le contact `is_main`. |
-| `trigger_after_scene` | string \| null | non | ID de la scène après laquelle cette scène se déclenche automatiquement. Voir [§9](#9-déclencheurs-trigger_after_scene). |
+| `trigger_after_scene` | string \| null | non | ID de la scène après laquelle cette scène se déclenche automatiquement. Voir [§12](#12-déclencheurs-trigger_after_scene). |
 | `resume_after_flag` | string \| null | non | Nom d'un flag. La scène est mise en attente jusqu'à ce que ce flag soit posé par un choix. |
 | `messages_in` | array | oui | Liste des messages à afficher. |
-| `choices` | array | non | Choix proposés au joueur. Si absent, la narration s'arrête à cette scène. |
+| `choices` | array | non | Choix proposés au joueur. Si absent et `free_input` absent, la narration s'arrête. |
+| `free_input` | string | non | Nom de variable. Active la saisie libre du joueur à la place des choix. Voir [§10](#10-saisie-libre-du-joueur-free_input). |
+| `next` | string | non | ID de la scène suivante. Requis si `free_input` est présent. |
 
 ---
 
@@ -371,7 +375,74 @@ Le nom est mis à jour immédiatement dans la barre supérieure et le panneau co
 
 ---
 
-## 10. Déclencheurs (`trigger_after_scene`)
+## 10. Saisie libre du joueur (`free_input`)
+
+Permet au joueur de taper un message librement au lieu de choisir parmi des boutons. La valeur saisie est stockée dans une variable et peut être réutilisée dans les messages suivants via un template (voir [§11](#11-templates-dans-les-textes)).
+
+```json
+{
+  "id": "ch1_presentation",
+  "messages_in": [
+    "Et vous?"
+  ],
+  "free_input": "nom_joueur",
+  "next": "ch1_suite"
+}
+```
+
+| Champ | Description |
+|-------|-------------|
+| `free_input` | Nom de la variable dans laquelle le texte saisi est stocké. |
+| `next` | ID de la scène à jouer après la validation. **Obligatoire** si `free_input` est présent. |
+
+Quand une scène avec `free_input` est active, deux signaux visuels apparaissent automatiquement :
+- Un trait de 2 px en couleur d'accentuation pulse doucement au-dessus de la barre de saisie.
+- Le placeholder du champ de texte affiche `"Tapez votre message…"`.
+
+Ces indicateurs disparaissent dès que le joueur valide avec Entrée.
+
+> Une scène ne peut pas avoir à la fois `choices` et `free_input`. Si les deux sont présents, `free_input` est prioritaire.
+
+---
+
+## 11. Templates dans les textes
+
+N'importe quel texte de message ou de choix peut contenir des marqueurs `{nom_variable}`. Ils sont remplacés automatiquement par la valeur de la variable au moment de l'affichage.
+
+La source la plus courante est `free_input` : la valeur tapée par le joueur est stockée sous le nom de variable indiqué, et devient immédiatement disponible dans toutes les scènes suivantes.
+
+### Exemple complet — capturer puis réutiliser le prénom
+
+```json
+{
+  "id": "scene_demande_prenom",
+  "messages_in": [ "Et vous, comment vous appelez-vous?" ],
+  "free_input": "nom_joueur",
+  "next": "scene_suite"
+},
+{
+  "id": "scene_suite",
+  "messages_in": [
+    { "text": "{nom_joueur}… Ok.", "pause": "short" },
+    { "text": "Bien {nom_joueur}. On va s'en sortir.", "pause": "short" }
+  ],
+  "choices": [
+    { "text": "On fait comment?", "next": "scene_plan" }
+  ]
+}
+```
+
+Le marqueur `{nom_joueur}` dans `scene_suite` est remplacé par ce que le joueur a tapé dans `scene_demande_prenom`. Il fonctionne dans les messages de n'importe quel personnage, dans les textes de choix, et dans les messages envoyés par le joueur via `message`.
+
+### Règles
+
+- Le nom de variable dans `{...}` doit correspondre exactement à la clé définie dans `free_input` ou dans un `effect` (`set`/`add`/`sub`).
+- Si la variable n'existe pas encore au moment de l'affichage, le marqueur est laissé tel quel.
+- Les accolades qui ne correspondent à aucune variable connue sont laissées intactes.
+
+---
+
+## 12. Déclencheurs (`trigger_after_scene`)
 
 Déclenche automatiquement une scène dès qu'une autre est terminée. Utile pour les contacts secondaires qui réagissent en parallèle.
 
@@ -390,7 +461,7 @@ Plusieurs scènes peuvent partager le même `trigger_after_scene` — elles se j
 
 ---
 
-## 11. Thème visuel (`theme.json`)
+## 13. Thème visuel (`theme.json`)
 
 Créer un fichier `theme.json` à la racine du projet pour personnaliser l'apparence. Supprimer ce fichier revient au thème par défaut.
 
@@ -424,7 +495,7 @@ Seules les clés présentes dans le fichier sont appliquées — les autres gard
 
 ---
 
-## 12. Exemple complet annoté
+## 14. Exemple complet annoté
 
 `story.json` :
 
@@ -491,7 +562,7 @@ Seules les clés présentes dans le fichier sont appliquées — les autres gard
 
 ---
 
-## 13. Export web (Itch.io)
+## 15. Export web (Itch.io)
 
 ### Prérequis
 

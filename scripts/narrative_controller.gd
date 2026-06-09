@@ -1,6 +1,8 @@
 extends Node
 
 signal choice_made
+signal free_input_submitted(text: String)
+signal free_input_activated
 signal save_requested(notify_panel: bool)
 signal secondary_scene_received(contact_id: String)
 signal contact_renamed(contact_id: String, new_name: String)
@@ -26,6 +28,7 @@ var deferred_scenes: Dictionary = {}
 
 var _is_receiving: bool = false
 var _is_player_typing: bool = false
+var _waiting_for_free_input: bool = false
 var _pending_resumes: Array = []
 
 var is_busy: bool:
@@ -69,11 +72,12 @@ func play_scene(scene_id: String) -> void:
 						await message_display.receive_audio_message(media["path"], msg.get("time", ""))
 						await get_tree().create_timer(0.3).timeout
 			elif text != null:
-				var typing_ok = await message_display.show_typing(text)
+				var display_text := _apply_templates(text)
+				var typing_ok = await message_display.show_typing(display_text)
 				if not typing_ok:
 					_is_receiving = false
 					return
-				var bubble = await message_display.receive_message(text, msg.get("time", ""))
+				var bubble = await message_display.receive_message(display_text, msg.get("time", ""))
 				var edit = msg.get("edit", null)
 				if edit != null:
 					await get_tree().create_timer(edit.get("delay", 1.5)).timeout
@@ -87,6 +91,24 @@ func play_scene(scene_id: String) -> void:
 		current_message_index = i + 1
 		save_requested.emit(true)
 	_is_receiving = false
+
+	if current_scene.has("free_input"):
+		var var_name: String = current_scene["free_input"]
+		_waiting_for_free_input = true
+		free_input_activated.emit()
+		save_requested.emit(false)
+		var submitted_text: String = await free_input_submitted
+		_waiting_for_free_input = false
+		vars[var_name] = submitted_text
+		_is_player_typing = true
+		await message_display.type_message(submitted_text)
+		_is_player_typing = false
+		save_requested.emit(true)
+		_trigger_next_scenes(scene_id)
+		var fi_next = current_scene.get("next", null)
+		if fi_next != null:
+			await play_scene(fi_next)
+		return
 
 	waiting_for_choice = true
 	save_requested.emit(false)
@@ -116,7 +138,7 @@ func handle_choice(index: int) -> void:
 	var messages: Array = message_data if message_data is Array else [message_data]
 	_is_player_typing = true
 	for msg in messages:
-		await message_display.type_message(msg)
+		await message_display.type_message(_apply_templates(msg))
 	_is_player_typing = false
 	var next_scene_id = choice.get("next", null)
 	if next_scene_id != null and DialogueLoader.has_scene(next_scene_id):
@@ -238,6 +260,16 @@ func set_state(data: Dictionary) -> void:
 	pending_choices         = data.get("pending_choices", {})
 	# "messages" est l'ancienne clé — conservé pour compatibilité avec les sauvegardes existantes
 	contact_histories       = data.get("contact_histories", data.get("messages", {}))
+
+
+func submit_free_input(text: String) -> void:
+	free_input_submitted.emit(text)
+
+
+func _apply_templates(text: String) -> String:
+	if vars.is_empty() or not "{" in text:
+		return text
+	return text.format(vars)
 
 
 func _run_effects(effects: Array) -> void:

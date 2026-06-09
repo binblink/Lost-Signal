@@ -22,6 +22,8 @@ extends Control
 
 var _total_unread: int = 0
 var _blink_tween: Tween = null
+var _free_input_tween: Tween = null
+var _free_input_indicator: ColorRect = null
 var _narrative: Node = null
 
 
@@ -59,6 +61,8 @@ func _ready() -> void:
 
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	_contact_panel.contacts = DialogueLoader.get_contacts()
+	line_edit.text_submitted.connect(_on_free_input_submitted)
+	_narrative.free_input_activated.connect(_start_free_input_visual)
 
 	_update_clock()
 	var clock_timer := Timer.new()
@@ -286,6 +290,41 @@ func load_game() -> void:
 # ---------------------------------------------------------------------------
 # UI globale
 # ---------------------------------------------------------------------------
+
+func _start_free_input_visual() -> void:
+	line_edit.placeholder_text = "Tapez votre message…"
+	if not is_instance_valid(_free_input_indicator):
+		_free_input_indicator = ColorRect.new()
+		_free_input_indicator.color = ThemeManager.accent_color
+		_free_input_indicator.custom_minimum_size = Vector2(0, 2)
+		var parent = input_bar.get_parent()
+		parent.add_child(_free_input_indicator)
+		parent.move_child(_free_input_indicator, input_bar.get_index())
+	_free_input_indicator.visible = true
+	_free_input_indicator.modulate.a = 1.0
+	if _free_input_tween:
+		_free_input_tween.kill()
+	_free_input_tween = create_tween().set_loops()
+	_free_input_tween.tween_property(_free_input_indicator, "modulate:a", 0.15, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_free_input_tween.tween_property(_free_input_indicator, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_free_input_visual() -> void:
+	line_edit.placeholder_text = ""
+	if _free_input_tween:
+		_free_input_tween.kill()
+		_free_input_tween = null
+	if is_instance_valid(_free_input_indicator):
+		_free_input_indicator.visible = false
+
+
+func _on_free_input_submitted(text: String) -> void:
+	if text.strip_edges().is_empty() or not _narrative._waiting_for_free_input:
+		return
+	_stop_free_input_visual()
+	line_edit.clear()
+	_narrative.submit_free_input(text.strip_edges())
+
 
 func _update_clock() -> void:
 	var t := Time.get_time_dict_from_system()

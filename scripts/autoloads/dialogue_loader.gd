@@ -154,6 +154,17 @@ func _validate() -> void:
 		if resume_flag != null and not resume_flag in flags_set:
 			warnings.append("%s resume_after_flag '%s' jamais posé par aucun choix." % [ctx, resume_flag])
 
+		# free_input
+		var free_input = scene.get("free_input", null)
+		if free_input != null:
+			if not free_input is String or free_input.is_empty():
+				errors.append("%s free_input doit être une chaîne non vide (nom de variable)." % ctx)
+			var fi_next = scene.get("next", null)
+			if fi_next == null:
+				warnings.append("%s free_input présent mais 'next' absent — la narration s'arrêtera après la saisie." % ctx)
+			elif not _scenes.has(fi_next):
+				errors.append("%s next '%s' introuvable." % [ctx, fi_next])
+
 		# choices
 		var choices: Array = scene.get("choices", [])
 		for j in range(choices.size()):
