@@ -111,6 +111,10 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 }
 ```
 
+**Important** : 
+- Les fichiers image doivent être placés dans le dossier `assets/images/`
+- Dans le JSON, utilisez toujours un chemin Godot commençant par `res://assets/images/`
+
 ### Audio
 
 ```json
@@ -119,6 +123,10 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
   "media": { "type": "audio", "path": "res://assets/sounds/voicenote.ogg" }
 }
 ```
+
+**Important** :
+- Les fichiers audio doivent être placés dans le dossier `assets/sounds/`
+- Dans le JSON, utilisez toujours un chemin Godot commençant par `res://assets/sounds/`
 
 ## 6. Choix (`choices`)
 

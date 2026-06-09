@@ -42,7 +42,11 @@ projet/
 
 1. **Créer** un fichier `.json` dans `dialogues/`
 2. **Écrire** des scènes avec messages et choix (voir `docs/authoring.md` pour la syntaxe)
-3. **Lancer** le jeu dans Godot — la validation affiche les erreurs au démarrage
+3. **Placer les assets** :
+   - Images dans `assets/images/` 
+   - Sons dans `assets/sounds/`
+4. **Référencer les assets** dans les fichiers JSON avec un chemin Godot : `res://assets/images/...` ou `res://assets/sounds/...`
+5. **Lancer** le jeu dans Godot — la validation affiche les erreurs au démarrage
 
 ---
 

@@ -372,7 +372,7 @@ func _show_validation_report(report: Dictionary) -> void:
 		_validation_title.text = "Validation : aucun problème détecté"
 		lines.append("Aucun problème de format détecté.")
 
-	_validation_body.text = lines.join("\n")
+	_validation_body.text = "\n".join(lines)
 	_validation_body.autowrap = true
 	_validation_body.clip_text = true
 	btn_recommencer.visible = false
