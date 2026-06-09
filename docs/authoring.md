@@ -1,0 +1,229 @@
+# Maeve // Lost Signal — Guide auteur
+
+Ce document explique comment écrire du contenu narratif pour le moteur de messages.
+Le principe : un auteur doit uniquement fournir des fichiers JSON bien formés, sans modifier le code.
+
+## 1. Principe général
+
+Le jeu charge automatiquement :
+- `story.json` pour la configuration des contacts et de la scène de départ
+- tous les fichiers JSON du dossier `dialogues/` pour les scènes
+
+Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
+
+## 2. `story.json`
+
+### Structure minimale
+
+```json
+{
+  "start_scene": "ch1_intro",
+  "contacts": [
+    { "id": "maeve", "name": "+33 6 23 11 47 05", "is_main": true,  "avatar": null, "status": "network_issue" },
+    { "id": "alex",  "name": "Alex",              "is_main": false, "avatar": null, "status": "online" }
+  ]
+}
+```
+
+### Champs autorisés
+
+- `start_scene` : ID de la scène de départ.
+- `contacts` : tableau de contacts.
+  - `id` : identifiant unique du contact.
+  - `name` : texte affiché dans le bandeau.
+  - `is_main` : `true` pour le contact principal scriptable.
+  - `avatar` : chemin d'icône ou `null`.
+  - `status` : `online`, `away`, `offline`, `network_issue`.
+
+## 3. Fichier de dialogue (`dialogues/*.json`)
+
+Chaque fichier contient :
+
+```json
+{
+  "scenes": [
+    {
+      "id": "scene_01",
+      "contact_id": "maeve",
+      "messages_in": [ ... ],
+      "choices": [ ... ]
+    }
+  ]
+}
+```
+
+### Champs de scène
+
+- `id` : identifiant unique.
+- `contact_id` : identifiant du contact qui parle.
+- `trigger_after_scene` : ID d'une scène après laquelle celle-ci est jouée automatiquement.
+- `resume_after_flag` : nom d'un flag. La scène attente jusqu'à ce que le flag soit activé.
+- `messages_in` : liste de messages entrants.
+- `choices` : liste de choix présentée au joueur.
+- `free_input` : nom d'une variable pour saisir du texte libre.
+- `next` : ID de la scène suivante lorsque `free_input` est utilisé.
+
+## 4. Messages entrants (`messages_in`)
+
+### Forme courte
+
+Un message simple peut être écrit comme une chaîne :
+
+```json
+"Bonjour?"
+```
+
+Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
+
+### Forme détaillée
+
+```json
+{
+  "text": "Je suis perdue.",
+  "pause": "short",
+  "requires_flag": "a_appele_aide",
+  "condition": { "var": "confiance", "op": "gte", "value": 2 },
+  "effects": [ ... ],
+  "media": { "type": "image", "path": "res://assets/images/lieu.png" },
+  "time": "14:43"
+}
+```
+
+### Champs recommandés
+
+- `text` : contenu du message. Peut être `null` si un média est envoyé.
+- `pause` : `short`, `medium`, `long`.
+- `requires_flag` : message affiché uniquement si le flag est actif.
+- `condition` : condition sur une variable numérique.
+- `edit` : modification du message après envoi.
+- `effects` : effet déclenché immédiatement.
+- `media` : image ou audio.
+- `time` : horodatage optionnel.
+
+## 5. Messages média
+
+### Image
+
+```json
+{
+  "text": null,
+  "media": { "type": "image", "path": "res://assets/images/lieu.png" }
+}
+```
+
+### Audio
+
+```json
+{
+  "text": null,
+  "media": { "type": "audio", "path": "res://assets/sounds/voicenote.ogg" }
+}
+```
+
+## 6. Choix (`choices`)
+
+Un choix est un objet avec au moins `text`.
+
+```json
+{
+  "text": "Je vais vous aider.",
+  "message": "Je vais vous aider.",
+  "next": "scene_02",
+  "flag": "engagement_a",
+  "effects": [ ... ]
+}
+```
+
+### Notes
+
+- `message` peut être une chaîne ou un tableau de chaînes.
+- Si `message` est un tableau, chaque élément correspond à une bulle envoyée successivement par le joueur.
+- `flag` active un flag booléen.
+- `effects` applique des changements de variables ou des modifications de contact.
+
+### Exemple de message en plusieurs bulles
+
+```json
+{
+  "text": "Mouais… curieux quand même.",
+  "message": [
+    "Mouais je suis pas convaincu…",
+    "Mais je suis curieux de voir où ça va."
+  ],
+  "next": "scene_02"
+}
+```
+
+Dans cet exemple, le choix affiche d'abord le label `Mouais… curieux quand même.`, puis le joueur envoie deux messages à la suite.
+
+## 7. Effets
+
+Les effets sont déclarés dans `effects` et s'appliquent immédiatement.
+
+### Opérations prises en charge
+
+- `set` : fixe une variable.
+- `add` : ajoute une valeur.
+- `sub` : soustrait une valeur.
+- `rename` : change le nom d'un contact.
+- `set_status` : change le statut d'un contact.
+
+### Exemples
+
+```json
+"effects": [
+  { "op": "set", "var": "confiance", "value": 1 },
+  { "op": "add", "var": "stress", "value": 2 },
+  { "op": "rename", "contact": "maeve", "value": "Maeve" }
+]
+```
+
+## 8. Variables et conditions
+
+### Variables
+
+Les variables sont numériques et stockées dans `vars`.
+
+### Condition
+
+```json
+"condition": { "var": "confiance", "op": "gte", "value": 2 }
+```
+
+Opérations supportées : `eq`, `neq`, `gt`, `gte`, `lt`, `lte`.
+
+## 9. `free_input`
+
+Permet au joueur de taper un texte libre.
+
+```json
+{
+  "id": "scene_capture",
+  "messages_in": ["Comment tu t'appelles?"],
+  "free_input": "nom_joueur",
+  "next": "scene_reponse"
+}
+```
+
+La valeur saisie est stockée dans la variable `nom_joueur`.
+
+## 10. Templates
+
+Les valeurs de variable peuvent être injectées dans les textes avec des accolades :
+
+```json
+"text": "Merci {nom_joueur}, je suis rassurée."
+```
+
+## 11. Triggers et scènes différées
+
+- `trigger_after_scene` : la scène se joue automatiquement après l'ID donné.
+- `resume_after_flag` : la scène est différée jusqu'à ce que le flag soit activé.
+
+## 12. Validation
+
+Le jeu valide automatiquement `story.json` et tous les fichiers `dialogues/*.json` au lancement dans Godot.
+
+Si des erreurs ou des avertissements sont trouvés, une fenêtre apparaît immédiatement dans le jeu avec le détail du problème. Les erreurs sont aussi loguées dans la console Godot.
+
+L'auteur n'a rien à installer : il suffit de lancer le projet dans Godot et de lire le rapport qui s'affiche.

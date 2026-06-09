@@ -18,6 +18,8 @@ extends Control
 @onready var _contact_panel     = $RootHBox/ContactPanel
 @onready var btn_annuler        = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Annuler
 @onready var btn_recommencer    = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Recommencer
+@onready var _validation_title  = $ConfirmDialog/MarginContainer/VBoxContainer/Label
+@onready var _validation_body   = $ConfirmDialog/MarginContainer/VBoxContainer/Label2
 @onready var _clock_label       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Time
 
 var _total_unread: int = 0
@@ -25,6 +27,7 @@ var _blink_tween: Tween = null
 var _free_input_tween: Tween = null
 var _free_input_indicator: ColorRect = null
 var _narrative: Node = null
+var _validation_active: bool = false
 
 
 func _ready() -> void:
@@ -73,6 +76,9 @@ func _ready() -> void:
 
 	_update_topbar(_narrative.active_contact_id)
 	_contact_panel.show_panel()
+
+	if DialogueLoader.has_validation_issues():
+		_show_validation_report(DialogueLoader.get_validation_report())
 
 	if SaveManager.has_save():
 		await load_game()
@@ -338,8 +344,39 @@ func _on_new_game_pressed() -> void:
 func _on_cancel_pressed() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
+	if _validation_active:
+		_validation_active = false
+		btn_recommencer.visible = true
+		btn_annuler.text = "Annuler"
 
 func _on_startover_pressed() -> void:
 	SaveManager.delete_save()
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
+
+func _show_validation_report(report: Dictionary) -> void:
+	var errors: Array = report.get("errors", [])
+	var warnings: Array = report.get("warnings", [])
+	var lines: Array = []
+	if errors.size() > 0:
+		_validation_title.text = "Validation : erreurs détectées"
+		for err in errors:
+			lines.append("Erreur : %s" % err)
+	if warnings.size() > 0:
+		if errors.size() > 0:
+			lines.append("")
+		_validation_title.text = "Validation : erreurs et avertissements détectés"
+		for warn in warnings:
+			lines.append("Avertissement : %s" % warn)
+	if errors.is_empty() and warnings.is_empty():
+		_validation_title.text = "Validation : aucun problème détecté"
+		lines.append("Aucun problème de format détecté.")
+
+	_validation_body.text = lines.join("\n")
+	_validation_body.autowrap = true
+	_validation_body.clip_text = true
+	btn_recommencer.visible = false
+	btn_annuler.text = "OK"
+	_validation_active = true
+	confirm_dialog.visible = true
+	overlay.visible = true

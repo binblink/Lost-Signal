@@ -7,12 +7,23 @@ var _scenes:      Dictionary = {}
 var _contacts:    Array      = []
 var _start_scene: String     = "scene_01"
 var _triggers:    Dictionary = {}
+var validation_errors:   Array = []
+var validation_warnings: Array = []
 
 func _ready() -> void:
 	_load_story()
 	_load_dialogues_dir()
 	print("DialogueLoader: %d scènes, %d contacts chargés." % [_scenes.size(), _contacts.size()])
 	_validate()
+
+func get_validation_report() -> Dictionary:
+	return {
+		"errors": validation_errors.duplicate(),
+		"warnings": validation_warnings.duplicate()
+	}
+
+func has_validation_issues() -> bool:
+	return validation_errors.size() > 0 or validation_warnings.size() > 0
 
 # ---------------------------------------------------------------------------
 
@@ -169,6 +180,9 @@ func _validate() -> void:
 		var choices: Array = scene.get("choices", [])
 		for j in range(choices.size()):
 			_check_choice(choices[j], ctx, j, errors, warnings)
+
+	validation_errors = errors
+	validation_warnings = warnings
 
 	for e in errors:
 		push_error("Validator: " + e)
