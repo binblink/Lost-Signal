@@ -93,7 +93,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 
 - `text` : contenu du message. Peut être `null` si un média est envoyé.
 - `pause` : `short`, `medium`, `long`.
-- `requires_flag` : message affiché uniquement si le flag est actif.
+- `requires_flag` : message affiché uniquement si le flag est actif. Peut être une chaîne (flag unique) ou un tableau de chaînes (tous les flags doivent être actifs).
 - `condition` : condition sur une variable numérique.
 - `edit` : modification du message après envoi.
 - `effects` : effet déclenché immédiatement.
@@ -192,13 +192,67 @@ Les effets sont déclarés dans `effects` et s'appliquent immédiatement.
 
 Les variables sont numériques et stockées dans `vars`.
 
-### Condition
+### Flags multiples (ET)
+
+`requires_flag` accepte une chaîne ou un tableau. Avec un tableau, tous les flags doivent être actifs :
+
+```json
+"requires_flag": ["rep_a", "commit_t"]
+```
+
+### Condition simple
 
 ```json
 "condition": { "var": "confiance", "op": "gte", "value": 2 }
 ```
 
 Opérations supportées : `eq`, `neq`, `gt`, `gte`, `lt`, `lte`.
+
+### Conditions composées
+
+`condition` peut utiliser les opérateurs `and` et `or` avec des nœuds imbriqués.
+
+Chaque nœud peut être :
+- `{ "flag": "nom_flag" }` — vérifie un flag
+- `{ "var": "...", "op": "...", "value": ... }` — compare une variable
+- `{ "and": [...] }` ou `{ "or": [...] }` — sous-expression
+
+**ET entre un flag et une variable :**
+
+```json
+"condition": {
+  "and": [
+    { "flag": "rep_a" },
+    { "var": "confiance", "op": "gte", "value": 3 }
+  ]
+}
+```
+
+**OU entre deux flags :**
+
+```json
+"condition": {
+  "or": [
+    { "flag": "react_r" },
+    { "flag": "react_u" }
+  ]
+}
+```
+
+**Imbrication :**
+
+```json
+"condition": {
+  "and": [
+    { "flag": "commit_t" },
+    { "or": [
+        { "var": "stress", "op": "lt", "value": 5 },
+        { "flag": "react_t" }
+      ]
+    }
+  ]
+}
+```
 
 ## 9. `free_input`
 

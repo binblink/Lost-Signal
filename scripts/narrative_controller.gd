@@ -205,19 +205,42 @@ func _trigger_next_scenes(scene_id: String) -> void:
 
 func _eval_condition(msg: Dictionary) -> bool:
 	var req_flag = msg.get("requires_flag", null)
-	if req_flag != null and not flags.get(req_flag, false):
-		return false
+	if req_flag != null:
+		if req_flag is Array:
+			for f in req_flag:
+				if not flags.get(f, false):
+					return false
+		elif not flags.get(req_flag, false):
+			return false
 	var cond = msg.get("condition", null)
-	if cond != null:
+	if cond != null and not _eval_cond_node(cond):
+		return false
+	return true
+
+
+func _eval_cond_node(cond: Dictionary) -> bool:
+	if cond.has("and"):
+		for sub in cond["and"]:
+			if not _eval_cond_node(sub):
+				return false
+		return true
+	if cond.has("or"):
+		for sub in cond["or"]:
+			if _eval_cond_node(sub):
+				return true
+		return false
+	if cond.has("flag"):
+		return flags.get(cond["flag"], false)
+	if cond.has("var"):
 		var val = vars.get(cond["var"], 0)
 		var target = cond["value"]
 		match cond["op"]:
-			"eq":  if val != target: return false
-			"neq": if val == target: return false
-			"gt":  if not val > target: return false
-			"gte": if not val >= target: return false
-			"lt":  if not val < target: return false
-			"lte": if not val <= target: return false
+			"eq":  return val == target
+			"neq": return val != target
+			"gt":  return val > target
+			"gte": return val >= target
+			"lt":  return val < target
+			"lte": return val <= target
 	return true
 
 
