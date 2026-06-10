@@ -7,8 +7,8 @@ const PANEL_WIDTH = 320.0
 const ANIM_DURATION = 0.25
 const MAX_PREVIEW_LENGTH = 80
 
-@onready var contact_list = $VBoxContainer/ContactList
-@onready var close_button = $VBoxContainer/TopBar/MarginContainer/HBoxContainer/CloseButton
+@onready var contact_list = %ContactList
+@onready var close_button = %CloseButton
 
 var contacts: Array = []
 

@@ -1,26 +1,26 @@
 extends Control
 
-@onready var message_display    = $RootHBox/VBoxContainer/Messages/MessagesList
-@onready var input_bar          = $RootHBox/VBoxContainer/InputBar
-@onready var line_edit          = $RootHBox/VBoxContainer/InputBar/MarginContainer/HBoxContainer/TextInput
-@onready var choices_layer      = $ChoicesLayer
-@onready var confirm_dialog     = $ConfirmDialog
-@onready var overlay            = $Overlay
-@onready var reset_button       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Reset
-@onready var panel_button       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/PanelButton
-@onready var mute_button        = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/MuteButton
-@onready var photo_overlay      = $PhotoOverlay
-@onready var photo_image        = $PhotoOverlay/MarginContainer/PhotoImage
-@onready var contact_name_label = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/ContactName
-@onready var _status_dot        = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusDot
-@onready var _status_text       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusText
-@onready var _status_warning    = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/VBoxContainer/StatusRow/StatusWarning
-@onready var _contact_panel     = $RootHBox/ContactPanel
-@onready var btn_annuler        = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Annuler
-@onready var btn_recommencer    = $ConfirmDialog/MarginContainer/VBoxContainer/HBoxContainer/Recommencer
-@onready var _validation_title  = $ConfirmDialog/MarginContainer/VBoxContainer/Label
-@onready var _validation_body   = $ConfirmDialog/MarginContainer/VBoxContainer/Label2
-@onready var _clock_label       = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Time
+@onready var message_display    = %MessagesList
+@onready var input_bar          = %InputBar
+@onready var line_edit          = %TextInput
+@onready var choices_layer      = %ChoicesLayer
+@onready var confirm_dialog     = %ConfirmDialog
+@onready var overlay            = %Overlay
+@onready var reset_button       = %Reset
+@onready var panel_button       = %PanelButton
+@onready var mute_button        = %MuteButton
+@onready var photo_overlay      = %PhotoOverlay
+@onready var photo_image        = %PhotoImage
+@onready var contact_name_label = %ContactName
+@onready var _status_dot        = %StatusDot
+@onready var _status_text       = %StatusText
+@onready var _status_warning    = %StatusWarning
+@onready var _contact_panel     = %ContactPanel
+@onready var btn_annuler        = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Annuler")
+@onready var btn_recommencer    = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Recommencer")
+@onready var _validation_title  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label")
+@onready var _validation_body   = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label2")
+@onready var _clock_label       = %ClockLabel
 
 var _total_unread: int = 0
 var _blink_tween: Tween = null

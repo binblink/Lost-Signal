@@ -53,7 +53,8 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_xe7ni")
 
-[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/Control/Panel" unique_id=1579082285]
+[node name="InitialLabel" type="Label" parent="MarginContainer/HBoxContainer/Control/Panel" unique_id=1579082285]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -76,6 +77,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="ContactName" type="Label" parent="MarginContainer/HBoxContainer/TextColumn/NameAndTimeLine" unique_id=160528305]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.913, 0.929, 0.937, 1)
@@ -83,6 +85,7 @@ theme_override_font_sizes/font_size = 14
 text = "Maeve"
 
 [node name="ContactTime" type="Label" parent="MarginContainer/HBoxContainer/TextColumn/NameAndTimeLine" unique_id=503457738]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.525, 0.588, 0.627, 1)
 theme_override_font_sizes/font_size = 11
@@ -93,6 +96,7 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="ContactPreview" type="Label" parent="MarginContainer/HBoxContainer/TextColumn/PreviewBadgeLine" unique_id=1060221191]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.525, 0.588, 0.627, 1)
@@ -102,6 +106,7 @@ text_overrun_behavior = 3
 max_lines_visible = 1
 
 [node name="UnreadBadge" type="Panel" parent="MarginContainer/HBoxContainer/TextColumn/PreviewBadgeLine" unique_id=334298733]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(10, 10)
 layout_mode = 2
 size_flags_vertical = 4

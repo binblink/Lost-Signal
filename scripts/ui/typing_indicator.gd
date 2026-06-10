@@ -1,8 +1,8 @@
 extends PanelContainer
 
-@onready var dot1 = $MarginContainer/HBoxContainer/Dot1
-@onready var dot2 = $MarginContainer/HBoxContainer/Dot2
-@onready var dot3 = $MarginContainer/HBoxContainer/Dot3
+@onready var dot1 = %Dot1
+@onready var dot2 = %Dot2
+@onready var dot3 = %Dot3
 
 func _ready() -> void:
 	dot1.modulate.a = 0.3

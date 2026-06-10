@@ -21,6 +21,7 @@ layout_mode = 2
 theme_override_constants/separation = 0
 
 [node name="Bubble" type="PanelContainer" parent="HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_bubble")
@@ -37,11 +38,13 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="PlayButton" type="Button" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 text = "▶"
 
 [node name="Progress" type="ProgressBar" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 8)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -51,12 +54,14 @@ value = 0.0
 show_percentage = false
 
 [node name="Duration" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 12
 text = "0:00"
 
 [node name="TimeAndStatus" type="Label" parent="HBoxContainer/Bubble/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 11
@@ -67,3 +72,4 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true

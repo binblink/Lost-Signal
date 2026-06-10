@@ -28,18 +28,21 @@ layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="Dot1" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1527203587]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 10
 text = "●"
 
 [node name="Dot2" type="Label" parent="MarginContainer/HBoxContainer" unique_id=958471939]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 10
 text = "●"
 
 [node name="Dot3" type="Label" parent="MarginContainer/HBoxContainer" unique_id=1900682946]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 10

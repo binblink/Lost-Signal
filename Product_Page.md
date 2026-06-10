@@ -84,7 +84,7 @@ You can build:
 
 ### 🧠 Full narrative logic (JSON only)
 - branching dialogue
-- variables & conditions
+- variables & conditions (simple and compound: `and` / `or`)
 - flags & story states
 - dynamic story progression
 
@@ -115,6 +115,7 @@ You can build:
 - persistent story state
 - variables & flags tracking
 - conversation memory across sessions
+- main menu with New Game / Continue
 
 ---
 
@@ -179,6 +180,7 @@ That’s it.
 - Full Godot 4.6 project  
 - Messaging UI system (Discord-style)  
 - JSON-based narrative engine  
+- Main menu (New Game / Continue)  
 - Example story scenario  
 - Theme system  
 - Save/load system  

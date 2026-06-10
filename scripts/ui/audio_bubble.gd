@@ -1,17 +1,17 @@
 extends MarginContainer
 
-@onready var play_button  = $HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow/PlayButton
-@onready var progress_bar = $HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow/Progress
-@onready var duration_label = $HBoxContainer/Bubble/MarginContainer/VBoxContainer/PlayerRow/Duration
-@onready var time_label   = $HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus
-@onready var player       = $AudioStreamPlayer
+@onready var play_button    = %PlayButton
+@onready var progress_bar   = %Progress
+@onready var duration_label = %Duration
+@onready var time_label     = %TimeAndStatus
+@onready var player         = %AudioStreamPlayer
 
 var _duration: float = 0.0
 
 
 func _ready() -> void:
 	player.finished.connect(_on_playback_finished)
-	ThemeManager.restyle_panel($HBoxContainer/Bubble, ThemeManager.bubble_in_color)
+	ThemeManager.restyle_panel(%Bubble, ThemeManager.bubble_in_color)
 	duration_label.add_theme_color_override("font_color", ThemeManager.time_color)
 	time_label.add_theme_color_override("font_color", ThemeManager.time_color)
 

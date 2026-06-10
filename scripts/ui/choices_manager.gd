@@ -7,7 +7,7 @@ var message_display: VBoxContainer = null
 var scroll_container: ScrollContainer = null
 var input_bar: Control = null
 
-@onready var _buttons_container = $MarginContainer/VBoxContainer
+@onready var _buttons_container = %ButtonsContainer
 
 var _choice_buttons: Array = []
 var _spacer: Control = null

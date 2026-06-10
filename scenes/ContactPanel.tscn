@@ -51,11 +51,13 @@ theme_override_font_sizes/font_size = 15
 text = "Messages"
 
 [node name="CloseButton" type="Button" parent="VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1864899315]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 text = "✕"
 
 [node name="ContactList" type="VBoxContainer" parent="VBoxContainer" unique_id=362930102]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 0
