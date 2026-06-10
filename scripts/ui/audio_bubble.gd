@@ -19,9 +19,14 @@ func _ready() -> void:
 func setup(path: String, time: String) -> void:
 	time_label.text = time
 	if ResourceLoader.exists(path):
-		player.stream = load(path)
-		_duration = player.stream.get_length()
-		duration_label.text = _format_duration(_duration)
+		var stream = load(path)
+		if stream == null:
+			push_error("AudioBubble: échec du chargement de %s." % path)
+			play_button.disabled = true
+		else:
+			player.stream = stream
+			_duration = player.stream.get_length()
+			duration_label.text = _format_duration(_duration)
 	play_button.pressed.connect(_on_play_pressed)
 
 

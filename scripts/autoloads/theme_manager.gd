@@ -21,6 +21,9 @@ func _load() -> void:
 	if not FileAccess.file_exists(THEME_PATH):
 		return
 	var file = FileAccess.open(THEME_PATH, FileAccess.READ)
+	if file == null:
+		push_warning("ThemeManager: impossible d'ouvrir theme.json (code %d) — thème par défaut utilisé." % FileAccess.get_open_error())
+		return
 	var json = JSON.new()
 	var err  = json.parse(file.get_as_text())
 	file.close()

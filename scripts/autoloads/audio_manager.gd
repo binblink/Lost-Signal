@@ -34,6 +34,9 @@ func _load_settings() -> void:
 	if not FileAccess.file_exists(SETTINGS_PATH):
 		return
 	var file = FileAccess.open(SETTINGS_PATH, FileAccess.READ)
+	if file == null:
+		push_error("AudioManager: impossible d'ouvrir les paramètres (code %d)." % FileAccess.get_open_error())
+		return
 	var json  = JSON.new()
 	if json.parse(file.get_as_text()) == OK:
 		is_muted = json.get_data().get("muted", false)
@@ -42,6 +45,9 @@ func _load_settings() -> void:
 
 func _save_settings() -> void:
 	var file = FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("AudioManager: impossible d'écrire les paramètres (code %d)." % FileAccess.get_open_error())
+		return
 	file.store_string(JSON.stringify({ "muted": is_muted }))
 	file.close()
 

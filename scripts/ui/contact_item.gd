@@ -47,13 +47,15 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 	# Avatar image si disponible
 	var avatar_path = contact.get("avatar", null)
 	if avatar_path != null and ResourceLoader.exists(avatar_path):
-		var panel = initial_label.get_parent()
-		var texture_rect = TextureRect.new()
-		texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-		texture_rect.texture = load(avatar_path)
-		texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		texture_rect.clip_contents = true
-		texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(texture_rect)
-		initial_label.visible = false
+		var tex = load(avatar_path)
+		if tex != null:
+			var panel = initial_label.get_parent()
+			var texture_rect = TextureRect.new()
+			texture_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+			texture_rect.texture = tex
+			texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			texture_rect.clip_contents = true
+			texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			panel.add_child(texture_rect)
+			initial_label.visible = false

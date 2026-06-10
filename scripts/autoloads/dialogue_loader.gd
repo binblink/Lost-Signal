@@ -76,6 +76,9 @@ func _parse_json(path: String) -> Dictionary:
 		push_error("DialogueLoader: fichier introuvable → " + path)
 		return {}
 	var file = FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error("DialogueLoader: impossible d'ouvrir %s (code %d)." % [path, FileAccess.get_open_error()])
+		return {}
 	var json  = JSON.new()
 	var err   = json.parse(file.get_as_text())
 	file.close()

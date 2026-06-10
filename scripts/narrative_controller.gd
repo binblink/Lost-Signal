@@ -38,7 +38,6 @@ var contact_histories: Dictionary = {}
 var pending_choices: Dictionary = {}
 var current_message_index: int = 0
 var waiting_for_choice: bool = false
-var secondary_histories: Dictionary = {}
 var played_secondary_scenes: Array = []
 var deferred_scenes: Dictionary = {}
 
@@ -267,13 +266,16 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 	return false
 
 
+func _set_flag(flag_name: String) -> void:
+	flags[flag_name] = true
+	if deferred_scenes.has(flag_name):
+		_pending_resumes.append(deferred_scenes[flag_name])
+		deferred_scenes.erase(flag_name)
+
+
 func _apply_effects(choice: Dictionary) -> void:
 	if choice.get("flag", null) != null:
-		var flag_name: String = choice["flag"]
-		flags[flag_name] = true
-		if deferred_scenes.has(flag_name):
-			_pending_resumes.append(deferred_scenes[flag_name])
-			deferred_scenes.erase(flag_name)
+		_set_flag(choice["flag"])
 	_run_effects(choice.get("effects", []))
 
 
@@ -288,7 +290,6 @@ func get_state() -> Dictionary:
 		"contact_statuses":       contact_statuses,
 		"deferred_scenes":        deferred_scenes,
 		"contact_histories":      contact_histories,
-		"secondary_histories":    secondary_histories,
 		"played_secondary_scenes": played_secondary_scenes,
 		"pending_choices":        pending_choices,
 	}
@@ -301,7 +302,6 @@ func set_state(data: Dictionary) -> void:
 	deferred_scenes         = data.get("deferred_scenes", {})
 	current_message_index   = data.get("current_message_index", 0)
 	waiting_for_choice      = data.get("waiting_for_choice", false)
-	secondary_histories     = data.get("secondary_histories", {})
 	played_secondary_scenes = data.get("played_secondary_scenes", [])
 	pending_choices         = data.get("pending_choices", {})
 	# "messages" est l'ancienne clé — conservé pour compatibilité avec les sauvegardes existantes
