@@ -177,10 +177,7 @@ func _update_mute_button() -> void:
 	mute_button.text = "🔇" if AudioManager.is_muted else "🔊"
 
 func _on_contacts_button_pressed() -> void:
-	if _contact_panel._is_open:
-		_contact_panel.hide_panel()
-	else:
-		_contact_panel.show_panel()
+	_contact_panel.toggle_panel()
 
 func _update_panel_button() -> void:
 	panel_button.text = "☰●" if _total_unread > 0 else "☰"
@@ -325,7 +322,7 @@ func _stop_free_input_visual() -> void:
 
 
 func _on_free_input_submitted(text: String) -> void:
-	if text.strip_edges().is_empty() or not _narrative._waiting_for_free_input:
+	if text.strip_edges().is_empty() or not _narrative.is_waiting_for_free_input:
 		return
 	_stop_free_input_visual()
 	line_edit.clear()

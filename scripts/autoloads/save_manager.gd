@@ -14,6 +14,9 @@ const SAVE_PATH = "user://savegame.json"
 
 func save(state: Dictionary) -> void:
 	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("SaveManager: impossible d'ouvrir la sauvegarde en écriture (code %d)." % FileAccess.get_open_error())
+		return
 	file.store_string(JSON.stringify(state))
 	file.close()
 
@@ -21,6 +24,9 @@ func load_save() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return {}
 	var file = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file == null:
+		push_error("SaveManager: impossible d'ouvrir la sauvegarde en lecture (code %d)." % FileAccess.get_open_error())
+		return {}
 	var text = file.get_as_text()
 	file.close()
 	var json = JSON.new()
@@ -38,4 +44,6 @@ func has_save() -> bool:
 
 func delete_save() -> void:
 	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(SAVE_PATH)
+		var err = DirAccess.remove_absolute(SAVE_PATH)
+		if err != OK:
+			push_error("SaveManager: suppression de la sauvegarde échouée (code %d)." % err)

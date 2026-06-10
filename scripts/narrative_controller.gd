@@ -1,5 +1,21 @@
 extends Node
 
+const DELAY_IMAGE_MIN  := 0.3
+const DELAY_IMAGE_MAX  := 0.8
+const DELAY_AUDIO_MIN  := 0.5
+const DELAY_AUDIO_MAX  := 1.5
+const DELAY_AFTER_MEDIA := 0.3
+const DELAY_AFTER_TEXT  := 0.5
+const DELAY_EDIT_DEFAULT := 1.5
+
+const PAUSE_SHORT_MIN  := 1.0
+const PAUSE_SHORT_MAX  := 4.0
+const PAUSE_MEDIUM_MIN := 5.0
+const PAUSE_MEDIUM_MAX := 15.0
+const PAUSE_LONG_MIN   := 15.0
+const PAUSE_LONG_MAX   := 40.0
+const PAUSE_FALLBACK   := 0.5
+
 signal choice_made
 signal free_input_submitted(text: String)
 signal free_input_activated
@@ -34,6 +50,9 @@ var _pending_resumes: Array = []
 var is_busy: bool:
 	get: return _is_player_typing or _is_receiving
 
+var is_waiting_for_free_input: bool:
+	get: return _waiting_for_free_input
+
 
 func play_scene(scene_id: String) -> void:
 	if not DialogueLoader.has_scene(scene_id):
@@ -64,13 +83,13 @@ func play_scene(scene_id: String) -> void:
 			if media != null:
 				match media.get("type", ""):
 					"image":
-						await get_tree().create_timer(randf_range(0.3, 0.8)).timeout
+						await get_tree().create_timer(randf_range(DELAY_IMAGE_MIN, DELAY_IMAGE_MAX)).timeout
 						await message_display.receive_image_message(media["path"], msg.get("time", ""))
-						await get_tree().create_timer(0.3).timeout
+						await get_tree().create_timer(DELAY_AFTER_MEDIA).timeout
 					"audio":
-						await get_tree().create_timer(randf_range(0.5, 1.5)).timeout
+						await get_tree().create_timer(randf_range(DELAY_AUDIO_MIN, DELAY_AUDIO_MAX)).timeout
 						await message_display.receive_audio_message(media["path"], msg.get("time", ""))
-						await get_tree().create_timer(0.3).timeout
+						await get_tree().create_timer(DELAY_AFTER_MEDIA).timeout
 			elif text != null:
 				var display_text := _apply_templates(text)
 				var typing_ok = await message_display.show_typing(display_text)
@@ -80,14 +99,14 @@ func play_scene(scene_id: String) -> void:
 				var bubble = await message_display.receive_message(display_text, msg.get("time", ""))
 				var edit = msg.get("edit", null)
 				if edit != null:
-					await get_tree().create_timer(edit.get("delay", 1.5)).timeout
+					await get_tree().create_timer(edit.get("delay", DELAY_EDIT_DEFAULT)).timeout
 					if is_instance_valid(bubble):
 						if edit["type"] == "delete":
 							bubble.queue_free()
 						elif edit["type"] == "correct":
 							bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
 				else:
-					await get_tree().create_timer(0.5).timeout
+					await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
 		current_message_index = i + 1
 		save_requested.emit(true)
 	_is_receiving = false
@@ -171,10 +190,10 @@ func restore_pending_choice_for(contact_id: String) -> void:
 func do_pause(type: String) -> void:
 	var duration: float
 	match type:
-		"short":  duration = randf_range(1.0, 4.0)
-		"medium": duration = randf_range(5.0, 15.0)
-		"long":   duration = randf_range(15.0, 40.0)
-		_:        duration = 0.5
+		"short":  duration = randf_range(PAUSE_SHORT_MIN,  PAUSE_SHORT_MAX)
+		"medium": duration = randf_range(PAUSE_MEDIUM_MIN, PAUSE_MEDIUM_MAX)
+		"long":   duration = randf_range(PAUSE_LONG_MIN,   PAUSE_LONG_MAX)
+		_:        duration = PAUSE_FALLBACK
 	await get_tree().create_timer(duration).timeout
 
 

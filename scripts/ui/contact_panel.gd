@@ -24,6 +24,12 @@ func _ready() -> void:
 	clip_contents = true
 	close_button.pressed.connect(hide_panel)
 
+func toggle_panel() -> void:
+	if _is_open:
+		hide_panel()
+	else:
+		show_panel()
+
 func show_panel() -> void:
 	if _is_open:
 		return
@@ -74,6 +80,9 @@ func _rebuild_list() -> void:
 	for child in contact_list.get_children():
 		child.queue_free()
 	await get_tree().process_frame
+	if not is_inside_tree():
+		_rebuilding = false
+		return
 	for contact in contacts:
 		var contact_id = contact.get("id", "")
 		# Ne pas afficher les contacts sans historique

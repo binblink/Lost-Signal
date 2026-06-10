@@ -2,6 +2,8 @@ extends Control
 
 signal choice_selected(index: int)
 
+const SCROLL_STEP := 60
+
 # Références passées par main.gd au _ready
 var message_display: VBoxContainer = null
 var scroll_container: ScrollContainer = null
@@ -54,6 +56,6 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if scroll_container:
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				scroll_container.scroll_vertical -= 60
+				scroll_container.scroll_vertical -= SCROLL_STEP
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				scroll_container.scroll_vertical += 60
+				scroll_container.scroll_vertical += SCROLL_STEP

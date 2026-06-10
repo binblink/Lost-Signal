@@ -65,6 +65,28 @@ func restyle_bubble(panel: Control, is_out: bool) -> void:
 	panel.add_theme_stylebox_override("panel", s)
 
 
+func restyle_button(btn: Button, base_color: Color) -> void:
+	var states := {
+		"normal":        base_color,
+		"focus":         base_color,
+		"hover":         Color(min(1.0, base_color.r * 1.2), min(1.0, base_color.g * 1.2), min(1.0, base_color.b * 1.2)),
+		"hover_pressed": Color(min(1.0, base_color.r * 1.2), min(1.0, base_color.g * 1.2), min(1.0, base_color.b * 1.2)),
+		"pressed":       Color(base_color.r * 0.8, base_color.g * 0.8, base_color.b * 0.8),
+	}
+	for state in states:
+		var s := StyleBoxFlat.new()
+		s.bg_color                   = states[state]
+		s.corner_radius_top_left     = 8
+		s.corner_radius_top_right    = 8
+		s.corner_radius_bottom_right = 8
+		s.corner_radius_bottom_left  = 8
+		s.content_margin_left        = 24.0
+		s.content_margin_right       = 24.0
+		s.content_margin_top         = 10.0
+		s.content_margin_bottom      = 10.0
+		btn.add_theme_stylebox_override(state, s)
+
+
 # Applique le thème complet sur un bouton de choix (normal / hover / pressed).
 func restyle_choice_button(btn: Button) -> void:
 	var tc := topbar_color
