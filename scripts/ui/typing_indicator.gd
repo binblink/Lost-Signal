@@ -11,7 +11,7 @@ func _ready() -> void:
 	animate()
 
 func animate() -> void:
-	while true:
+	while is_inside_tree():
 		await pulse(dot1)
 		await pulse(dot2)
 		await pulse(dot3)

@@ -187,6 +187,9 @@ func _play_secondary_scene(scene: Dictionary) -> void:
 	if not contact_histories.has(contact_id):
 		contact_histories[contact_id] = []
 	for msg in scene.get("messages_in", []):
+		if not _eval_condition(msg):
+			continue
+		_run_effects(msg.get("effects", []))
 		var media = msg.get("media", null)
 		if media != null:
 			contact_histories[contact_id].append({ "text": null, "time": msg.get("time", ""), "out": false, "media": media })
@@ -241,7 +244,8 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 			"gte": return val >= target
 			"lt":  return val < target
 			"lte": return val <= target
-	return true
+	push_warning("NarrativeController: condition inconnue ignorée : %s" % str(cond))
+	return false
 
 
 func _apply_effects(choice: Dictionary) -> void:

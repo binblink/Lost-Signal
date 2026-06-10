@@ -181,6 +181,8 @@ func _validate() -> void:
 		for j in range(choices.size()):
 			_check_choice(choices[j], ctx, j, errors, warnings)
 
+	_detect_trigger_cycles(errors)
+
 	validation_errors = errors
 	validation_warnings = warnings
 
@@ -255,11 +257,43 @@ func _check_choice(choice: Dictionary, ctx: String, j: int, errors: Array, warni
 
 
 func _check_condition(cond: Dictionary, label: String, errors: Array) -> void:
+	if cond.has("and"):
+		for i in range(cond["and"].size()):
+			_check_condition(cond["and"][i], "%s.and[%d]" % [label, i], errors)
+		return
+	if cond.has("or"):
+		for i in range(cond["or"].size()):
+			_check_condition(cond["or"][i], "%s.or[%d]" % [label, i], errors)
+		return
+	if cond.has("flag"):
+		return
 	if not cond.has("var") or not cond.has("op") or not cond.has("value"):
-		errors.append("%s condition mal formée (champs requis : var, op, value)." % label)
+		errors.append("%s condition mal formée (champs requis : var, op, value ou flag)." % label)
 		return
 	if not cond["op"] in ["eq", "neq", "gt", "gte", "lt", "lte"]:
 		errors.append("%s condition op '%s' inconnu (eq/neq/gt/gte/lt/lte)." % [label, cond["op"]])
+
+
+func _detect_trigger_cycles(errors: Array) -> void:
+	var color: Dictionary = {}
+	for scene_id in _scenes.keys():
+		if not color.has(scene_id):
+			_dfs_trigger(scene_id, color, [], errors)
+
+func _dfs_trigger(scene_id: String, color: Dictionary, stack: Array, errors: Array) -> void:
+	color[scene_id] = 1
+	stack.append(scene_id)
+	for triggered_id in _triggers.get(scene_id, []):
+		if not _scenes.has(triggered_id):
+			continue
+		if not color.has(triggered_id):
+			_dfs_trigger(triggered_id, color, stack, errors)
+		elif color[triggered_id] == 1:
+			var cycle_start: int = stack.find(triggered_id)
+			var cycle: Array = stack.slice(cycle_start) + [triggered_id]
+			errors.append("Cycle de déclenchement détecté : %s" % " → ".join(cycle))
+	stack.pop_back()
+	color[scene_id] = 2
 
 
 func _check_effect(effect: Dictionary, label: String, errors: Array, warnings: Array) -> void:
