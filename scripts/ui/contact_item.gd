@@ -20,9 +20,9 @@ func _ready() -> void:
 	contact_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
-	var name = contact.get("name", "")
-	contact_name.text = name
-	initial_label.text = name[0].to_upper() if name.length() > 0 else "?"
+	var contact_label = contact.get("name", "")
+	contact_name.text = contact_label
+	initial_label.text = contact_label[0].to_upper() if contact_label.length() > 0 else "?"
 	unread_badge.visible = unread
 
 	if last_message.is_empty():
@@ -33,16 +33,16 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 		var prefix = "Vous : " if last_message.get("out", false) else ""
 		var raw = last_message.get("text", null)
 		var media = last_message.get("media", null)
-		var text: String
+		var preview: String
 		if raw != null:
-			text = str(raw)
+			preview = str(raw)
 		elif media != null:
-			text = "📷 Photo"
+			preview = "📷 Photo"
 		else:
-			text = ""
-		if text.length() > MAX_PREVIEW_LENGTH:
-			text = text.substr(0, MAX_PREVIEW_LENGTH) + "…"
-		contact_preview.text = prefix + text
+			preview = ""
+		if preview.length() > MAX_PREVIEW_LENGTH:
+			preview = preview.substr(0, MAX_PREVIEW_LENGTH) + "…"
+		contact_preview.text = prefix + preview
 
 	# Avatar image si disponible
 	var avatar_path = contact.get("avatar", null)

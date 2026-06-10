@@ -50,4 +50,4 @@ func _on_playback_finished() -> void:
 
 func _format_duration(seconds: float) -> String:
 	var s := int(seconds)
-	return "%d:%02d" % [s / 60, s % 60]
+	return "%d:%02d" % [floori(s / 60.0), s % 60]
