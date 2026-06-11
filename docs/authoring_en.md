@@ -289,3 +289,36 @@ The game automatically validates `story.json` and all `dialogues/*.json` files o
 If errors or warnings are found, a window appears immediately in the game with a full breakdown. Errors are also logged to the Godot console.
 
 No tools to install: just open the project in Godot and read the report that appears.
+
+## 13. Localizing Dialogues
+
+The engine supports multiple languages through separate dialogue files.
+
+### Naming Convention
+
+```
+dialogues/
+├── acte1.json        ← base file (loaded when no locale-specific variant exists)
+├── acte1.fr.json     ← French variant
+└── acte1.en.json     ← English variant
+```
+
+On startup, the engine automatically selects the file matching the active language. If no variant exists for the current locale, it falls back to the base file (no suffix).
+
+### Adding a Language
+
+1. Duplicate the base file: `acte1.json` → `acte1.es.json`
+2. Translate all `text`, `message`, and `choices[].text` fields
+3. Keep all IDs (`id`, `next`, `flag`, `requires_flag`) identical — these are internal keys, not displayed text
+
+### UI Translations
+
+Interface texts (statuses, buttons, validation messages) are managed separately in `translations/ui.csv`. To add a language, add a column with the ISO language code (`es`, `de`, etc.) and fill in all keys.
+
+```csv
+keys,en,fr,es
+STATUS_ONLINE,online,en ligne,en línea
+BTN_CANCEL,Cancel,Annuler,Cancelar
+```
+
+The system language is detected automatically on first launch. Players can change it via the **Settings** menu (⚙).

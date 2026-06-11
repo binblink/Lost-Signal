@@ -31,23 +31,36 @@ SMS-format visual novel built with Godot 4.6. All narrative content is defined i
 project/
 ├── story.json                    ← configuration (contacts, starting scene)
 ├── dialogues/
-│   ├── acte1.json                ← narrative content to add/edit
+│   ├── acte1.json                ← narrative content (default language)
+│   ├── acte1.en.json             ← English variant (optional)
 │   └── ...other .json files
 ├── assets/
 │   ├── images/                   ← images for message bubbles (PNG, JPG, WEBP)
 │   └── sounds/                   ← audio messages (OGG, MP3, WAV)
+├── translations/
+│   └── ui.csv                    ← UI translations (statuses, buttons…)
 └── theme.json                    ← visual styles (colors, fonts, etc.)
 ```
 
 ### Adding Content
 
 1. **Create** a `.json` file in `dialogues/`
-2. **Write** scenes with messages and choices (see `docs/authoring.md` for the syntax)
+2. **Write** scenes with messages and choices (see `docs/authoring_en.md` for the syntax)
 3. **Place assets**:
    - Images in `assets/images/`
    - Sounds in `assets/sounds/`
 4. **Reference assets** in JSON files using a Godot path: `res://assets/images/...` or `res://assets/sounds/...`
 5. **Launch** the game in Godot — the validator reports any errors at startup
+
+### Localizing Dialogues
+
+The engine automatically picks the right dialogue file based on the active language:
+
+- `acte1.json` → loaded when no locale-specific file exists (fallback)
+- `acte1.fr.json` → loaded in French
+- `acte1.en.json` → loaded in English
+
+Players change the language via the **Settings** menu (⚙ button, top right). If the system language is supported, it is applied automatically on first launch.
 
 ---
 
@@ -69,7 +82,7 @@ Protected nodes per scene:
 
 | Scene | Protected Nodes |
 |-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, Overlay, Reset, PanelButton, MuteButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
+| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
 | `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
 | `ContactPanel.tscn` | ContactList, CloseButton |
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |

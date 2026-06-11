@@ -289,3 +289,36 @@ Le jeu valide automatiquement `story.json` et tous les fichiers `dialogues/*.jso
 Si des erreurs ou des avertissements sont trouvés, une fenêtre apparaît immédiatement dans le jeu avec le détail du problème. Les erreurs sont aussi loguées dans la console Godot.
 
 L'auteur n'a rien à installer : il suffit de lancer le projet dans Godot et de lire le rapport qui s'affiche.
+
+## 13. Localisation des dialogues
+
+Le moteur supporte plusieurs langues via des fichiers de dialogue distincts.
+
+### Convention de nommage
+
+```
+dialogues/
+├── acte1.json        ← fichier de base (chargé si aucune variante n'existe)
+├── acte1.fr.json     ← variante française
+└── acte1.en.json     ← variante anglaise
+```
+
+Au lancement, le moteur sélectionne automatiquement le fichier correspondant à la langue active. Si aucune variante n'existe pour la langue courante, il revient sur le fichier de base (sans suffixe).
+
+### Ajouter une langue
+
+1. Dupliquer le fichier de base : `acte1.json` → `acte1.es.json`
+2. Traduire tous les champs `text`, `message` et `choices[].text`
+3. Conserver les IDs (`id`, `next`, `flag`, `requires_flag`) identiques — ce sont des clés internes, pas du texte affiché
+
+### Traductions de l'interface
+
+Les textes de l'interface (statuts, boutons, messages de validation) sont gérés séparément dans `translations/ui.csv`. Pour ajouter une langue, ajouter une colonne avec le code ISO de la langue (`es`, `de`, etc.) et renseigner toutes les clés.
+
+```csv
+keys,en,fr,es
+STATUS_ONLINE,online,en ligne,en línea
+BTN_CANCEL,Cancel,Annuler,Cancelar
+```
+
+La langue système est détectée automatiquement au premier lancement. Le joueur peut la modifier via le menu **Paramètres** (⚙).

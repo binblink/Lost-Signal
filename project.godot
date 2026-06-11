@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 SaveManager="*res://scripts/autoloads/save_manager.gd"
+SettingsManager="*res://scripts/autoloads/settings_manager.gd"
 DialogueLoader="*res://scripts/autoloads/dialogue_loader.gd"
 ThemeManager="*res://scripts/autoloads/theme_manager.gd"
 AudioManager="*res://scripts/autoloads/audio_manager.gd"

@@ -31,11 +31,14 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 projet/
 ├── story.json                    ← configuration (contacts, scène de départ)
 ├── dialogues/
-│   ├── acte1.json                ← contenu narratif à ajouter/modifier
+│   ├── acte1.json                ← contenu narratif (langue par défaut)
+│   ├── acte1.en.json             ← variante anglaise (optionnel)
 │   └── ...autres fichiers.json
 ├── assets/
 │   ├── images/                   ← images pour les bulles (PNG, JPG, WEBP)
 │   └── sounds/                   ← messages audio (OGG, MP3, WAV)
+├── translations/
+│   └── ui.csv                    ← traductions de l'interface (statuts, boutons…)
 └── theme.json                    ← styles visuels (couleurs, polices, etc.)
 ```
 
@@ -48,6 +51,16 @@ projet/
    - Sons dans `assets/sounds/`
 4. **Référencer les assets** dans les fichiers JSON avec un chemin Godot : `res://assets/images/...` ou `res://assets/sounds/...`
 5. **Lancer** le jeu dans Godot — la validation affiche les erreurs au démarrage
+
+### Localisation des dialogues
+
+Le moteur sélectionne automatiquement le bon fichier de dialogue selon la langue active :
+
+- `acte1.json` → chargé si aucune variante locale n'existe (fallback)
+- `acte1.fr.json` → chargé en français
+- `acte1.en.json` → chargé en anglais
+
+Le joueur change la langue via le menu **Paramètres** (bouton ⚙ en haut à droite). Si la langue système est supportée, elle est appliquée automatiquement au premier lancement.
 
 ---
 
@@ -69,7 +82,7 @@ Les nœuds protégés dans chaque scène :
 
 | Scène | Nœuds protégés |
 |-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, Overlay, Reset, PanelButton, MuteButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
+| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
 | `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
 | `ContactPanel.tscn` | ContactList, CloseButton |
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |

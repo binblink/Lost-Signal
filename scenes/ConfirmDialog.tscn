@@ -40,7 +40,7 @@ theme_override_constants/separation = 16
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer" unique_id=706448967]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
-text = "Nouvelle partie"
+text = "CONFIRM_NEWGAME_TITLE"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -48,8 +48,7 @@ vertical_alignment = 1
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_font_sizes/font_size = 13
-text = "Tu vas perdre toute ta progression.
-Et si Maeve avait besoin de toi ?"
+text = "CONFIRM_NEWGAME_BODY"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -58,15 +57,15 @@ layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Annuler" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=130137125]
+[node name="Cancel" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=130137125]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_41w52")
-text = "Annuler"
+text = "BTN_CANCEL"
 
-[node name="Recommencer" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=376780376]
+[node name="Restart" type="Button" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=376780376]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9137255, 0.92941177, 0.9372549, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_7uq2i")
-text = "Recommencer"
+text = "BTN_RESTART"
 autowrap_trim_flags = 0

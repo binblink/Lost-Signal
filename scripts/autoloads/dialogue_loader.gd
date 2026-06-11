@@ -16,6 +16,14 @@ func _ready() -> void:
 	print("DialogueLoader: %d scènes, %d contacts chargés." % [_scenes.size(), _contacts.size()])
 	_validate()
 
+func reload_for_locale() -> void:
+	_scenes.clear()
+	_triggers.clear()
+	validation_errors.clear()
+	validation_warnings.clear()
+	_load_dialogues_dir()
+	_validate()
+
 func get_validation_report() -> Dictionary:
 	return {
 		"errors": validation_errors.duplicate(),
@@ -41,13 +49,35 @@ func _load_dialogues_dir() -> void:
 	if dir == null:
 		push_error("DialogueLoader: dossier introuvable → " + DIALOGUES_DIR)
 		return
+
+	var locale := SettingsManager.language
+
+	# Collect all .json files
+	var all_files: Array[String] = []
 	dir.list_dir_begin()
-	var file_name = dir.get_next()
+	var file_name := dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			_load_scenes_from(DIALOGUES_DIR + file_name)
+			all_files.append(file_name)
 		file_name = dir.get_next()
 	dir.list_dir_end()
+
+	# For each base name, prefer the locale-specific file (base.locale.json)
+	# and fall back to the unlocalized file (base.json).
+	var chosen: Dictionary = {}  # base_name -> file_name
+	for f: String in all_files:
+		var base: String = f.get_basename()  # e.g. "acte1.en" or "acte1"
+		var parts: PackedStringArray = base.split(".")
+		if parts.size() == 2:
+			var file_locale := parts[1]
+			if file_locale == locale:
+				chosen[parts[0]] = f   # locale match — highest priority
+		elif parts.size() == 1:
+			if not chosen.has(base):
+				chosen[base] = f       # fallback if no locale file yet
+
+	for f in chosen.values():
+		_load_scenes_from(DIALOGUES_DIR + f)
 
 func _load_scenes_from(path: String) -> void:
 	var data = _parse_json(path)

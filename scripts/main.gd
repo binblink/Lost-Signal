@@ -8,7 +8,8 @@ extends Control
 @onready var overlay            = %Overlay
 @onready var reset_button       = %Reset
 @onready var panel_button       = %PanelButton
-@onready var mute_button        = %MuteButton
+@onready var settings_button    = %SettingsButton
+@onready var settings_dialog    = %SettingsDialog
 @onready var photo_overlay      = %PhotoOverlay
 @onready var photo_image        = %PhotoImage
 @onready var contact_name_label = %ContactName
@@ -16,8 +17,8 @@ extends Control
 @onready var _status_text       = %StatusText
 @onready var _status_warning    = %StatusWarning
 @onready var _contact_panel     = %ContactPanel
-@onready var btn_annuler        = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Annuler")
-@onready var btn_recommencer    = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Recommencer")
+@onready var btn_cancel         = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
+@onready var btn_restart        = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
 @onready var _validation_title  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label")
 @onready var _validation_body   = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label2")
 @onready var _clock_label       = %ClockLabel
@@ -55,12 +56,13 @@ func _ready() -> void:
 	overlay.visible = false
 	reset_button.pressed.connect(_on_new_game_pressed)
 	panel_button.pressed.connect(_on_contacts_button_pressed)
-	mute_button.pressed.connect(_on_mute_pressed)
-	_update_mute_button()
+	settings_button.pressed.connect(_on_settings_pressed)
+	settings_dialog.accepted.connect(_on_settings_accepted)
+	settings_dialog.cancelled.connect(func(): overlay.visible = false)
 	message_display.image_clicked.connect(_on_image_clicked)
 	photo_overlay.gui_input.connect(_on_photo_overlay_input)
-	btn_annuler.pressed.connect(_on_cancel_pressed)
-	btn_recommencer.pressed.connect(_on_startover_pressed)
+	btn_cancel.pressed.connect(_on_cancel_pressed)
+	btn_restart.pressed.connect(_on_startover_pressed)
 
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	_contact_panel.contacts = DialogueLoader.get_contacts()
@@ -87,7 +89,7 @@ func _ready() -> void:
 
 
 # ---------------------------------------------------------------------------
-# Thème
+# Theme
 # ---------------------------------------------------------------------------
 
 func _apply_theme() -> void:
@@ -137,19 +139,19 @@ func _apply_status_ui(contact_id: String) -> void:
 	match _get_status(contact_id):
 		"online":
 			_status_dot.add_theme_color_override("font_color", Color(0.2, 0.85, 0.4))
-			_status_text.text = "en ligne"
+			_status_text.text = tr("STATUS_ONLINE")
 			_status_warning.visible = false
 		"away":
 			_status_dot.add_theme_color_override("font_color", Color(1.0, 0.80, 0.1))
-			_status_text.text = "absent"
+			_status_text.text = tr("STATUS_AWAY")
 			_status_warning.visible = false
 		"offline":
 			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
-			_status_text.text = "hors ligne"
+			_status_text.text = tr("STATUS_OFFLINE")
 			_status_warning.visible = false
 		"network_issue":
 			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
-			_status_text.text = "problème réseau"
+			_status_text.text = tr("STATUS_NETWORK_ISSUE")
 			_status_warning.visible = true
 			_blink_tween = create_tween().set_loops()
 			_blink_tween.tween_property(_status_dot, "modulate:a", 0.1, 0.5)
@@ -157,7 +159,7 @@ func _apply_status_ui(contact_id: String) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Panneau contacts
+# Contacts panel
 # ---------------------------------------------------------------------------
 
 func _on_image_clicked(path: String) -> void:
@@ -169,12 +171,16 @@ func _on_photo_overlay_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		photo_overlay.visible = false
 
-func _on_mute_pressed() -> void:
-	AudioManager.toggle_mute()
-	_update_mute_button()
+func _on_settings_pressed() -> void:
+	overlay.visible = true
+	settings_dialog.open()
 
-func _update_mute_button() -> void:
-	mute_button.text = "🔇" if AudioManager.is_muted else "🔊"
+func _on_settings_accepted(language_changed: bool) -> void:
+	overlay.visible = false
+	if language_changed:
+		save_game(false)
+		DialogueLoader.reload_for_locale()
+		get_tree().reload_current_scene()
 
 func _on_contacts_button_pressed() -> void:
 	_contact_panel.toggle_panel()
@@ -206,7 +212,7 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Signaux narratifs
+# Narrative signals
 # ---------------------------------------------------------------------------
 
 func _on_save_requested(notify_panel: bool) -> void:
@@ -291,11 +297,11 @@ func load_game() -> void:
 
 
 # ---------------------------------------------------------------------------
-# UI globale
+# Global UI
 # ---------------------------------------------------------------------------
 
 func _start_free_input_visual() -> void:
-	line_edit.placeholder_text = "Tapez votre message…"
+	line_edit.placeholder_text = tr("INPUT_PLACEHOLDER")
 	if not is_instance_valid(_free_input_indicator):
 		_free_input_indicator = ColorRect.new()
 		_free_input_indicator.color = ThemeManager.accent_color
@@ -343,8 +349,8 @@ func _on_cancel_pressed() -> void:
 	overlay.visible = false
 	if _validation_active:
 		_validation_active = false
-		btn_recommencer.visible = true
-		btn_annuler.text = "Annuler"
+		btn_restart.visible = true
+		btn_cancel.text = tr("BTN_CANCEL")
 
 func _on_startover_pressed() -> void:
 	SaveManager.delete_save()
@@ -356,24 +362,24 @@ func _show_validation_report(report: Dictionary) -> void:
 	var warnings: Array = report.get("warnings", [])
 	var lines: Array = []
 	if errors.size() > 0:
-		_validation_title.text = "Validation : erreurs détectées"
+		_validation_title.text = tr("VALID_ERRORS")
 		for err in errors:
-			lines.append("Erreur : %s" % err)
+			lines.append(tr("VALID_ERROR_LINE") % err)
 	if warnings.size() > 0:
 		if errors.size() > 0:
 			lines.append("")
-		_validation_title.text = "Validation : erreurs et avertissements détectés"
+		_validation_title.text = tr("VALID_ERRORS_WARNINGS")
 		for warn in warnings:
-			lines.append("Avertissement : %s" % warn)
+			lines.append(tr("VALID_WARNING_LINE") % warn)
 	if errors.is_empty() and warnings.is_empty():
-		_validation_title.text = "Validation : aucun problème détecté"
-		lines.append("Aucun problème de format détecté.")
+		_validation_title.text = tr("VALID_OK")
+		lines.append(tr("VALID_OK_BODY"))
 
 	_validation_body.text = "\n".join(lines)
 	_validation_body.autowrap = true
 	_validation_body.clip_text = true
-	btn_recommencer.visible = false
-	btn_annuler.text = "OK"
+	btn_restart.visible = false
+	btn_cancel.text = tr("BTN_OK")
 	_validation_active = true
 	confirm_dialog.visible = true
 	overlay.visible = true
