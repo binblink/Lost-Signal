@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dqx0mainmen1a"]
 
 [ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dstngsdlg001a" path="res://scenes/SettingsDialog.tscn" id="2_stngd"]
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
@@ -52,3 +53,36 @@ text = "MENU_CONTINUE"
 unique_name_in_owner = true
 layout_mode = 2
 text = "MENU_NEW_GAME"
+
+[node name="BtnSettings" type="Button" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "BTN_SETTINGS"
+
+[node name="Overlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.588)
+
+[node name="SettingsDialog" parent="." unique_id=2233445566 instance=ExtResource("2_stngd")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -155.0
+offset_top = -130.0
+offset_right = 155.0
+offset_bottom = 130.0
+grow_horizontal = 2
+grow_vertical = 2

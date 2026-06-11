@@ -17,9 +17,18 @@ Et si Maeve avait besoin de toi ?"
 SETTINGS_TITLE,Settings,Paramètres
 SETTINGS_LANGUAGE,Language,Langue
 SETTINGS_VOLUME,Volume,Volume
-SETTINGS_DISPLAY,Display,Affichage
+SETTINGS_RESOLUTION,Resolution,Résolution
+SETTINGS_DISPLAY,Display mode,Mode d'affichage
+DISPLAY_480P,480p  (854 × 480),480p  (854 × 480)
+DISPLAY_720P,720p  (1280 × 720),720p  (1280 × 720)
+DISPLAY_900P,900p  (1600 × 900),900p  (1600 × 900)
+DISPLAY_1080P,1080p (1920 × 1080),1080p (1920 × 1080)
+DISPLAY_1440P,1440p (2560 × 1440),1440p (2560 × 1440)
+DISPLAY_4K,4K    (3840 × 2160),4K    (3840 × 2160)
 DISPLAY_WINDOWED,Windowed,Fenêtré
+DISPLAY_BORDERLESS,Fullscreen windowed,Plein écran fenêtré
 DISPLAY_FULLSCREEN,Fullscreen,Plein écran
+BTN_SETTINGS,Settings,Paramètres
 VALID_ERRORS,Validation: errors detected,Validation : erreurs détectées
 VALID_ERROR_LINE,Error: %s,Erreur : %s
 VALID_ERRORS_WARNINGS,Validation: errors and warnings detected,Validation : erreurs et avertissements détectés
