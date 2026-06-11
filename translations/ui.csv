@@ -9,6 +9,8 @@ BTN_RESTART,Restart,Recommencer
 BTN_ACCEPT,Accept,Accepter
 BTN_OK,OK,OK
 CONFIRM_NEWGAME_TITLE,New game,Nouvelle partie
+MENU_CONTINUE,Continue,Continuer
+MENU_NEW_GAME,New game,Nouvelle partie
 "CONFIRM_NEWGAME_BODY","You will lose all your progress.
 What if Maeve needed you?","Tu vas perdre toute ta progression.
 Et si Maeve avait besoin de toi ?"

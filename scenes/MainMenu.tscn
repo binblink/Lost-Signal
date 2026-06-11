@@ -46,9 +46,9 @@ custom_minimum_size = Vector2(0, 20)
 [node name="BtnContinue" type="Button" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Continuer"
+text = "MENU_CONTINUE"
 
 [node name="BtnNewGame" type="Button" parent="CenterContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Nouvelle partie"
+text = "MENU_NEW_GAME"
