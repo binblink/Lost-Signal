@@ -46,6 +46,7 @@ var _is_receiving: bool = false
 var _is_player_typing: bool = false
 var _waiting_for_free_input: bool = false
 var _pending_resumes: Array = []
+var _visible_choices: Array = []
 
 var is_busy: bool:
 	get: return _is_player_typing or _is_receiving
@@ -134,8 +135,9 @@ func play_scene(scene_id: String) -> void:
 	save_requested.emit(false)
 
 	if current_scene.has("choices"):
+		_visible_choices = current_scene["choices"].filter(func(c): return _eval_condition(c))
 		await choices_layer.show_choices(
-			current_scene["choices"].map(func(c): return c["text"])
+			_visible_choices.map(func(c): return c["text"])
 		)
 		await choice_made
 
@@ -143,11 +145,11 @@ func play_scene(scene_id: String) -> void:
 
 
 func handle_choice(index: int) -> void:
-	if not current_scene.has("choices"):
+	if _visible_choices.is_empty():
 		return
-	if index >= current_scene["choices"].size():
+	if index >= _visible_choices.size():
 		return
-	var choice = current_scene["choices"][index]
+	var choice = _visible_choices[index]
 	waiting_for_choice = false
 	current_message_index = 0
 	_apply_effects(choice)
@@ -181,8 +183,9 @@ func restore_pending_choice_for(contact_id: String) -> void:
 			waiting_for_choice = true
 			current_scene = pending_scene
 			current_message_index = 0
+			_visible_choices = pending_scene["choices"].filter(func(c): return _eval_condition(c))
 			await choices_layer.show_choices(
-				pending_scene["choices"].map(func(c): return c["text"])
+				_visible_choices.map(func(c): return c["text"])
 			)
 	else:
 		choices_layer.visible = false

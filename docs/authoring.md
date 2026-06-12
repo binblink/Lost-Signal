@@ -97,7 +97,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 
 ### Champs recommandés
 
-- `text` : contenu du message. Peut être `null` si un média est envoyé.
+- `text` : contenu du message. Peut être `null` si un média est envoyé. Accepte aussi un **tableau de chaînes** pour enchaîner plusieurs bulles en une seule déclaration — voir ci-dessous.
 - `pause` : `short`, `medium`, `long`.
 - `requires_flag` : message affiché uniquement si le flag est actif. Peut être une chaîne (flag unique) ou un tableau de chaînes (tous les flags doivent être actifs).
 - `condition` : condition sur une variable numérique.
@@ -105,6 +105,23 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 - `effects` : effet déclenché immédiatement.
 - `media` : image ou audio.
 - `time` : horodatage optionnel.
+
+### Tableau de bulles
+
+Quand `text` est un tableau, le moteur l'expanse automatiquement en plusieurs messages distincts :
+
+```json
+{
+  "text": ["...", "C'est pas du spam!", "Je suis une vraie personne."],
+  "requires_flag": "rep_a",
+  "pause": "short"
+}
+```
+
+Règles d'expansion :
+- `requires_flag` et `condition` s'appliquent à **toutes** les bulles
+- `pause` et `effects` s'appliquent à la **première** bulle uniquement
+- `time` s'applique à la **dernière** bulle uniquement
 
 ## 5. Messages média
 
@@ -154,6 +171,7 @@ Un choix est un objet avec au moins `text`.
 - Si `message` est un tableau, chaque élément correspond à une bulle envoyée successivement par le joueur.
 - `flag` active un flag booléen.
 - `effects` applique des changements de variables ou des modifications de contact.
+- `requires_flag` et `condition` filtrent la visibilité du choix — un choix dont la condition n'est pas remplie n'apparaît pas dans la liste. Les mêmes syntaxes que pour les messages sont supportées.
 
 ### Exemple de message en plusieurs bulles
 

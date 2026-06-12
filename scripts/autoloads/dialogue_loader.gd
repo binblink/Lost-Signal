@@ -87,10 +87,25 @@ func _load_scenes_from(path: String) -> void:
 		if not scene.has("contact_id"):
 			scene["contact_id"] = _get_main_contact_id()
 		if scene.has("messages_in"):
-			for i in range(scene["messages_in"].size()):
-				var m = scene["messages_in"][i]
+			var expanded: Array = []
+			for m in scene["messages_in"]:
 				if m is String:
-					scene["messages_in"][i] = { "text": m }
+					expanded.append({ "text": m })
+				elif m is Dictionary and m.get("text", null) is Array:
+					var texts: Array = m["text"]
+					for i in range(texts.size()):
+						var entry: Dictionary = { "text": texts[i] }
+						if m.has("requires_flag"): entry["requires_flag"] = m["requires_flag"]
+						if m.has("condition"):     entry["condition"]     = m["condition"]
+						if i == 0:
+							if m.has("pause"):   entry["pause"]   = m["pause"]
+							if m.has("effects"): entry["effects"] = m["effects"]
+						if i == texts.size() - 1:
+							if m.has("time"): entry["time"] = m["time"]
+						expanded.append(entry)
+				else:
+					expanded.append(m)
+			scene["messages_in"] = expanded
 		if _scenes.has(scene["id"]):
 			push_warning("DialogueLoader: ID en double « %s » dans %s — ignoré." % [scene["id"], path])
 			continue

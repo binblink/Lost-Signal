@@ -376,7 +376,7 @@ func _show_validation_report(report: Dictionary) -> void:
 		lines.append(tr("VALID_OK_BODY"))
 
 	_validation_body.text = "\n".join(lines)
-	_validation_body.autowrap = true
+	_validation_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_validation_body.clip_text = true
 	btn_restart.visible = false
 	btn_cancel.text = tr("BTN_OK")

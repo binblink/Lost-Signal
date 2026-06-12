@@ -62,6 +62,12 @@ Each file contains:
 - `choices`: list of choices presented to the player.
 - `free_input`: variable name to capture free text input from the player.
 - `next`: ID of the next scene when `free_input` is used.
+- `music`: Godot path to an audio file to play as background music. Optional — three possible behaviors:
+  - **Absent**: the current music continues uninterrupted.
+  - **Path** (`"res://assets/music/tension.ogg"`): plays this track on loop. No effect if the same track is already playing.
+  - **`null`**: fades out and stops the current music.
+
+Music automatically ducks when the player plays an audio message, then fades back up when playback ends.
 
 ## 4. Incoming Messages (`messages_in`)
 
@@ -91,7 +97,7 @@ The engine automatically converts a string into `{ "text": "..." }`.
 
 ### Available Fields
 
-- `text`: message content. Can be `null` if a media file is sent instead.
+- `text`: message content. Can be `null` if a media file is sent instead. Also accepts an **array of strings** to chain multiple bubbles in a single declaration — see below.
 - `pause`: `short`, `medium`, `long`.
 - `requires_flag`: message shown only if the flag is set. Can be a string (single flag) or an array of strings (all flags must be set).
 - `condition`: condition based on a numeric variable.
@@ -99,6 +105,23 @@ The engine automatically converts a string into `{ "text": "..." }`.
 - `effects`: effect triggered immediately when the message appears.
 - `media`: image or audio attachment.
 - `time`: optional timestamp.
+
+### Bubble Array
+
+When `text` is an array, the engine automatically expands it into multiple separate message bubbles:
+
+```json
+{
+  "text": ["...", "That's not spam!", "I'm a real person."],
+  "requires_flag": "rep_a",
+  "pause": "short"
+}
+```
+
+Expansion rules:
+- `requires_flag` and `condition` apply to **all** bubbles
+- `pause` and `effects` apply to the **first** bubble only
+- `time` applies to the **last** bubble only
 
 ## 5. Media Messages
 
@@ -148,6 +171,7 @@ A choice is an object with at least a `text` field.
 - If `message` is an array, each element is sent as a separate bubble by the player.
 - `flag` activates a boolean flag.
 - `effects` applies variable changes or contact modifications.
+- `requires_flag` and `condition` control choice visibility — a choice whose condition is not met will not appear in the list. The same syntax as for messages is supported.
 
 ### Multi-bubble Message Example
 
