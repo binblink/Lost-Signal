@@ -85,6 +85,11 @@ Background scenes run independently, are saved automatically, and persist across
 
 ---
 
+### 🎵 Scene music
+Each scene can optionally declare a background music track. The engine handles the rest — looping, smooth fade-out when stopped, and automatic ducking when the player plays an audio message. If a scene doesn't specify music, whatever is playing continues uninterrupted.
+
+---
+
 ### ✏️ Live message editing
 Characters can modify their own messages after sending — correcting a typo with a delay, or deleting a message entirely. A mechanic that doesn't exist in traditional dialogue systems, and one that opens specific narrative possibilities: hesitation, regret, second thoughts, unreliable communication.
 

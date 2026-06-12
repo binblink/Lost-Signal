@@ -42,7 +42,9 @@ func _on_play_pressed() -> void:
 	if player.playing:
 		player.stop()
 		play_button.text = "▶"
+		AudioManager.unduck_music()
 	else:
+		AudioManager.duck_music()
 		player.play()
 		play_button.text = "⏸"
 
@@ -51,6 +53,7 @@ func _on_playback_finished() -> void:
 	play_button.text = "▶"
 	progress_bar.value = 0.0
 	duration_label.text = _format_duration(_duration)
+	AudioManager.unduck_music()
 
 
 func _format_duration(seconds: float) -> String:

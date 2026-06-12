@@ -40,6 +40,7 @@ var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var played_secondary_scenes: Array = []
 var deferred_scenes: Dictionary = {}
+var current_music_path: String = ""
 
 var _is_receiving: bool = false
 var _is_player_typing: bool = false
@@ -69,6 +70,7 @@ func play_scene(scene_id: String) -> void:
 		deferred_scenes[resume_flag] = scene_id
 		return
 
+	_handle_music(current_scene)
 	_is_receiving = true
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
@@ -281,17 +283,18 @@ func _apply_effects(choice: Dictionary) -> void:
 
 func get_state() -> Dictionary:
 	return {
-		"current_scene_id":       current_scene.get("id", ""),
-		"current_message_index":  current_message_index,
-		"waiting_for_choice":     waiting_for_choice,
-		"flags":                  flags,
-		"vars":                   vars,
-		"contact_names":          contact_names,
-		"contact_statuses":       contact_statuses,
-		"deferred_scenes":        deferred_scenes,
-		"contact_histories":      contact_histories,
+		"current_scene_id":        current_scene.get("id", ""),
+		"current_message_index":   current_message_index,
+		"waiting_for_choice":      waiting_for_choice,
+		"flags":                   flags,
+		"vars":                    vars,
+		"contact_names":           contact_names,
+		"contact_statuses":        contact_statuses,
+		"deferred_scenes":         deferred_scenes,
+		"contact_histories":       contact_histories,
 		"played_secondary_scenes": played_secondary_scenes,
-		"pending_choices":        pending_choices,
+		"pending_choices":         pending_choices,
+		"current_music_path":      current_music_path,
 	}
 
 func set_state(data: Dictionary) -> void:
@@ -306,6 +309,9 @@ func set_state(data: Dictionary) -> void:
 	pending_choices         = data.get("pending_choices", {})
 	# "messages" est l'ancienne clé — conservé pour compatibilité avec les sauvegardes existantes
 	contact_histories       = data.get("contact_histories", data.get("messages", {}))
+	current_music_path      = data.get("current_music_path", "")
+	if current_music_path != "":
+		AudioManager.play_music(current_music_path)
 
 
 func submit_free_input(text: String) -> void:
@@ -316,6 +322,18 @@ func _apply_templates(text: String) -> String:
 	if vars.is_empty() or not "{" in text:
 		return text
 	return text.format(vars)
+
+
+func _handle_music(scene: Dictionary) -> void:
+	if not scene.has("music"):
+		return
+	var music = scene.get("music", null)
+	if music == null:
+		AudioManager.stop_music()
+		current_music_path = ""
+	else:
+		AudioManager.play_music(music)
+		current_music_path = music
 
 
 func _run_effects(effects: Array) -> void:

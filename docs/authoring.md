@@ -62,6 +62,12 @@ Chaque fichier contient :
 - `choices` : liste de choix présentée au joueur.
 - `free_input` : nom d'une variable pour saisir du texte libre.
 - `next` : ID de la scène suivante lorsque `free_input` est utilisé.
+- `music` : chemin Godot vers un fichier audio à lancer en fond sonore. Optionnel — trois comportements possibles :
+  - **Absent** : la musique en cours continue sans interruption.
+  - **Chemin** (`"res://assets/music/tension.ogg"`) : lance cette piste en boucle. Si la même piste joue déjà, aucun effet.
+  - **`null`** : coupe la musique en cours avec un fondu.
+
+La musique baisse automatiquement (ducking) quand le joueur lance un message vocal, puis remonte à la fin de la lecture.
 
 ## 4. Messages entrants (`messages_in`)
 
