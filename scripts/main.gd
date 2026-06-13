@@ -17,18 +17,16 @@ extends Control
 @onready var _status_text       = %StatusText
 @onready var _status_warning    = %StatusWarning
 @onready var _contact_panel     = %ContactPanel
-@onready var btn_cancel         = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
-@onready var btn_restart        = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
-@onready var _validation_title  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label")
-@onready var _validation_body   = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label2")
-@onready var _clock_label       = %ClockLabel
+@onready var btn_cancel  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
+@onready var btn_restart = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
+@onready var _clock_label = %ClockLabel
 
 var _total_unread: int = 0
 var _blink_tween: Tween = null
 var _free_input_tween: Tween = null
 var _free_input_indicator: ColorRect = null
 var _narrative: Node = null
-var _validation_active: bool = false
+var _validation_dialog: Control = null
 
 
 func _ready() -> void:
@@ -76,11 +74,18 @@ func _ready() -> void:
 	clock_timer.timeout.connect(_update_clock)
 	add_child(clock_timer)
 
+	_validation_dialog = preload("res://scenes/ValidationDialog.tscn").instantiate()
+	_validation_dialog.closed.connect(func(): overlay.visible = false)
+	_validation_dialog.set_anchors_preset(Control.PRESET_CENTER)
+	_validation_dialog.z_index = 10
+	add_child(_validation_dialog)
+
 	_update_topbar(_narrative.active_contact_id)
 	_contact_panel.show_panel()
 
 	if DialogueLoader.has_validation_issues():
-		_show_validation_report(DialogueLoader.get_validation_report())
+		overlay.visible = true
+		_validation_dialog.open(DialogueLoader.get_validation_report())
 
 	if SaveManager.has_save():
 		await load_game()
@@ -322,39 +327,8 @@ func _on_new_game_pressed() -> void:
 func _on_cancel_pressed() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
-	if _validation_active:
-		_validation_active = false
-		btn_restart.visible = true
-		btn_cancel.text = tr("BTN_CANCEL")
 
 func _on_startover_pressed() -> void:
 	SaveManager.delete_save()
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
-
-func _show_validation_report(report: Dictionary) -> void:
-	var errors: Array = report.get("errors", [])
-	var warnings: Array = report.get("warnings", [])
-	var lines: Array = []
-	if errors.size() > 0:
-		_validation_title.text = tr("VALID_ERRORS")
-		for err in errors:
-			lines.append(tr("VALID_ERROR_LINE") % err)
-	if warnings.size() > 0:
-		if errors.size() > 0:
-			lines.append("")
-		_validation_title.text = tr("VALID_ERRORS_WARNINGS")
-		for warn in warnings:
-			lines.append(tr("VALID_WARNING_LINE") % warn)
-	if errors.is_empty() and warnings.is_empty():
-		_validation_title.text = tr("VALID_OK")
-		lines.append(tr("VALID_OK_BODY"))
-
-	_validation_body.text = "\n".join(lines)
-	_validation_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_validation_body.clip_text = true
-	btn_restart.visible = false
-	btn_cancel.text = tr("BTN_OK")
-	_validation_active = true
-	confirm_dialog.visible = true
-	overlay.visible = true

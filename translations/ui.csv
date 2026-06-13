@@ -29,10 +29,9 @@ DISPLAY_WINDOWED,Windowed,Fenêtré
 DISPLAY_BORDERLESS,Fullscreen windowed,Plein écran fenêtré
 DISPLAY_FULLSCREEN,Fullscreen,Plein écran
 BTN_SETTINGS,Settings,Paramètres
-VALID_ERRORS,Validation: errors detected,Validation : erreurs détectées
-VALID_ERROR_LINE,Error: %s,Erreur : %s
-VALID_ERRORS_WARNINGS,Validation: errors and warnings detected,Validation : erreurs et avertissements détectés
-VALID_WARNING_LINE,Warning: %s,Avertissement : %s
 VALID_OK,Validation: no issues detected,Validation : aucun problème détecté
 VALID_OK_BODY,No format issues detected.,Aucun problème de format détecté.
+VALID_COUNT_ERRORS,%d error(s),%d erreur(s)
+VALID_COUNT_WARNINGS,%d warning(s),%d avertissement(s)
+VALID_COPY,Copy,Copier
 MSG_DELETED,Message deleted,Message supprimé

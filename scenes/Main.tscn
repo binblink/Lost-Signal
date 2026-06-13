@@ -3,9 +3,9 @@
 [ext_resource type="Script" uid="uid://jdmgl8x2e1tp" path="res://scripts/main.gd" id="1_r0du0"]
 [ext_resource type="Script" uid="uid://cmkyok6ojx52b" path="res://scripts/ui/message_display.gd" id="2_0bbpv"]
 [ext_resource type="PackedScene" uid="uid://c364u6luterqx" path="res://scenes/ConfirmDialog.tscn" id="2_uu6xs"]
-[ext_resource type="PackedScene" uid="uid://dstngsdlg001a" path="res://scenes/SettingsDialog.tscn" id="5_stngd"]
 [ext_resource type="Script" uid="uid://b17cgpt81fkki" path="res://scripts/ui/choices_manager.gd" id="3_rarhs"]
 [ext_resource type="Script" uid="uid://btw65xojsvp5c" path="res://scripts/ui/contact_panel.gd" id="4_panel"]
+[ext_resource type="PackedScene" uid="uid://dstngsdlg001a" path="res://scenes/SettingsDialog.tscn" id="5_stngd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel_bg"]
 bg_color = Color(0.08, 0.11, 0.13, 1)
