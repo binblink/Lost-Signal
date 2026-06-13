@@ -36,7 +36,8 @@ projet/
 │   └── ...autres fichiers.json
 ├── assets/
 │   ├── images/                   ← images pour les bulles (PNG, JPG, WEBP)
-│   └── sounds/                   ← messages audio (OGG, MP3, WAV)
+│   ├── sounds/                   ← messages audio (OGG, MP3, WAV)
+│   └── music/                    ← musiques de fond (OGG, MP3, WAV)
 ├── translations/
 │   └── ui.csv                    ← traductions de l'interface (statuts, boutons…)
 └── theme.json                    ← styles visuels (couleurs, polices, etc.)
@@ -47,9 +48,10 @@ projet/
 1. **Créer** un fichier `.json` dans `dialogues/`
 2. **Écrire** des scènes avec messages et choix (voir `docs/authoring.md` pour la syntaxe)
 3. **Placer les assets** :
-   - Images dans `assets/images/` 
+   - Images dans `assets/images/`
    - Sons dans `assets/sounds/`
-4. **Référencer les assets** dans les fichiers JSON avec un chemin Godot : `res://assets/images/...` ou `res://assets/sounds/...`
+   - Musiques dans `assets/music/`
+4. **Référencer les assets** dans les fichiers JSON avec un chemin Godot : `res://assets/images/...`, `res://assets/sounds/...` ou `res://assets/music/...`
 5. **Lancer** le jeu dans Godot — la validation affiche les erreurs au démarrage
 
 ### Localisation des dialogues
@@ -88,6 +90,7 @@ Les nœuds protégés dans chaque scène :
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |
 | `MessageBubbleAudioIn.tscn` | Bubble, PlayButton, Progress, Duration, TimeAndStatus, AudioStreamPlayer |
 | `TypingIndicator.tscn` | Dot1, Dot2, Dot3 |
+| `ValidationDialog.tscn` | Title, Body, CopyButton, CloseButton |
 
 ### Ce qui n'existe pas dans ce projet
 

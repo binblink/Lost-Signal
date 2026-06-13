@@ -221,6 +221,7 @@ Un choix est un objet avec au moins `text`.
 
 ### Notes
 
+- `next` : ID de la scène à jouer après que le joueur a confirmé ce choix. Requis dans la plupart des cas.
 - `message` peut être une chaîne ou un tableau de chaînes.
 - Si `message` est un tableau, chaque élément correspond à une bulle envoyée successivement par le joueur.
 - `flag` active un flag booléen.
@@ -379,7 +380,7 @@ Cette scène se déclenche automatiquement après `scene_03` et arrive dans la c
 - `trigger_after_scene` : la scène se joue automatiquement après l'ID donné.
 - `resume_after_flag` : la scène est différée jusqu'à ce que le flag soit activé.
 
-## 12. Validation
+## 13. Validation
 
 Le jeu valide automatiquement `story.json` et tous les fichiers `dialogues/*.json` au lancement dans Godot.
 
@@ -387,7 +388,7 @@ Si des erreurs ou des avertissements sont trouvés, une fenêtre apparaît immé
 
 L'auteur n'a rien à installer : il suffit de lancer le projet dans Godot et de lire le rapport qui s'affiche.
 
-## 13. Localisation des dialogues
+## 14. Localisation des dialogues
 
 Le moteur supporte plusieurs langues via des fichiers de dialogue distincts.
 

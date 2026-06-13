@@ -221,6 +221,7 @@ A choice is an object with at least a `text` field.
 
 ### Notes
 
+- `next`: ID of the scene to play after the player confirms this choice. Required in most cases.
 - `message` can be a string or an array of strings.
 - If `message` is an array, each element is sent as a separate bubble by the player.
 - `flag` activates a boolean flag.
@@ -379,7 +380,7 @@ This scene triggers automatically after `scene_03` and arrives in Alex's convers
 - `trigger_after_scene`: the scene plays automatically after the given scene ID finishes.
 - `resume_after_flag`: the scene is deferred until the specified flag is set.
 
-## 12. Validation
+## 13. Validation
 
 The game automatically validates `story.json` and all `dialogues/*.json` files on launch in Godot.
 
@@ -387,7 +388,7 @@ If errors or warnings are found, a window appears immediately in the game with a
 
 No tools to install: just open the project in Godot and read the report that appears.
 
-## 13. Localizing Dialogues
+## 14. Localizing Dialogues
 
 The engine supports multiple languages through separate dialogue files.
 

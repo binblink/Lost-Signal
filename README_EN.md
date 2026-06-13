@@ -15,7 +15,7 @@ SMS-format visual novel built with Godot 4.6. All narrative content is defined i
 
 ## Documentation
 
-**See `docs/authoring.md`** for the full documentation:
+**See `docs/authoring_en.md`** for the full documentation:
 - JSON file structure (story.json, dialogues/*.json)
 - Messages, choices, conditions, effects
 - Flags, variables, templates, triggers
@@ -36,7 +36,8 @@ project/
 │   └── ...other .json files
 ├── assets/
 │   ├── images/                   ← images for message bubbles (PNG, JPG, WEBP)
-│   └── sounds/                   ← audio messages (OGG, MP3, WAV)
+│   ├── sounds/                   ← audio messages (OGG, MP3, WAV)
+│   └── music/                    ← background music tracks (OGG, MP3, WAV)
 ├── translations/
 │   └── ui.csv                    ← UI translations (statuses, buttons…)
 └── theme.json                    ← visual styles (colors, fonts, etc.)
@@ -49,7 +50,8 @@ project/
 3. **Place assets**:
    - Images in `assets/images/`
    - Sounds in `assets/sounds/`
-4. **Reference assets** in JSON files using a Godot path: `res://assets/images/...` or `res://assets/sounds/...`
+   - Music in `assets/music/`
+4. **Reference assets** in JSON files using a Godot path: `res://assets/images/...`, `res://assets/sounds/...` or `res://assets/music/...`
 5. **Launch** the game in Godot — the validator reports any errors at startup
 
 ### Localizing Dialogues
@@ -88,6 +90,7 @@ Protected nodes per scene:
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |
 | `MessageBubbleAudioIn.tscn` | Bubble, PlayButton, Progress, Duration, TimeAndStatus, AudioStreamPlayer |
 | `TypingIndicator.tscn` | Dot1, Dot2, Dot3 |
+| `ValidationDialog.tscn` | Title, Body, CopyButton, CloseButton |
 
 ### Moving Unique Nodes
 
