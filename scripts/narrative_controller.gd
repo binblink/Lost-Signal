@@ -101,12 +101,18 @@ func play_scene(scene_id: String) -> void:
 				var bubble = await message_display.receive_message(display_text, msg.get("time", ""))
 				var edit = msg.get("edit", null)
 				if edit != null:
-					await get_tree().create_timer(edit.get("delay", DELAY_EDIT_DEFAULT)).timeout
-					if is_instance_valid(bubble):
-						if edit["type"] == "delete":
-							bubble.queue_free()
-						elif edit["type"] == "correct":
-							bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = edit["corrected_text"]
+					var edits: Array = edit if edit is Array else [edit]
+					for e in edits:
+						await get_tree().create_timer(e.get("delay", DELAY_EDIT_DEFAULT)).timeout
+						if not is_instance_valid(bubble):
+							break
+						var label = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
+						match e.get("type", ""):
+							"correct":
+								label.text = e.get("corrected_text", "")
+							"delete":
+								label.text = tr("MSG_DELETED")
+								label.add_theme_color_override("font_color", ThemeManager.time_color)
 				else:
 					await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
 		current_message_index = i + 1
@@ -315,6 +321,14 @@ func set_state(data: Dictionary) -> void:
 	current_music_path      = data.get("current_music_path", "")
 	if current_music_path != "":
 		AudioManager.play_music(current_music_path)
+
+
+func rebuild_choices() -> void:
+	if not current_scene.has("choices"):
+		return
+	_visible_choices = current_scene["choices"].filter(func(c): return _eval_condition(c))
+	await choices_layer.show_choices(_visible_choices.map(func(c): return c["text"]))
+	await choice_made
 
 
 func submit_free_input(text: String) -> void:

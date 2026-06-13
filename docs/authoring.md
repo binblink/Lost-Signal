@@ -56,6 +56,7 @@ Chaque fichier contient :
 
 - `id` : identifiant unique.
 - `contact_id` : identifiant du contact qui parle.
+- `_notes` : champ ignoré par le moteur — utilisez-le librement pour annoter vos scènes. Ex : `"_notes": "Scène d'ouverture — révision prévue"`.
 - `trigger_after_scene` : ID d'une scène après laquelle celle-ci est jouée automatiquement.
 - `resume_after_flag` : nom d'un flag. La scène attente jusqu'à ce que le flag soit activé.
 - `messages_in` : liste de messages entrants.
@@ -104,7 +105,45 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 - `edit` : modification du message après envoi.
 - `effects` : effet déclenché immédiatement.
 - `media` : image ou audio.
-- `time` : horodatage optionnel.
+- `time` : horodatage optionnel, affiché sous la bulle. Format `"HH:MM"` — ex : `"14:43"`.
+
+### Modification d'un message après envoi (`edit`)
+
+Un message peut se corriger ou se supprimer automatiquement après un délai, comme si le contact réalisait une faute ou regrettait ce qu'il a écrit.
+
+**Correction :**
+
+```json
+{
+  "text": "J'ai aucune idée d'ou je suis.",
+  "edit": { "type": "correct", "corrected_text": "J'ai aucune idée d'où je suis.", "delay": 2.0 }
+}
+```
+
+**Suppression :**
+
+```json
+{
+  "text": "Laissez tomber.",
+  "edit": { "type": "delete", "delay": 3.0 }
+}
+```
+
+- `type` : `correct` pour modifier le texte, `delete` pour remplacer la bulle par *"Message supprimé"*.
+- `corrected_text` : nouveau texte affiché (requis si `type` est `correct`).
+- `delay` : délai en secondes avant la modification. Optionnel — par défaut `1.5`.
+
+`edit` accepte aussi un **tableau** pour enchaîner plusieurs opérations. Chaque délai est relatif à l'opération précédente :
+
+```json
+{
+  "text": "Laissez tomber, je vais bien.",
+  "edit": [
+    { "type": "correct", "corrected_text": "Laissez tomber...", "delay": 2.0 },
+    { "type": "delete", "delay": 3.0 }
+  ]
+}
+```
 
 ### Tableau de bulles
 
@@ -122,6 +161,21 @@ Règles d'expansion :
 - `requires_flag` et `condition` s'appliquent à **toutes** les bulles
 - `pause` et `effects` s'appliquent à la **première** bulle uniquement
 - `time` s'applique à la **dernière** bulle uniquement
+
+Pour ajouter une pause sur une bulle spécifique, remplacez la chaîne par un objet `{ "text": "...", "pause": "short" }` :
+
+```json
+{
+  "text": [
+    "Merci de rester avec moi!",
+    { "text": "Ca me rassure un peu...", "pause": "short" },
+    "Mais je suis vraiment inquiète."
+  ],
+  "requires_flag": "rep_b1"
+}
+```
+
+Les chaînes et les objets peuvent être mélangés librement dans le même tableau. Le `requires_flag` du parent s'applique à toutes les bulles quoi qu'il arrive.
 
 ## 5. Messages média
 
@@ -173,6 +227,8 @@ Un choix est un objet avec au moins `text`.
 - `effects` applique des changements de variables ou des modifications de contact.
 - `requires_flag` et `condition` filtrent la visibilité du choix — un choix dont la condition n'est pas remplie n'apparaît pas dans la liste. Les mêmes syntaxes que pour les messages sont supportées.
 
+> **Attention** : si toutes les conditions de choix sont fausses en même temps, le joueur se retrouve bloqué sans rien à cliquer. Assurez-vous qu'au moins un choix est toujours visible, soit en le laissant sans condition, soit en couvrant tous les cas possibles.
+
 ### Exemple de message en plusieurs bulles
 
 ```json
@@ -198,7 +254,7 @@ Les effets sont déclarés dans `effects` et s'appliquent immédiatement.
 - `add` : ajoute une valeur.
 - `sub` : soustrait une valeur.
 - `rename` : change le nom d'un contact.
-- `set_status` : change le statut d'un contact.
+- `set_status` : change le statut d'un contact. Valeurs acceptées : `online`, `away`, `offline`, `network_issue`.
 
 ### Exemples
 
@@ -301,7 +357,24 @@ Les valeurs de variable peuvent être injectées dans les textes avec des accola
 "text": "Merci {nom_joueur}, je suis rassurée."
 ```
 
-## 11. Triggers et scènes différées
+## 11. Contacts secondaires
+
+Quand une scène a un `contact_id` différent du contact actuellement actif, le moteur la joue en arrière-plan : les messages sont ajoutés à l'historique de ce contact, un badge de notification apparaît dans le panneau, et le joueur choisit quand basculer pour lire la conversation.
+
+C'est le mécanisme principal pour les histoires multi-contacts. Exemple : Maeve est le contact principal, Alex envoie un message pendant que le joueur lit la conversation de Maeve.
+
+```json
+{
+  "id": "alex_interrompt",
+  "contact_id": "alex",
+  "trigger_after_scene": "scene_03",
+  "messages_in": ["T'as vu les nouvelles?"]
+}
+```
+
+Cette scène se déclenche automatiquement après `scene_03` et arrive dans la conversation d'Alex, pas de Maeve.
+
+## 12. Triggers et scènes différées
 
 - `trigger_after_scene` : la scène se joue automatiquement après l'ID donné.
 - `resume_after_flag` : la scène est différée jusqu'à ce que le flag soit activé.

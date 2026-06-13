@@ -56,6 +56,7 @@ Each file contains:
 
 - `id`: unique identifier.
 - `contact_id`: identifier of the contact speaking.
+- `_notes`: ignored by the engine — use freely to annotate your scenes. E.g. `"_notes": "Opening scene — revision planned"`.
 - `trigger_after_scene`: ID of a scene after which this one plays automatically.
 - `resume_after_flag`: flag name. The scene waits until that flag is set.
 - `messages_in`: list of incoming messages.
@@ -104,7 +105,45 @@ The engine automatically converts a string into `{ "text": "..." }`.
 - `edit`: modifies the message after it is sent.
 - `effects`: effect triggered immediately when the message appears.
 - `media`: image or audio attachment.
-- `time`: optional timestamp.
+- `time`: optional timestamp displayed below the bubble. Format `"HH:MM"` — e.g. `"14:43"`.
+
+### Editing a Message After Sending (`edit`)
+
+A message can correct itself or be deleted automatically after a delay — as if the contact noticed a typo or thought better of what they wrote.
+
+**Correction:**
+
+```json
+{
+  "text": "I have no idea where i am.",
+  "edit": { "type": "correct", "corrected_text": "I have no idea where I am.", "delay": 2.0 }
+}
+```
+
+**Deletion:**
+
+```json
+{
+  "text": "Never mind.",
+  "edit": { "type": "delete", "delay": 3.0 }
+}
+```
+
+- `type`: `correct` to replace the text, `delete` to replace the bubble with *"Message deleted"*.
+- `corrected_text`: the new text to display (required if `type` is `correct`).
+- `delay`: time in seconds before the edit occurs. Optional — defaults to `1.5`.
+
+`edit` also accepts an **array** to chain multiple operations. Each delay is relative to the previous operation:
+
+```json
+{
+  "text": "Never mind, I'm fine.",
+  "edit": [
+    { "type": "correct", "corrected_text": "Never mind...", "delay": 2.0 },
+    { "type": "delete", "delay": 3.0 }
+  ]
+}
+```
 
 ### Bubble Array
 
@@ -122,6 +161,21 @@ Expansion rules:
 - `requires_flag` and `condition` apply to **all** bubbles
 - `pause` and `effects` apply to the **first** bubble only
 - `time` applies to the **last** bubble only
+
+To add a pause on a specific bubble, replace the string with an object `{ "text": "...", "pause": "short" }`:
+
+```json
+{
+  "text": [
+    "Thank you for staying with me!",
+    { "text": "It's reassuring to have someone on the outside...", "pause": "short" },
+    "But I'm really scared."
+  ],
+  "requires_flag": "rep_b1"
+}
+```
+
+Strings and objects can be freely mixed in the same array. The parent's `requires_flag` applies to all bubbles regardless.
 
 ## 5. Media Messages
 
@@ -173,6 +227,8 @@ A choice is an object with at least a `text` field.
 - `effects` applies variable changes or contact modifications.
 - `requires_flag` and `condition` control choice visibility — a choice whose condition is not met will not appear in the list. The same syntax as for messages is supported.
 
+> **Warning**: if all choice conditions are false at the same time, the player will be stuck with nothing to click. Always ensure at least one choice is visible — either by leaving it without a condition, or by making sure all cases are covered.
+
 ### Multi-bubble Message Example
 
 ```json
@@ -198,7 +254,7 @@ Effects are declared in `effects` and applied immediately.
 - `add`: adds a value to a variable.
 - `sub`: subtracts a value from a variable.
 - `rename`: changes a contact's display name.
-- `set_status`: changes a contact's status.
+- `set_status`: changes a contact's status. Accepted values: `online`, `away`, `offline`, `network_issue`.
 
 ### Examples
 
@@ -301,7 +357,24 @@ Variable values can be injected into message text using curly braces:
 "text": "Thank you {player_name}, that's reassuring."
 ```
 
-## 11. Triggers and Deferred Scenes
+## 11. Secondary Contacts
+
+When a scene has a `contact_id` different from the currently active contact, the engine plays it in the background: messages are added to that contact's history, a notification badge appears in the panel, and the player decides when to switch and read the conversation.
+
+This is the main mechanism for multi-contact stories. Example: Maeve is the main contact, Alex sends a message while the player is reading Maeve's conversation.
+
+```json
+{
+  "id": "alex_interrupts",
+  "contact_id": "alex",
+  "trigger_after_scene": "scene_03",
+  "messages_in": ["Did you see the news?"]
+}
+```
+
+This scene triggers automatically after `scene_03` and arrives in Alex's conversation, not Maeve's.
+
+## 12. Triggers and Deferred Scenes
 
 - `trigger_after_scene`: the scene plays automatically after the given scene ID finishes.
 - `resume_after_flag`: the scene is deferred until the specified flag is set.

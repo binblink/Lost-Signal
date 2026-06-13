@@ -89,22 +89,7 @@ func _load_scenes_from(path: String) -> void:
 		if scene.has("messages_in"):
 			var expanded: Array = []
 			for m in scene["messages_in"]:
-				if m is String:
-					expanded.append({ "text": m })
-				elif m is Dictionary and m.get("text", null) is Array:
-					var texts: Array = m["text"]
-					for i in range(texts.size()):
-						var entry: Dictionary = { "text": texts[i] }
-						if m.has("requires_flag"): entry["requires_flag"] = m["requires_flag"]
-						if m.has("condition"):     entry["condition"]     = m["condition"]
-						if i == 0:
-							if m.has("pause"):   entry["pause"]   = m["pause"]
-							if m.has("effects"): entry["effects"] = m["effects"]
-						if i == texts.size() - 1:
-							if m.has("time"): entry["time"] = m["time"]
-						expanded.append(entry)
-				else:
-					expanded.append(m)
+				expanded.append_array(_normalize_message(m))
 			scene["messages_in"] = expanded
 		if _scenes.has(scene["id"]):
 			push_warning("DialogueLoader: ID en double « %s » dans %s — ignoré." % [scene["id"], path])
@@ -115,6 +100,36 @@ func _load_scenes_from(path: String) -> void:
 			if not _triggers.has(trigger):
 				_triggers[trigger] = []
 			_triggers[trigger].append(scene["id"])
+
+func _normalize_message(m) -> Array:
+	if m is String:
+		return [{ "text": m }]
+	if not m is Dictionary:
+		return []
+	if not m.get("text", null) is Array:
+		return [m]
+	var texts: Array = m["text"]
+	var result: Array = []
+	for i in range(texts.size()):
+		var element = texts[i]
+		var entry: Dictionary = {}
+		if element is String:
+			entry["text"] = element
+		elif element is Dictionary:
+			entry["text"] = element.get("text", "")
+			if element.has("pause"): entry["pause"] = element["pause"]
+		else:
+			entry["text"] = str(element)
+		if m.has("requires_flag"): entry["requires_flag"] = m["requires_flag"]
+		if m.has("condition"):     entry["condition"]     = m["condition"]
+		if i == 0:
+			if not entry.has("pause") and m.has("pause"): entry["pause"] = m["pause"]
+			if m.has("effects"): entry["effects"] = m["effects"]
+		if i == texts.size() - 1:
+			if m.has("time"): entry["time"] = m["time"]
+		result.append(entry)
+	return result
+
 
 func _parse_json(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):

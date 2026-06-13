@@ -35,3 +35,4 @@ VALID_ERRORS_WARNINGS,Validation: errors and warnings detected,Validation : erre
 VALID_WARNING_LINE,Warning: %s,Avertissement : %s
 VALID_OK,Validation: no issues detected,Validation : aucun problème détecté
 VALID_OK_BODY,No format issues detected.,Aucun problème de format détecté.
+MSG_DELETED,Message deleted,Message supprimé
