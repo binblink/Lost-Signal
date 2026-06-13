@@ -118,3 +118,24 @@ func render_history(history: Array) -> void:
 func clear_messages() -> void:
 	for child in get_children():
 		child.queue_free()
+
+func collect_messages_data() -> Array:
+	var messages_data = []
+	for child in get_children():
+		if not child is MarginContainer:
+			continue
+		if child.has_meta("msg_data"):
+			messages_data.append(child.get_meta("msg_data"))
+		else:
+			var hbox = child.get_node_or_null("HBoxContainer")
+			if hbox == null:
+				continue
+			var spacer_index = -1
+			for i in range(hbox.get_child_count()):
+				if hbox.get_child(i) is Control and not hbox.get_child(i) is PanelContainer:
+					spacer_index = i
+			var msg_node  = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
+			var time_node = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus")
+			if msg_node and time_node:
+				messages_data.append({ "text": msg_node.text, "time": time_node.text, "out": spacer_index == 0 })
+	return messages_data

@@ -196,7 +196,7 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 		_update_panel_button()
 	if contact_id == _narrative.active_contact_id:
 		return
-	_narrative.contact_histories[_narrative.active_contact_id] = _collect_messages_data()
+	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
 	_narrative.active_contact_id = contact_id
 	_update_topbar(contact_id)
 	var contact_data = DialogueLoader.get_contact(contact_id)
@@ -240,29 +240,8 @@ func _on_contact_status_changed(contact_id: String, _new_status: String) -> void
 # Save / Load
 # ---------------------------------------------------------------------------
 
-func _collect_messages_data() -> Array:
-	var messages_data = []
-	for child in message_display.get_children():
-		if not child is MarginContainer:
-			continue
-		if child.has_meta("msg_data"):
-			messages_data.append(child.get_meta("msg_data"))
-		else:
-			var hbox = child.get_node_or_null("HBoxContainer")
-			if hbox == null:
-				continue
-			var spacer_index = -1
-			for i in range(hbox.get_child_count()):
-				if hbox.get_child(i) is Control and not hbox.get_child(i) is PanelContainer:
-					spacer_index = i
-			var msg_node  = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
-			var time_node = child.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus")
-			if msg_node and time_node:
-				messages_data.append({"text": msg_node.text, "time": time_node.text, "out": spacer_index == 0})
-	return messages_data
-
 func save_game(notify_panel: bool = true) -> void:
-	_narrative.contact_histories[_narrative.active_contact_id] = _collect_messages_data()
+	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
 	SaveManager.save(_narrative.get_state())
 	if notify_panel:
 		_contact_panel.update_history(_narrative.active_contact_id, _narrative.contact_histories.get(_narrative.active_contact_id, []))
@@ -287,11 +266,7 @@ func load_game() -> void:
 	for cid in _narrative.contact_histories:
 		_contact_panel.update_history(cid, _narrative.contact_histories.get(cid, []))
 	if _narrative.waiting_for_choice:
-		if _narrative.current_scene.has("choices"):
-			await choices_layer.show_choices(
-				_narrative.current_scene["choices"].map(func(c): return c["text"])
-			)
-			await _narrative.choice_made
+		await _narrative.rebuild_choices()
 	else:
 		await _narrative.play_scene(scene_id)
 
