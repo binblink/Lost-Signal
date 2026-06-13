@@ -18,7 +18,7 @@ const PAUSE_FALLBACK   := 0.5
 
 signal choice_made
 signal free_input_submitted(text: String)
-signal free_input_activated
+signal free_input_activated(placeholder: String)
 signal save_requested(notify_panel: bool)
 signal secondary_scene_received(contact_id: String)
 signal contact_renamed(contact_id: String, new_name: String)
@@ -122,7 +122,7 @@ func play_scene(scene_id: String) -> void:
 	if current_scene.has("free_input"):
 		var var_name: String = current_scene["free_input"]
 		_waiting_for_free_input = true
-		free_input_activated.emit()
+		free_input_activated.emit(current_scene.get("free_input_placeholder", ""))
 		save_requested.emit(false)
 		var submitted_text: String = await free_input_submitted
 		_waiting_for_free_input = false

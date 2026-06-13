@@ -344,11 +344,13 @@ Permet au joueur de taper un texte libre.
   "id": "scene_capture",
   "messages_in": ["Comment tu t'appelles?"],
   "free_input": "nom_joueur",
+  "free_input_placeholder": "Entrez votre prénom…",
   "next": "scene_reponse"
 }
 ```
 
-La valeur saisie est stockée dans la variable `nom_joueur`.
+- `free_input` : nom de la variable dans laquelle la valeur saisie est stockée.
+- `free_input_placeholder` : texte affiché dans le champ de saisie avant que le joueur n'écrive. Optionnel — revient au placeholder par défaut si absent.
 
 ## 10. Templates
 

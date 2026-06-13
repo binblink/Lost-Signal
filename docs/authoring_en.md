@@ -344,11 +344,13 @@ Lets the player type a free-text response.
   "id": "scene_capture",
   "messages_in": ["What's your name?"],
   "free_input": "player_name",
+  "free_input_placeholder": "Enter your first name…",
   "next": "scene_response"
 }
 ```
 
-The entered value is stored in the variable `player_name`.
+- `free_input`: name of the variable where the entered value is stored.
+- `free_input_placeholder`: text displayed in the input field before the player types. Optional — falls back to the default placeholder if absent.
 
 ## 10. Templates
 

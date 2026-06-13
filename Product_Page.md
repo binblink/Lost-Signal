@@ -81,6 +81,8 @@ Characters don't wait for the player to finish reading.
 
 Scenes can be set to **trigger automatically** after another scene ends, or **resume after a specific story flag** is set. This means a second character can message the player mid-conversation — the notification badge appears, and the player decides when to switch.
 
+When they do, they enter a full conversation — choices, replies, branching — exactly like the main contact. Secondary contacts are not notifications. They are parallel storylines.
+
 Background scenes run independently, are saved automatically, and persist across sessions.
 
 ---
@@ -160,7 +162,7 @@ A complete game requires only:
 ```
 story.json           ← contacts and starting scene
 dialogues/*.json     ← your story scenes
-assets/              ← images and audio (optional)
+assets/              ← images, audio and music (optional)
 theme.json           ← visual style (optional)
 ```
 
@@ -229,6 +231,8 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - JSON narrative engine with conditions, variables, flags, effects, templates
 - Multi-contact system with status indicators
 - Background conversation and trigger system
+- Scene music with looping, fade, and audio ducking
+- Live message editing (correct or delete after sending)
 - Built-in story validator with in-game reporting
 - Auto-save system (saves after every story beat)
 - Main menu (New Game / Continue)

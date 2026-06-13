@@ -280,8 +280,8 @@ func load_game() -> void:
 # Global UI
 # ---------------------------------------------------------------------------
 
-func _start_free_input_visual() -> void:
-	line_edit.placeholder_text = tr("INPUT_PLACEHOLDER")
+func _start_free_input_visual(placeholder: String) -> void:
+	line_edit.placeholder_text = placeholder if placeholder != "" else tr("INPUT_PLACEHOLDER")
 	if not is_instance_valid(_free_input_indicator):
 		_free_input_indicator = ColorRect.new()
 		_free_input_indicator.color = ThemeManager.accent_color
