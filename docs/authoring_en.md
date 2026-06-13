@@ -362,7 +362,7 @@ Variable values can be injected into message text using curly braces:
 
 When a scene has a `contact_id` different from the currently active contact, the engine plays it in the background: messages are added to that contact's history, a notification badge appears in the panel, and the player decides when to switch and read the conversation.
 
-This is the main mechanism for multi-contact stories. Example: Maeve is the main contact, Alex sends a message while the player is reading Maeve's conversation.
+This is the main mechanism for multi-contact stories. Example: Maeve is the main contact, Alex sends a message while the player is reading Maeve's conversation. When the player switches to Alex, the messages appear and any pending choices are shown — a full branching conversation is possible, exactly like the main contact.
 
 ```json
 {

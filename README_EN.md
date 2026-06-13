@@ -108,3 +108,4 @@ The framework uses a small set of concepts to build stories:
 - **Conditions**: show a message or choice only if a flag is set or a variable crosses a threshold — compound conditions (`and` / `or`) supported
 - **Effects**: modify variables and contacts when a choice is made
 - **Triggers**: chain scenes automatically, or defer them until a condition is met
+- **Secondary contacts**: scenes can arrive in the background in another contact's conversation — the player gets a notification badge, switches when they choose, and can have a full conversation with choices and replies

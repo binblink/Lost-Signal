@@ -108,3 +108,4 @@ Le framework utilise quelques concepts simples pour construire des histoires :
 - **Conditions** : afficher un message/choix si un flag est actif ou une variable franchit un seuil — conditions composées (`and` / `or`) supportées
 - **Effets** : modifier les variables et contacts lors d'un choix
 - **Triggers** : enchaîner les scènes automatiquement ou les différer
+- **Contacts secondaires** : des scènes peuvent arriver en arrière-plan dans la conversation d'un autre contact — le joueur reçoit une notification, bascule quand il le souhaite, et peut y avoir une vraie conversation avec choix et réponses

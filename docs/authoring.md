@@ -362,7 +362,7 @@ Les valeurs de variable peuvent être injectées dans les textes avec des accola
 
 Quand une scène a un `contact_id` différent du contact actuellement actif, le moteur la joue en arrière-plan : les messages sont ajoutés à l'historique de ce contact, un badge de notification apparaît dans le panneau, et le joueur choisit quand basculer pour lire la conversation.
 
-C'est le mécanisme principal pour les histoires multi-contacts. Exemple : Maeve est le contact principal, Alex envoie un message pendant que le joueur lit la conversation de Maeve.
+C'est le mécanisme principal pour les histoires multi-contacts. Exemple : Maeve est le contact principal, Alex envoie un message pendant que le joueur lit la conversation de Maeve. Quand le joueur bascule vers Alex, les messages s'affichent et les choix en attente apparaissent — une vraie conversation avec embranchements est possible, exactement comme avec le contact principal.
 
 ```json
 {
