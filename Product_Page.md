@@ -75,6 +75,13 @@ Write your entire story in JSON. The engine handles the rest.
 
 ---
 
+### 📬 Pre-existing conversations
+Secondary contacts can have a conversation history and a pending choice waiting before the player even receives Maeve's first message. The player opens the app and already has unread messages — as if their character had a life before the story began.
+
+Both the message history and the pending choice are defined directly in `story.json`, alongside the contact's name and status.
+
+---
+
 ### 🔀 Background conversations
 Characters don't wait for the player to finish reading.
 
@@ -247,6 +254,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - JSON narrative engine with conditions, variables, flags, effects, templates
 - Multi-contact system with status indicators
 - Background conversation and trigger system
+- Pre-existing conversation histories and pending choices at game start
 - Real-time delays — scenes that arrive minutes or hours later, persisted across sessions
 - Scene music with looping, fade, and audio ducking
 - Live message editing (correct, delete, or corrupted on arrival)

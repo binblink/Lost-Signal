@@ -90,6 +90,22 @@ func _ready() -> void:
 	if SaveManager.has_save():
 		await load_game()
 	else:
+		for contact in DialogueLoader.get_contacts():
+			var cid: String = contact.get("id", "")
+			if contact.get("is_main", false):
+				continue
+			var history: Array = contact.get("history", [])
+			var pending_scene: String = contact.get("pending_scene", "")
+			var has_content := history.size() > 0 or pending_scene != ""
+			if history.size() > 0:
+				_narrative.contact_histories[cid] = history
+				_contact_panel.update_history(cid, history)
+			if pending_scene != "" and DialogueLoader.has_scene(pending_scene):
+				_narrative.pending_choices[cid] = pending_scene
+			if has_content:
+				_contact_panel.mark_unread(cid)
+				_total_unread += 1
+		_update_panel_button()
 		await _narrative.play_scene(DialogueLoader.get_start_scene())
 
 

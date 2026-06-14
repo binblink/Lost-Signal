@@ -34,6 +34,54 @@ A dialogue file always contains a root object with a `scenes` key.
   - `is_main`: `true` for the main scriptable contact.
   - `avatar`: icon path or `null`.
   - `status`: `online`, `away`, `offline`, `network_issue`.
+  - `history`: pre-existing messages shown at the start of a new game. See below.
+  - `pending_scene`: ID of a scene whose choices will be presented to the player as soon as they open the conversation. See below.
+
+### Pre-existing Conversations (`history` and `pending_scene`)
+
+These two fields give the impression that the player has already been using the messaging app before the story begins. At the start of a new game, affected contacts immediately show an unread badge.
+
+#### `history`
+
+An array of pre-written messages — both incoming and outgoing — displayed in the conversation history from the very first moment.
+
+```json
+{
+  "id": "alex",
+  "name": "Alex",
+  "status": "online",
+  "history": [
+    { "text": "Did you see the news this morning?", "time": "09:14", "out": false },
+    { "text": "No, haven't checked yet.",           "time": "09:15", "out": true },
+    { "text": "Call me when you can.",              "time": "09:16", "out": false }
+  ]
+}
+```
+
+Each entry contains:
+- `text`: message content.
+- `time`: timestamp displayed below the bubble. Format `"HH:MM"`.
+- `out`: `true` if the message comes from the player, `false` if it comes from the contact.
+
+#### `pending_scene`
+
+ID of an existing scene whose **choices** are presented to the player as soon as they open the conversation — as if a question had been left unanswered.
+
+```json
+{
+  "id": "alex",
+  "name": "Alex",
+  "status": "online",
+  "history": [
+    { "text": "You coming tonight?", "time": "18:42", "out": false }
+  ],
+  "pending_scene": "alex_party_choice"
+}
+```
+
+The scene referenced by `pending_scene` must exist in the dialogue files and contain a `choices` field. When the player selects a choice, the scene resumes normally — the narrative continuation (`next`, flags, effects) applies exactly as for any other scene.
+
+> Both fields are ignored if a save file exists — the game restores the saved state, not the initial state.
 
 ## 3. Dialogue File (`dialogues/*.json`)
 

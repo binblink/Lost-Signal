@@ -34,6 +34,54 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
   - `is_main` : `true` pour le contact principal scriptable.
   - `avatar` : chemin d'icône ou `null`.
   - `status` : `online`, `away`, `offline`, `network_issue`.
+  - `history` : messages pré-existants affichés dès le début d'une nouvelle partie. Voir ci-dessous.
+  - `pending_scene` : ID d'une scène dont les choix seront proposés au joueur dès qu'il ouvre la conversation. Voir ci-dessous.
+
+### Conversations pré-existantes (`history` et `pending_scene`)
+
+Ces deux champs permettent de donner l'impression que le joueur a déjà utilisé la messagerie avant que la partie commence. Dès le lancement d'une nouvelle partie, les contacts concernés affichent un badge de messages non lus.
+
+#### `history`
+
+Tableau de messages pré-écrits — entrants et sortants — affichés dans l'historique de la conversation dès le démarrage.
+
+```json
+{
+  "id": "alex",
+  "name": "Alex",
+  "status": "online",
+  "history": [
+    { "text": "T'as vu les infos ce matin ?", "time": "09:14", "out": false },
+    { "text": "Bah non, j'ai pas encore regardé.", "time": "09:15", "out": true },
+    { "text": "Rappelle-moi dès que tu peux.", "time": "09:16", "out": false }
+  ]
+}
+```
+
+Chaque entrée contient :
+- `text` : contenu du message.
+- `time` : horodatage affiché sous la bulle. Format `"HH:MM"`.
+- `out` : `true` si le message vient du joueur, `false` si il vient du contact.
+
+#### `pending_scene`
+
+ID d'une scène existante dont les **choix** seront présentés au joueur dès qu'il ouvre la conversation — comme si une question était restée sans réponse.
+
+```json
+{
+  "id": "alex",
+  "name": "Alex",
+  "status": "online",
+  "history": [
+    { "text": "Tu viens ce soir ?", "time": "18:42", "out": false }
+  ],
+  "pending_scene": "alex_soiree_choix"
+}
+```
+
+La scène référencée par `pending_scene` doit exister dans les fichiers de dialogue et contenir un champ `choices`. Lorsque le joueur sélectionne un choix, la scène reprend normalement — la suite narrative (`next`, flags, effets) s'applique comme pour n'importe quelle scène.
+
+> Ces deux champs sont ignorés si une sauvegarde existe — le jeu restaure l'état sauvegardé, pas l'état initial.
 
 ## 3. Fichier de dialogue (`dialogues/*.json`)
 

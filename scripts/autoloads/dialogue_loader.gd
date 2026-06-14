@@ -197,6 +197,13 @@ func _validate() -> void:
 			if f != null and not f in flags_set:
 				flags_set.append(f)
 
+	# pending_scene dans les contacts de story.json
+	for contact in _contacts:
+		var cid := contact.get("id", "?")
+		var ps := contact.get("pending_scene", "")
+		if ps != "" and not _scenes.has(ps):
+			errors.append("Contact '%s' : pending_scene '%s' introuvable." % [cid, ps])
+
 	# start_scene
 	if not _scenes.has(_start_scene):
 		errors.append("start_scene '%s' introuvable dans les scènes chargées." % _start_scene)
