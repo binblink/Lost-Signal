@@ -274,9 +274,10 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 		if not media.has("path") or str(media.get("path", "")) == "":
 			errors.append("%s media sans 'path'." % label)
 	elif text == null:
-		var has_effects: bool = msg.get("effects", []).size() > 0
-		var has_pause:   bool = msg.get("pause", null) != null
-		if not has_effects and not has_pause:
+		var has_effects:   bool = msg.get("effects", []).size() > 0
+		var has_pause:     bool = msg.get("pause", null) != null
+		var is_corrupted:  bool = msg.get("corrupted", false)
+		if not has_effects and not has_pause and not is_corrupted:
 			warnings.append("%s message silencieux sans effets ni pause (sera ignoré)." % label)
 
 	var req_flag = msg.get("requires_flag", null)

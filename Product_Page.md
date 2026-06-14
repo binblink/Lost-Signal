@@ -107,7 +107,9 @@ Each scene can optionally declare a background music track. The engine handles t
 ---
 
 ### ✏️ Live message editing
-Characters can modify their own messages after sending — correcting a typo with a delay, or deleting a message entirely. A mechanic that doesn't exist in traditional dialogue systems, and one that opens specific narrative possibilities: hesitation, regret, second thoughts, unreliable communication.
+Characters can modify their own messages after sending — correcting a typo with a delay, or deleting a message entirely. A single field also lets you send a message that arrives already corrupted: the typing indicator appears as normal, but the bubble shows **✗ Corrupted message** in red instead of text.
+
+These mechanics don't exist in traditional dialogue systems, and they open specific narrative possibilities: hesitation, regret, second thoughts, unreliable communication, degraded signal.
 
 ---
 
@@ -247,7 +249,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Background conversation and trigger system
 - Real-time delays — scenes that arrive minutes or hours later, persisted across sessions
 - Scene music with looping, fade, and audio ducking
-- Live message editing (correct or delete after sending)
+- Live message editing (correct, delete, or corrupted on arrival)
 - Built-in story validator with in-game reporting
 - Auto-save system (saves after every story beat)
 - Main menu (New Game / Continue)

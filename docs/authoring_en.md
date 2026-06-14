@@ -103,6 +103,7 @@ The engine automatically converts a string into `{ "text": "..." }`.
 - `requires_flag`: message shown only if the flag is set. Can be a string (single flag) or an array of strings (all flags must be set).
 - `condition`: condition based on a numeric variable.
 - `edit`: modifies the message after it is sent.
+- `corrupted`: displays the bubble as a corrupted message — **✗ Corrupted message** in red. `text` is not required.
 - `effects`: effect triggered immediately when the message appears.
 - `media`: image or audio attachment.
 - `time`: optional timestamp displayed below the bubble. Format `"HH:MM"` — e.g. `"14:43"`.
@@ -143,6 +144,20 @@ A message can correct itself or be deleted automatically after a delay — as if
     { "type": "delete", "delay": 3.0 }
   ]
 }
+```
+
+### Corrupted Message (`corrupted`)
+
+A message can arrive in a corrupted state. The typing indicator appears as normal, then instead of text the bubble displays **✗ Corrupted message** in red.
+
+```json
+{ "corrupted": true }
+```
+
+Useful to simulate a failed transmission, a jammed signal, or an intentionally incomplete message. Like any other message, `corrupted` accepts `pause`, `requires_flag`, `condition`, and `effects`:
+
+```json
+{ "corrupted": true, "pause": "short", "requires_flag": "weak_signal" }
 ```
 
 ### Bubble Array

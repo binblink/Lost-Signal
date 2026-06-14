@@ -103,6 +103,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 - `requires_flag` : message affiché uniquement si le flag est actif. Peut être une chaîne (flag unique) ou un tableau de chaînes (tous les flags doivent être actifs).
 - `condition` : condition sur une variable numérique.
 - `edit` : modification du message après envoi.
+- `corrupted` : affiche la bulle comme un message corrompu — **✗ Message corrompu** en rouge. `text` n'est pas nécessaire.
 - `effects` : effet déclenché immédiatement.
 - `media` : image ou audio.
 - `time` : horodatage optionnel, affiché sous la bulle. Format `"HH:MM"` — ex : `"14:43"`.
@@ -143,6 +144,20 @@ Un message peut se corriger ou se supprimer automatiquement après un délai, co
     { "type": "delete", "delay": 3.0 }
   ]
 }
+```
+
+### Message corrompu (`corrupted`)
+
+Un message peut arriver dans un état corrompu. L'indicateur de frappe apparaît normalement, puis la bulle affiche **✗ Message corrompu** en rouge à la place d'un texte.
+
+```json
+{ "corrupted": true }
+```
+
+Utile pour simuler une transmission ratée, un signal brouillé, ou un message intentionnellement incomplet. Comme tout message, `corrupted` accepte `pause`, `requires_flag`, `condition` et `effects` :
+
+```json
+{ "corrupted": true, "pause": "short", "requires_flag": "signal_faible" }
 ```
 
 ### Tableau de bulles

@@ -95,7 +95,14 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 			_run_effects(msg.get("effects", []))
 			var media = msg.get("media", null)
 			var text  = msg.get("text", null)
-			if media != null:
+			if msg.get("corrupted", false):
+				var typing_ok = await message_display.show_typing("...")
+				if not typing_ok:
+					_is_receiving = false
+					return
+				await message_display.receive_corrupted_message(msg.get("time", ""))
+				await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
+			elif media != null:
 				match media.get("type", ""):
 					"image":
 						await get_tree().create_timer(randf_range(DELAY_IMAGE_MIN, DELAY_IMAGE_MAX)).timeout
@@ -233,7 +240,9 @@ func _play_secondary_scene(scene: Dictionary) -> void:
 			continue
 		_run_effects(msg.get("effects", []))
 		var media = msg.get("media", null)
-		if media != null:
+		if msg.get("corrupted", false):
+			contact_histories[contact_id].append({ "text": null, "time": msg.get("time", ""), "out": false, "corrupted": true })
+		elif media != null:
 			contact_histories[contact_id].append({ "text": null, "time": msg.get("time", ""), "out": false, "media": media })
 		elif msg.get("text", null) != null:
 			contact_histories[contact_id].append({ "text": msg["text"], "time": msg.get("time", ""), "out": false })

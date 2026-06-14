@@ -93,6 +93,18 @@ func type_message(text: String) -> void:
 	await get_tree().create_timer(randf_range(0.2, 0.5)).timeout
 	await send_message(text)
 
+func receive_corrupted_message(time: String) -> MarginContainer:
+	var bubble = BubbleIn.instantiate()
+	add_child(bubble)
+	var t = time if time != "" else get_current_time()
+	var label = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
+	label.text = "✗ " + tr("MSG_CORRUPTED")
+	label.add_theme_color_override("font_color", Color(0.85, 0.2, 0.2))
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
+	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "corrupted": true })
+	await scroll_to_bottom()
+	return bubble
+
 func scroll_to_bottom() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -108,6 +120,8 @@ func render_history(history: Array) -> void:
 	for msg in history:
 		if msg.get("out", false):
 			await send_message(msg["text"])
+		elif msg.get("corrupted", false):
+			await receive_corrupted_message(msg.get("time", ""))
 		elif msg.has("media"):
 			match msg["media"].get("type", ""):
 				"image": await receive_image_message(msg["media"]["path"], msg.get("time", ""))
