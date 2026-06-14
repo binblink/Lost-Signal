@@ -90,7 +90,7 @@ Background scenes run independently, are saved automatically, and persist across
 ### ⏱ Real-time delays
 A character can say *"I'll message you in an hour"* — and actually mean it.
 
-Scenes can be scheduled to play after a real-world delay: minutes, hours, or longer. The engine saves the target time. If the player closes the game and comes back later, the message arrives immediately on reload. If they stay in the game, it arrives when the timer expires — with a **Windows system notification** showing the contact's name and a message preview, even if the game is minimized.
+Scenes can be scheduled to play after a real-world delay: minutes, hours, or longer. The engine saves the target time. If the player closes the game and comes back later, the message arrives immediately on reload. If they stay in the game, it arrives when the timer expires.
 
 This is the mechanic that made *Lifeline* feel like a real person was on the other end. It's now a single JSON field.
 

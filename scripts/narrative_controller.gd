@@ -388,26 +388,8 @@ func _schedule_timer(scene_id: String, delay_seconds: float) -> void:
 	get_tree().create_timer(delay_seconds).timeout.connect(func():
 		scheduled_scenes.erase(scene_id)
 		save_requested.emit(false)
-		_notify_timed_scene(scene_id)
 		play_scene(scene_id, true)
 	)
-
-
-func _notify_timed_scene(scene_id: String) -> void:
-	var scene := DialogueLoader.get_scene(scene_id)
-	if scene.is_empty():
-		return
-	var contact_id: String = scene.get("contact_id", "")
-	var display_name: String = contact_names.get(contact_id, "")
-	if display_name.is_empty():
-		display_name = DialogueLoader.get_contact(contact_id).get("name", contact_id)
-	var preview: String = ""
-	for msg in scene.get("messages_in", []):
-		var text = msg.get("text", null) if msg is Dictionary else msg
-		if text is String and not text.is_empty():
-			preview = text
-			break
-	DisplayServer.show_notification(display_name, preview if not preview.is_empty() else "…")
 
 
 func resume_overdue_scenes() -> void:

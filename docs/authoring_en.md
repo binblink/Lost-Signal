@@ -463,9 +463,7 @@ No intermediate choice needed here. The scene triggers at the end of another via
 
 `maeve_evening` triggers automatically at the end of `scene_03`, but its 3-hour delay is applied first — the player will receive the message 3 hours later, even if they closed the game.
 
-> **System notifications**: when the delay expires while the game is running (including in the background), a Windows notification appears with the contact's name and the first message as a preview. If the game was closed, no notification is sent — the scene plays immediately on the next launch instead.
->
-> **Compatibility**: `resume_after_delay` works with any contact (`contact_id`). A secondary contact scene with a delay will arrive in the right conversation at the right time, with its notification badge.
+> **Note**: `resume_after_delay` works with any contact (`contact_id`). A secondary contact scene with a delay will arrive in the right conversation at the right time, with its notification badge.
 
 ## 13. Validation
 

@@ -463,9 +463,7 @@ Ici aucun choix intermédiaire n'est nécessaire. La scène se déclenche à la 
 
 `maeve_soir` se déclenche automatiquement à la fin de `scene_03`, mais son délai de 3 heures est appliqué avant tout — le joueur recevra le message 3 heures plus tard, même s'il a fermé le jeu.
 
-> **Notifications système** : quand le délai expire pendant que le jeu tourne (y compris en arrière-plan), une notification Windows apparaît avec le nom du contact et le premier message comme aperçu. Si le jeu était fermé, aucune notification n'est envoyée — la scène joue directement au prochain lancement.
->
-> **Compatibilité** : `resume_after_delay` fonctionne avec n'importe quel contact (`contact_id`). Une scène secondaire avec un délai arrivera dans la conversation du bon contact au moment prévu, avec son badge de notification.
+> **Note** : `resume_after_delay` fonctionne avec n'importe quel contact (`contact_id`). Une scène secondaire avec un délai arrivera dans la conversation du bon contact au moment prévu, avec son badge de notification.
 
 ## 13. Validation
 
