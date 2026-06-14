@@ -266,6 +266,7 @@ func load_game() -> void:
 	await message_display.scroll_to_bottom()
 	var scene_id = data.get("current_scene_id", "")
 	if scene_id == "" or not DialogueLoader.has_scene(scene_id):
+		await _narrative.resume_overdue_scenes()
 		return
 	_narrative.current_scene = DialogueLoader.get_scene(scene_id)
 	for cid in _narrative.contact_histories:
@@ -274,6 +275,7 @@ func load_game() -> void:
 		await _narrative.rebuild_choices()
 	else:
 		await _narrative.play_scene(scene_id)
+	await _narrative.resume_overdue_scenes()
 
 
 # ---------------------------------------------------------------------------

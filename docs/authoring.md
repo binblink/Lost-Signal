@@ -381,6 +381,91 @@ Cette scène se déclenche automatiquement après `scene_03` et arrive dans la c
 
 - `trigger_after_scene` : la scène se joue automatiquement après l'ID donné.
 - `resume_after_flag` : la scène est différée jusqu'à ce que le flag soit activé.
+- `resume_after_delay` : la scène se joue après un délai en temps réel. Le moteur enregistre l'heure cible dans la sauvegarde — si le jeu est relancé entre-temps, la scène joue immédiatement au chargement si le délai est dépassé, ou reprend le compte à rebours sinon.
+
+Formats acceptés pour `resume_after_delay` :
+- Nombre de secondes : `300`
+- Chaîne avec suffixe : `"5m"`, `"1h"`, `"30s"`
+
+### Pattern 1 — Délai déclenché par un choix
+
+Le contact annonce qu'il part, le joueur répond, et le prochain message n'arrive qu'une heure plus tard en temps réel.
+
+```json
+[
+  {
+    "id": "maeve_part",
+    "contact_id": "maeve",
+    "messages_in": [
+      "Je dois régler un truc urgent.",
+      { "text": "Je te recontacte dans une heure.", "pause": "short" }
+    ],
+    "choices": [
+      {
+        "text": "Ok, à tout à l'heure.",
+        "message": "Ok, prends le temps qu'il faut.",
+        "next": "maeve_retour"
+      }
+    ]
+  },
+  {
+    "id": "maeve_retour",
+    "contact_id": "maeve",
+    "resume_after_delay": "1h",
+    "messages_in": [
+      "Je suis de retour.",
+      { "text": "Désolée pour l'attente.", "pause": "short" }
+    ],
+    "choices": [
+      {
+        "text": "C'est bon, pas de souci.",
+        "message": "C'est bon, pas de souci.",
+        "next": "scene_suivante"
+      }
+    ]
+  }
+]
+```
+
+Quand le joueur sélectionne le choix dans `maeve_part`, le moteur tente de jouer `maeve_retour` — mais celle-ci a un délai d'une heure. Le moteur enregistre l'heure cible et s'arrête. Une heure plus tard (jeu ouvert ou relancé), `maeve_retour` se joue automatiquement.
+
+### Pattern 2 — Délai sur une scène déclenchée automatiquement
+
+Ici aucun choix intermédiaire n'est nécessaire. La scène se déclenche à la fin d'une autre via `trigger_after_scene`, mais n'arrive qu'après un délai.
+
+```json
+[
+  {
+    "id": "scene_03",
+    "contact_id": "maeve",
+    "messages_in": ["Je t'envoie les infos ce soir."],
+    "choices": [
+      {
+        "text": "Ok, j'attends.",
+        "message": "Ok, j'attends.",
+        "next": "scene_04"
+      }
+    ]
+  },
+  {
+    "id": "maeve_soir",
+    "contact_id": "maeve",
+    "trigger_after_scene": "scene_03",
+    "resume_after_delay": "3h",
+    "messages_in": [
+      "Voilà, j'ai tout envoyé.",
+      { "text": "Dis-moi si tu reçois bien.", "pause": "short" }
+    ],
+    "choices": [...]
+  }
+]
+```
+
+`maeve_soir` se déclenche automatiquement à la fin de `scene_03`, mais son délai de 3 heures est appliqué avant tout — le joueur recevra le message 3 heures plus tard, même s'il a fermé le jeu.
+
+> **Notifications système** : quand le délai expire pendant que le jeu tourne (y compris en arrière-plan), une notification Windows apparaît avec le nom du contact et le premier message comme aperçu. Si le jeu était fermé, aucune notification n'est envoyée — la scène joue directement au prochain lancement.
+>
+> **Compatibilité** : `resume_after_delay` fonctionne avec n'importe quel contact (`contact_id`). Une scène secondaire avec un délai arrivera dans la conversation du bon contact au moment prévu, avec son badge de notification.
 
 ## 13. Validation
 

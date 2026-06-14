@@ -40,6 +40,7 @@ var current_message_index: int = 0
 var waiting_for_choice: bool = false
 var played_secondary_scenes: Array = []
 var deferred_scenes: Dictionary = {}
+var scheduled_scenes: Dictionary = {}
 var current_music_path: String = ""
 
 var _is_receiving: bool = false
@@ -55,11 +56,20 @@ var is_waiting_for_free_input: bool:
 	get: return _waiting_for_free_input
 
 
-func play_scene(scene_id: String) -> void:
+func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	if not DialogueLoader.has_scene(scene_id):
 		return
 	current_scene = DialogueLoader.get_scene(scene_id)
 	var scene_contact = current_scene.get("contact_id", DialogueLoader.get_main_contact().get("id", "maeve"))
+
+	var resume_delay = current_scene.get("resume_after_delay", null)
+	if resume_delay != null and not _skip_delay:
+		if not scheduled_scenes.has(scene_id):
+			var delay_secs := _parse_delay(resume_delay)
+			scheduled_scenes[scene_id] = int(Time.get_unix_time_from_system()) + int(delay_secs)
+			_schedule_timer(scene_id, delay_secs)
+			save_requested.emit(false)
+		return
 
 	if scene_contact != active_contact_id:
 		_play_secondary_scene(current_scene)
@@ -304,6 +314,7 @@ func get_state() -> Dictionary:
 		"played_secondary_scenes": played_secondary_scenes,
 		"pending_choices":         pending_choices,
 		"current_music_path":      current_music_path,
+		"scheduled_scenes":        scheduled_scenes,
 	}
 
 func set_state(data: Dictionary) -> void:
@@ -321,6 +332,12 @@ func set_state(data: Dictionary) -> void:
 	current_music_path      = data.get("current_music_path", "")
 	if current_music_path != "":
 		AudioManager.play_music(current_music_path)
+	scheduled_scenes = data.get("scheduled_scenes", {})
+	var now := int(Time.get_unix_time_from_system())
+	for scene_id in scheduled_scenes.keys():
+		var remaining := float(scheduled_scenes[scene_id] - now)
+		if remaining > 0.0:
+			_schedule_timer(scene_id, remaining)
 
 
 func rebuild_choices() -> void:
@@ -351,6 +368,56 @@ func _handle_music(scene: Dictionary) -> void:
 	else:
 		AudioManager.play_music(music)
 		current_music_path = music
+
+
+func _parse_delay(value) -> float:
+	if value is float or value is int:
+		return float(value)
+	if value is String:
+		if value.ends_with("h"):
+			return float(value.trim_suffix("h")) * 3600.0
+		if value.ends_with("m"):
+			return float(value.trim_suffix("m")) * 60.0
+		if value.ends_with("s"):
+			return float(value.trim_suffix("s"))
+		return float(value)
+	return 0.0
+
+
+func _schedule_timer(scene_id: String, delay_seconds: float) -> void:
+	get_tree().create_timer(delay_seconds).timeout.connect(func():
+		scheduled_scenes.erase(scene_id)
+		save_requested.emit(false)
+		_notify_timed_scene(scene_id)
+		play_scene(scene_id, true)
+	)
+
+
+func _notify_timed_scene(scene_id: String) -> void:
+	var scene := DialogueLoader.get_scene(scene_id)
+	if scene.is_empty():
+		return
+	var contact_id: String = scene.get("contact_id", "")
+	var display_name: String = contact_names.get(contact_id, "")
+	if display_name.is_empty():
+		display_name = DialogueLoader.get_contact(contact_id).get("name", contact_id)
+	var preview: String = ""
+	for msg in scene.get("messages_in", []):
+		var text = msg.get("text", null) if msg is Dictionary else msg
+		if text is String and not text.is_empty():
+			preview = text
+			break
+	DisplayServer.show_notification(display_name, preview if not preview.is_empty() else "…")
+
+
+func resume_overdue_scenes() -> void:
+	var now := int(Time.get_unix_time_from_system())
+	var overdue := scheduled_scenes.keys().filter(func(sid): return scheduled_scenes[sid] <= now)
+	for scene_id in overdue:
+		scheduled_scenes.erase(scene_id)
+		await play_scene(scene_id, true)
+	if not overdue.is_empty():
+		save_requested.emit(false)
 
 
 func _run_effects(effects: Array) -> void:

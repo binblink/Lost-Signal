@@ -381,6 +381,91 @@ This scene triggers automatically after `scene_03` and arrives in Alex's convers
 
 - `trigger_after_scene`: the scene plays automatically after the given scene ID finishes.
 - `resume_after_flag`: the scene is deferred until the specified flag is set.
+- `resume_after_delay`: the scene plays after a real-time delay. The engine records the target time in the save file — if the game is relaunched in between, the scene plays immediately on load if the delay has passed, or resumes the countdown otherwise.
+
+Accepted formats for `resume_after_delay`:
+- Number of seconds: `300`
+- String with suffix: `"5m"`, `"1h"`, `"30s"`
+
+### Pattern 1 — Delay triggered by a choice
+
+The contact announces they're leaving, the player replies, and the next message only arrives one hour later in real time.
+
+```json
+[
+  {
+    "id": "maeve_leaves",
+    "contact_id": "maeve",
+    "messages_in": [
+      "I need to deal with something urgent.",
+      { "text": "I'll message you again in an hour.", "pause": "short" }
+    ],
+    "choices": [
+      {
+        "text": "Ok, take your time.",
+        "message": "Ok, take all the time you need.",
+        "next": "maeve_returns"
+      }
+    ]
+  },
+  {
+    "id": "maeve_returns",
+    "contact_id": "maeve",
+    "resume_after_delay": "1h",
+    "messages_in": [
+      "I'm back.",
+      { "text": "Sorry for the wait.", "pause": "short" }
+    ],
+    "choices": [
+      {
+        "text": "No worries at all.",
+        "message": "No worries at all.",
+        "next": "next_scene"
+      }
+    ]
+  }
+]
+```
+
+When the player selects a choice in `maeve_leaves`, the engine tries to play `maeve_returns` — but it has a one-hour delay. The engine records the target time and stops. One hour later (game open or relaunched), `maeve_returns` plays automatically.
+
+### Pattern 2 — Delay on an automatically triggered scene
+
+No intermediate choice needed here. The scene triggers at the end of another via `trigger_after_scene`, but only arrives after a delay.
+
+```json
+[
+  {
+    "id": "scene_03",
+    "contact_id": "maeve",
+    "messages_in": ["I'll send you the info tonight."],
+    "choices": [
+      {
+        "text": "Ok, I'll wait.",
+        "message": "Ok, I'll wait.",
+        "next": "scene_04"
+      }
+    ]
+  },
+  {
+    "id": "maeve_evening",
+    "contact_id": "maeve",
+    "trigger_after_scene": "scene_03",
+    "resume_after_delay": "3h",
+    "messages_in": [
+      "Done, I sent everything.",
+      { "text": "Let me know if you got it.", "pause": "short" }
+    ],
+    "choices": [...]
+  }
+]
+```
+
+`maeve_evening` triggers automatically at the end of `scene_03`, but its 3-hour delay is applied first — the player will receive the message 3 hours later, even if they closed the game.
+
+> **System notifications**: when the delay expires while the game is running (including in the background), a Windows notification appears with the contact's name and the first message as a preview. If the game was closed, no notification is sent — the scene plays immediately on the next launch instead.
+>
+> **Compatibility**: `resume_after_delay` works with any contact (`contact_id`). A secondary contact scene with a delay will arrive in the right conversation at the right time, with its notification badge.
 
 ## 13. Validation
 

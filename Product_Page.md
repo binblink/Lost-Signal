@@ -87,6 +87,21 @@ Background scenes run independently, are saved automatically, and persist across
 
 ---
 
+### ⏱ Real-time delays
+A character can say *"I'll message you in an hour"* — and actually mean it.
+
+Scenes can be scheduled to play after a real-world delay: minutes, hours, or longer. The engine saves the target time. If the player closes the game and comes back later, the message arrives immediately on reload. If they stay in the game, it arrives when the timer expires — with a **Windows system notification** showing the contact's name and a message preview, even if the game is minimized.
+
+This is the mechanic that made *Lifeline* feel like a real person was on the other end. It's now a single JSON field.
+
+```json
+{
+  "resume_after_delay": "1h"
+}
+```
+
+---
+
 ### 🎵 Scene music
 Each scene can optionally declare a background music track. The engine handles the rest — looping, smooth fade-out when stopped, and automatic ducking when the player plays an audio message. If a scene doesn't specify music, whatever is playing continues uninterrupted.
 
@@ -231,6 +246,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - JSON narrative engine with conditions, variables, flags, effects, templates
 - Multi-contact system with status indicators
 - Background conversation and trigger system
+- Real-time delays — scenes that arrive minutes or hours later, persisted across sessions
 - Scene music with looping, fade, and audio ducking
 - Live message editing (correct or delete after sending)
 - Built-in story validator with in-game reporting
