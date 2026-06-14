@@ -58,7 +58,10 @@ var is_waiting_for_free_input: bool:
 
 func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	if not DialogueLoader.has_scene(scene_id):
+		push_error("[play_scene] scène introuvable : " + scene_id)
 		return
+	if current_scene.get("id", "") != scene_id:
+		current_message_index = 0
 	current_scene = DialogueLoader.get_scene(scene_id)
 	var scene_contact = current_scene.get("contact_id", DialogueLoader.get_main_contact().get("id", "maeve"))
 

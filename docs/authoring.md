@@ -349,8 +349,10 @@ Permet au joueur de taper un texte libre.
 }
 ```
 
-- `free_input` : nom de la variable dans laquelle la valeur saisie est stockée.
+- `free_input` : nom de la variable dans laquelle la valeur saisie est stockée. Le nom est libre — `"prenom"`, `"code_secret"`, `"reponse"` sont tous valides.
 - `free_input_placeholder` : texte affiché dans le champ de saisie avant que le joueur n'écrive. Optionnel — revient au placeholder par défaut si absent.
+
+La valeur saisie est ensuite injectable dans n'importe quel texte via les templates (voir section suivante) : `"Alors {prenom}, qu'est-ce que tu faisais ce soir-là?"`
 
 ## 10. Templates
 

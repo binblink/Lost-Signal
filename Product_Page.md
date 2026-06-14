@@ -71,8 +71,7 @@ Write your entire story in JSON. The engine handles the rest.
 - **Variables** — numeric values for complex systems (trust, stress, relationship scores…)
 - **Conditions** — show messages or choices based on flags and variables, with full `and` / `or` / nested logic
 - **Effects** — modify variables, change contact status, rename contacts mid-story. A contact listed as "Unknown Number" can reveal their name at the exact moment the story calls for it.
-- **Templates** — inject variable values into message text: `"Thanks {player_name}."`
-- **Free input** — ask the player to type a free-text response and store it as a variable
+- **Free input + templates** — ask the player to type a free-text response, store it as a variable, and inject it anywhere in the story: `"Thanks {player_name}, that's reassuring."`
 
 ---
 

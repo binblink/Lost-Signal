@@ -349,8 +349,10 @@ Lets the player type a free-text response.
 }
 ```
 
-- `free_input`: name of the variable where the entered value is stored.
+- `free_input`: name of the variable where the entered value is stored. The name is up to you — `"first_name"`, `"secret_code"`, `"answer"` are all valid.
 - `free_input_placeholder`: text displayed in the input field before the player types. Optional — falls back to the default placeholder if absent.
+
+The entered value can then be injected into any message text via templates (see next section): `"So {first_name}, what were you doing that night?"`
 
 ## 10. Templates
 
