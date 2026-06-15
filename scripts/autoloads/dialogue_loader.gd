@@ -199,8 +199,8 @@ func _validate() -> void:
 
 	# pending_scene dans les contacts de story.json
 	for contact in _contacts:
-		var cid := contact.get("id", "?")
-		var ps := contact.get("pending_scene", "")
+		var cid: String = contact.get("id", "?")
+		var ps: String = contact.get("pending_scene", "")
 		if ps != "" and not _scenes.has(ps):
 			errors.append("Contact '%s' : pending_scene '%s' introuvable." % [cid, ps])
 

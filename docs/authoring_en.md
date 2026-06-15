@@ -310,7 +310,9 @@ In this example, the choice displays the label `Hmm… curious though.`, then th
 
 ## 7. Effects
 
-Effects are declared in `effects` and applied immediately.
+Effects are declared in the `effects` field of a **message** or a **choice** and applied immediately.
+
+> **Important**: `effects` is always nested inside a message or choice — never at the scene level. A field like `"set_status": "..."` placed directly on the scene object will be silently ignored by the engine.
 
 ### Supported Operations
 

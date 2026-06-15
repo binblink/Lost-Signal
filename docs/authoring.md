@@ -310,7 +310,9 @@ Dans cet exemple, le choix affiche d'abord le label `Mouais… curieux quand mê
 
 ## 7. Effets
 
-Les effets sont déclarés dans `effects` et s'appliquent immédiatement.
+Les effets sont déclarés dans le champ `effects` d'un **message** ou d'un **choix** et s'appliquent immédiatement.
+
+> **Important** : `effects` est toujours imbriqué dans un message ou un choix — jamais au niveau de la scène. Un champ comme `"set_status": "..."` placé directement dans la scène sera silencieusement ignoré par le moteur.
 
 ### Opérations prises en charge
 
