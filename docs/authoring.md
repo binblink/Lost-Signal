@@ -198,11 +198,24 @@ Un message peut se corriger ou se supprimer automatiquement après un délai, co
 
 Un message peut arriver dans un état corrompu. L'indicateur de frappe apparaît normalement, puis la bulle affiche **✗ Message corrompu** en rouge à la place d'un texte.
 
+Utile pour simuler une transmission ratée, un signal brouillé, ou un message intentionnellement incomplet.
+
 ```json
-{ "corrupted": true }
+{
+  "id": "scene_signal_faible",
+  "messages_in": [
+    { "text": "Je vais essayer d'envoyer la photo—" },
+    { "corrupted": true },
+    { "text": "Tu as reçu quelque chose ?", "pause": "short" }
+  ],
+  "choices": [
+    { "text": "Non, rien reçu.", "message": "Non, rien.", "next": "scene_retry" },
+    { "text": "Oui, mais c'est illisible.", "message": "J'ai reçu quelque chose mais c'est tout corrompu.", "next": "scene_retry" }
+  ]
+}
 ```
 
-Utile pour simuler une transmission ratée, un signal brouillé, ou un message intentionnellement incomplet. Comme tout message, `corrupted` accepte `pause`, `requires_flag`, `condition` et `effects` :
+Comme tout message, `corrupted` accepte `pause`, `requires_flag`, `condition` et `effects` :
 
 ```json
 { "corrupted": true, "pause": "short", "requires_flag": "signal_faible" }
@@ -290,6 +303,8 @@ Un choix est un objet avec au moins `text`.
 - `flag` active un flag booléen.
 - `effects` applique des changements de variables ou des modifications de contact.
 - `requires_flag` et `condition` filtrent la visibilité du choix — un choix dont la condition n'est pas remplie n'apparaît pas dans la liste. Les mêmes syntaxes que pour les messages sont supportées.
+
+> **Maximum 4 choix par scène.** Le moteur affiche jusqu'à 4 boutons de choix simultanément. Les entrées au-delà du quatrième sont silencieusement ignorées — aucune erreur n'est levée.
 
 > **Attention** : si toutes les conditions de choix sont fausses en même temps, le joueur se retrouve bloqué sans rien à cliquer. Assurez-vous qu'au moins un choix est toujours visible, soit en le laissant sans condition, soit en couvrant tous les cas possibles.
 
@@ -572,3 +587,31 @@ BTN_CANCEL,Cancel,Annuler,Cancelar
 ```
 
 La langue système est détectée automatiquement au premier lancement. Le joueur peut la modifier via le menu **Paramètres** (⚙).
+
+## 15. Outil de debug — Jump to Scene
+
+Un overlay de debug est intégré au moteur pour faciliter les tests sans avoir à rejouer le début à chaque fois.
+
+### Accès
+
+Appuyez sur **F9** pendant le jeu pour ouvrir ou fermer l'overlay.
+
+> **L'overlay n'est disponible que dans l'éditeur Godot et les exports Debug.** Il est automatiquement absent des exports Release — aucune manipulation requise avant de publier le jeu.
+
+### Utilisation
+
+L'overlay contient trois zones :
+
+- **Scene ID** — entrez l'identifiant exact d'une scène (ex : `scene_05`). Si l'ID est invalide, le champ vire au rouge brièvement.
+- **Flags à activer** — liste de tous les flags connus du projet. Cochez ceux dont la scène a besoin avant de sauter.
+- **Vars** — variables à injecter, une par ligne au format `clé=valeur`. Les entiers et flottants sont reconnus automatiquement ; les autres valeurs sont stockées comme chaînes (utile pour pré-remplir une variable `free_input` avant de sauter dans la scène suivante) :
+
+```
+confiance=3
+stress=1
+nom_joueur=Alice
+```
+
+Cliquez sur **Jump** pour appliquer l'état et lancer la scène. La conversation en cours est remplacée immédiatement.
+
+**Fermer** (ou F9) referme l'overlay sans rien changer à l'état du jeu.

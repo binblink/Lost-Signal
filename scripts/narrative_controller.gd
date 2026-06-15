@@ -19,6 +19,7 @@ const PAUSE_FALLBACK   := 0.5
 signal choice_made
 signal free_input_submitted(text: String)
 signal free_input_activated(placeholder: String)
+signal free_input_aborted
 signal save_requested(notify_panel: bool)
 signal secondary_scene_received(contact_id: String)
 signal contact_renamed(contact_id: String, new_name: String)
@@ -48,6 +49,8 @@ var _is_player_typing: bool = false
 var _waiting_for_free_input: bool = false
 var _pending_resumes: Array = []
 var _visible_choices: Array = []
+var _abort: bool = false
+var _play_generation: int = 0
 
 var is_busy: bool:
 	get: return _is_player_typing or _is_receiving
@@ -56,7 +59,24 @@ var is_waiting_for_free_input: bool:
 	get: return _waiting_for_free_input
 
 
+func abort_current() -> void:
+	_abort = true
+	_is_receiving = false
+	_is_player_typing = false
+	_waiting_for_free_input = false
+	waiting_for_choice = false
+	choices_layer.hide_choices()
+	input_bar.visible = true
+	_play_generation += 1
+	choice_made.emit()
+	free_input_submitted.emit("")
+	_abort = false
+	free_input_aborted.emit()
+
+
 func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
+	if _abort:
+		return
 	if not DialogueLoader.has_scene(scene_id):
 		push_error("[play_scene] scène introuvable : " + scene_id)
 		return
@@ -85,6 +105,7 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 		return
 
 	_handle_music(current_scene)
+	var _gen := _play_generation
 	_is_receiving = true
 	for i in range(current_message_index, current_scene["messages_in"].size()):
 		var msg = current_scene["messages_in"][i]
@@ -92,6 +113,8 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 			var pause = msg.get("pause", null)
 			if pause != null:
 				await do_pause(pause)
+				if _play_generation != _gen:
+					return
 			_run_effects(msg.get("effects", []))
 			var media = msg.get("media", null)
 			var text  = msg.get("text", null)
@@ -142,9 +165,12 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	if current_scene.has("free_input"):
 		var var_name: String = current_scene["free_input"]
 		_waiting_for_free_input = true
+		input_bar.visible = true
 		free_input_activated.emit(current_scene.get("free_input_placeholder", ""))
 		save_requested.emit(false)
 		var submitted_text: String = await free_input_submitted
+		if _abort:
+			return
 		_waiting_for_free_input = false
 		vars[var_name] = submitted_text
 		_is_player_typing = true
@@ -166,6 +192,8 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 			_visible_choices.map(func(c): return c["text"])
 		)
 		await choice_made
+		if _abort:
+			return
 
 	_trigger_next_scenes(scene_id)
 

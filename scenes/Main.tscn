@@ -427,8 +427,8 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
-expand_mode = 3
-stretch_mode = 6
+expand_mode = 1
+stretch_mode = 5
 
 [node name="ConfirmDialog" parent="." unique_id=734935762 instance=ExtResource("2_uu6xs")]
 unique_name_in_owner = true

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cm8r40hs1sqkb"
-path="res://.godot/imported/lieu.png-80cfd470e9b46b6555b6e3c7d1dfa66b.ctex"
+uid="uid://ddkximfl8a1at"
+path="res://.godot/imported/maeve_pic_1.jpg-d86c7d3986df586752463edbfe92b6bb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/images/lieu.png"
-dest_files=["res://.godot/imported/lieu.png-80cfd470e9b46b6555b6e3c7d1dfa66b.ctex"]
+source_file="res://assets/images/maeve_pic_1.jpg"
+dest_files=["res://.godot/imported/maeve_pic_1.jpg-d86c7d3986df586752463edbfe92b6bb.ctex"]
 
 [params]
 

@@ -24,7 +24,7 @@ extends Control
 var _total_unread: int = 0
 var _blink_tween: Tween = null
 var _free_input_tween: Tween = null
-var _free_input_indicator: ColorRect = null
+var _free_input_indicator: Panel = null
 var _narrative: Node = null
 var _validation_dialog: Control = null
 
@@ -66,6 +66,7 @@ func _ready() -> void:
 	_contact_panel.contacts = DialogueLoader.get_contacts()
 	line_edit.text_submitted.connect(_on_free_input_submitted)
 	_narrative.free_input_activated.connect(_start_free_input_visual)
+	_narrative.free_input_aborted.connect(_stop_free_input_visual)
 
 	_update_clock()
 	var clock_timer := Timer.new()
@@ -86,6 +87,11 @@ func _ready() -> void:
 	if DialogueLoader.has_validation_issues():
 		overlay.visible = true
 		_validation_dialog.open(DialogueLoader.get_validation_report())
+
+	if OS.is_debug_build():
+		var debug_overlay := preload("res://scripts/debug_overlay.gd").new()
+		add_child(debug_overlay)
+		debug_overlay.setup(_narrative)
 
 	if SaveManager.has_save():
 		await load_game()
@@ -299,20 +305,28 @@ func load_game() -> void:
 # ---------------------------------------------------------------------------
 
 func _start_free_input_visual(placeholder: String) -> void:
-	line_edit.placeholder_text = placeholder if placeholder != "" else tr("INPUT_PLACEHOLDER")
+	line_edit.clear()
+	var _ph := placeholder if placeholder != "" else tr("INPUT_PLACEHOLDER")
+	line_edit.placeholder_text = _ph
 	if not is_instance_valid(_free_input_indicator):
-		_free_input_indicator = ColorRect.new()
-		_free_input_indicator.color = ThemeManager.accent_color
-		_free_input_indicator.custom_minimum_size = Vector2(0, 2)
-		var parent = input_bar.get_parent()
-		parent.add_child(_free_input_indicator)
-		parent.move_child(_free_input_indicator, input_bar.get_index())
+		_free_input_indicator = Panel.new()
+		var style := StyleBoxFlat.new()
+		style.draw_center = false
+		style.border_color = ThemeManager.accent_color
+		style.set_border_width_all(3)
+		_free_input_indicator.add_theme_stylebox_override("panel", style)
+		_free_input_indicator.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(_free_input_indicator)
+		await get_tree().process_frame
+		line_edit.placeholder_text = _ph
+	_free_input_indicator.global_position = input_bar.global_position
+	_free_input_indicator.size = input_bar.size
 	_free_input_indicator.visible = true
 	_free_input_indicator.modulate.a = 1.0
 	if _free_input_tween:
 		_free_input_tween.kill()
 	_free_input_tween = create_tween().set_loops()
-	_free_input_tween.tween_property(_free_input_indicator, "modulate:a", 0.15, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_free_input_tween.tween_property(_free_input_indicator, "modulate:a", 0.1, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_free_input_tween.tween_property(_free_input_indicator, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 

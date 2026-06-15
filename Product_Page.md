@@ -152,6 +152,15 @@ Errors and warnings appear **directly in the game window** — no console, no ex
 
 ---
 
+### 🛠 Debug overlay — jump to any scene instantly
+Press **F9** during play to open the debug overlay. Type a scene ID, check the flags and variables the scene depends on, and jump directly to it — no need to replay the beginning every time you test a change.
+
+Pre-fill `free_input` variables, set trust or stress scores, toggle flags on or off: the overlay injects everything before launching the scene. Close it with F9 and nothing changes.
+
+> Only available in the Godot editor and Debug exports — automatically absent from Release builds.
+
+---
+
 ### ⚙️ Player settings — out of the box
 A fully functional settings menu is included with no setup required:
 
@@ -259,6 +268,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Scene music with looping, fade, and audio ducking
 - Live message editing (correct, delete, or corrupted on arrival)
 - Built-in story validator with in-game reporting
+- Debug overlay (F9) — jump to any scene mid-play, inject flags and variables on the fly
 - Auto-save system (saves after every story beat)
 - Main menu (New Game / Continue)
 - Player settings menu (language, volume, resolution, display mode)

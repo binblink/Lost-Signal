@@ -20,6 +20,7 @@ SMS-format visual novel built with Godot 4.6. All narrative content is defined i
 - Messages, choices, conditions, effects
 - Flags, variables, templates, triggers
 - All optional fields and their default values
+- Debug tool (F9) to jump to any scene instantly without replaying from the start
 
 **Validation**: The game automatically validates `story.json` and all `dialogues/*.json` files on launch in Godot. If errors are found, a window appears immediately with a full report.
 

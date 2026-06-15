@@ -179,6 +179,15 @@ func get_main_contact() -> Dictionary:
 func _get_main_contact_id() -> String:
 	return get_main_contact().get("id", "")
 
+func get_all_flags() -> Array:
+	var result: Array = []
+	for scene in _scenes.values():
+		for choice in scene.get("choices", []):
+			var f = choice.get("flag", null)
+			if f != null and f not in result:
+				result.append(f)
+	return result
+
 # ---------------------------------------------------------------------------
 # Validation
 # ---------------------------------------------------------------------------
