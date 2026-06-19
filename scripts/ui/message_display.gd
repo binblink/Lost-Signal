@@ -14,11 +14,61 @@ var typing_speed: float = 0.05
 func _ready() -> void:
 	typing_speed = ThemeManager.typing_speed
 
+func _apply_emoticons(text: String) -> String:
+	return text \
+		.replace(">:-(", "😠") \
+		.replace(">:(", "😠") \
+		.replace(":'(", "😭") \
+		.replace(":'-(",  "😭") \
+		.replace("O:-)", "😇") \
+		.replace("O:)",  "😇") \
+		.replace(">:-)", "😈") \
+		.replace(">:)",  "😈") \
+		.replace("B-)",  "😎") \
+		.replace("B)",   "😎") \
+		.replace(":-D",  "😄") \
+		.replace(":D",   "😄") \
+		.replace("=-D",  "😁") \
+		.replace("=D",   "😁") \
+		.replace(":-)",  "😊") \
+		.replace(":)",   "😊") \
+		.replace(":-(", "😢") \
+		.replace(":(",  "😢") \
+		.replace(";-)", "😉") \
+		.replace(";)",  "😉") \
+		.replace(":-P", "😛") \
+		.replace(":P",  "😛") \
+		.replace(":-p", "😛") \
+		.replace(":p",  "😛") \
+		.replace(":-O", "😮") \
+		.replace(":O",  "😮") \
+		.replace(":-o", "😮") \
+		.replace(":o",  "😮") \
+		.replace(":-*", "😘") \
+		.replace(":*",  "😘") \
+		.replace(":-/", "😕") \
+		.replace(":/",  "😕") \
+		.replace(":-|", "😐") \
+		.replace(":|",  "😐") \
+		.replace(":')", "🥲") \
+		.replace("^_^", "😊") \
+		.replace("^^",  "😄") \
+		.replace("XD",  "😆") \
+		.replace("xD",  "😆") \
+		.replace(">_<", "😣") \
+		.replace("-_-", "😑") \
+		.replace("T_T", "😭") \
+		.replace("T.T", "😭") \
+		.replace("o.O", "🤨") \
+		.replace("O.o", "🤨") \
+		.replace("</3", "💔") \
+		.replace("<3",  "❤️")
+
 func receive_message(text: String, _time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	add_child(bubble)
 	var t = get_current_time()
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = text
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = _apply_emoticons(text)
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
 	bubble.set_meta("msg_data", { "text": text, "time": t, "out": false })
 	await scroll_to_bottom()
@@ -58,7 +108,7 @@ func send_message(text: String) -> void:
 	var bubble = BubbleOut.instantiate()
 	add_child(bubble)
 	var t = get_current_time()
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = text
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = _apply_emoticons(text)
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
 	bubble.set_meta("msg_data", { "text": text, "time": t, "out": true })
 	if line_edit:
@@ -83,6 +133,7 @@ func show_typing(text: String) -> bool:
 	return is_instance_valid(self)
 
 func type_message(text: String) -> void:
+	text = _apply_emoticons(text)
 	if line_edit:
 		line_edit.text = ""
 	for i in range(text.length()):

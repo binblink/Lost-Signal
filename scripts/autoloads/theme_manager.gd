@@ -15,6 +15,21 @@ var typing_speed:     float = 0.05
 
 func _ready() -> void:
 	_load()
+	_setup_emoji_fallback()
+
+
+func _setup_emoji_fallback() -> void:
+	var emoji_font := SystemFont.new()
+	emoji_font.font_names = PackedStringArray(["Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji"])
+	emoji_font.allow_system_fallback = true
+	var current := ThemeDB.fallback_font
+	if current != null:
+		var font_with_emoji := FontVariation.new()
+		font_with_emoji.base_font = current
+		font_with_emoji.fallbacks = [emoji_font]
+		ThemeDB.fallback_font = font_with_emoji
+	else:
+		ThemeDB.fallback_font = emoji_font
 
 
 func _load() -> void:

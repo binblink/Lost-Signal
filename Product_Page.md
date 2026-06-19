@@ -59,6 +59,7 @@ Corrupted messages, disappearing contacts, unstable conversations.
 - Multiple active conversations with contact switching
 - Animated typing indicator (three dots)
 - Timestamps and natural message flow
+- Emoji support — paste directly or use text shortcuts (`:)`, `<3`, `^^`…) in any message field
 - Contact status indicators: online, away, offline, network issue — each a narrative tool, not just a UI state. A contact with *network issue* that keeps dropping in and out tells a story before a single message is sent.
 
 ---

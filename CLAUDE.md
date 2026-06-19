@@ -1,0 +1,95 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+**Maeve — Lost Signal** is a narrative game built with Godot 4.6 (GDScript). It simulates a messaging app: the player exchanges messages with characters driven entirely by JSON data files. No compilation step — open the project in Godot 4.6 and press F5 (or run via the Godot editor).
+
+There are no automated tests. Validation runs automatically at launch: if `story.json` or any `dialogues/*.json` file has errors, a blocking dialog appears in-game, and errors are logged to the Godot console.
+
+**Debug overlay**: press **F9** in-game (debug builds only) to jump to any scene, set flags, and inject variables without replaying from the start.
+
+## Architecture
+
+### Autoloads (singletons)
+
+| Autoload | File | Role |
+|---|---|---|
+| `DialogueLoader` | `scripts/autoloads/dialogue_loader.gd` | Loads `story.json` and all `dialogues/*.json`; exposes scenes, contacts, triggers; runs structural validation on startup |
+| `SaveManager` | `scripts/autoloads/save_manager.gd` | Read/write `user://savegame.json` (JSON); serialises `NarrativeController.get_state()` |
+| `ThemeManager` | `scripts/autoloads/theme_manager.gd` | Loads `theme.json`; exposes colours and `font_size`/`typing_speed`; helpers `restyle_panel`, `restyle_bubble`, `restyle_choice_button` |
+| `SettingsManager` | `scripts/autoloads/settings_manager.gd` | Loads `user://settings.json`; manages language, volume, resolution; loads `translations/ui.csv` into `TranslationServer` |
+| `AudioManager` | `scripts/autoloads/audio_manager.gd` | Procedurally generates notification beep and typing click (no audio file needed); handles music playback with fade/duck |
+
+### Scene flow
+
+`Main.tscn` / `scripts/main.gd` is the root scene. It instantiates `NarrativeController` (not a scene, just a Node added via code), wires up all UI signals, and orchestrates save/load.
+
+Key responsibilities of `main.gd` that live outside `NarrativeController`:
+
+- **Contact switching** (`_on_contact_selected`): before switching, saves the current conversation via `message_display.collect_messages_data()` into `_narrative.contact_histories[current_id]`, then renders from `_narrative.contact_histories[new_id]` and calls `restore_pending_choice_for`. This is the only place histories are snapshotted from the live UI back into the engine state.
+- **Free input visual** (`_start_free_input_visual` / `_stop_free_input_visual`): responds to `NarrativeController.free_input_activated` signal. Creates a pulsing `Panel` border overlay on top of the input bar; cleared on `free_input_aborted`. `line_edit.clear()` is called at the start to flush any stale text before setting `placeholder_text`.
+- **Image popup**: `_on_image_clicked(path)` loads the texture into `%PhotoImage` and shows `%PhotoOverlay`. Clicking the overlay hides it.
+- **Startup validation**: if `DialogueLoader.has_validation_issues()`, an overlay + `ValidationDialog` block the UI immediately before any narrative starts.
+- **Debug overlay**: `scripts/debug_overlay.gd` is added as a child only when `OS.is_debug_build()` — absent from release exports automatically.
+
+`NarrativeController` (`scripts/narrative_controller.gd`) is the story engine. It calls `play_scene(id)`, which:
+1. Walks `messages_in` sequentially, evaluating conditions and effects
+2. Shows a typing indicator before each text bubble (via `message_display.show_typing`)
+3. After all messages, either awaits `free_input_submitted` or shows choices via `ChoicesManager`
+4. Calls `_trigger_next_scenes` to chain scenes linked by `trigger_after_scene`
+
+Secondary contacts: if a scene's `contact_id` differs from `active_contact_id`, `_play_secondary_scene` adds messages directly to `contact_histories[contact_id]` without animating them, then emits `secondary_scene_received`.
+
+`MessageDisplay` (`scripts/ui/message_display.gd`) renders bubbles as child nodes of a VBoxContainer. Each bubble is a preloaded `.tscn` instantiated at runtime. It exposes `render_history(Array)` to replay saved messages when switching contacts or loading a save.
+
+### Data files
+
+```
+story.json          ← contacts + start_scene
+dialogues/
+  acte1.json        ← French (default)
+  acte1.en.json     ← English variant (loaded when language == "en")
+theme.json          ← colour and font overrides
+translations/ui.csv ← UI strings (keys, en, fr columns)
+```
+
+`DialogueLoader` prefers locale-specific files (`base.locale.json`) over the base file. Scene IDs must be globally unique across all loaded files.
+
+### State machine in NarrativeController
+
+Key state variables:
+- `flags: Dictionary` — boolean flags set by choices (`flag` field)
+- `vars: Dictionary` — numeric/string variables set by effects; injected into message text via `{var_name}` templates
+- `contact_histories: Dictionary` — `contact_id → Array` of message data; persisted in save
+- `deferred_scenes: Dictionary` — `flag_name → scene_id` for `resume_after_flag`
+- `scheduled_scenes: Dictionary` — `scene_id → unix_timestamp` for `resume_after_delay`
+- `pending_choices: Dictionary` — `contact_id → scene_id` for secondary contacts awaiting player input
+
+`get_state()` / `set_state()` serialise and restore the complete engine state.
+
+## Key patterns
+
+**Awaiting player interaction**: `play_scene` uses `await` on signals (`choice_made`, `free_input_submitted`). `abort_current()` emits these signals with empty values and sets `_abort = true` to unblock any suspended coroutine cleanly.
+
+**Generation guard**: `_play_generation` is incremented on abort. Each `play_scene` call captures `var _gen := _play_generation` and checks it after any `await` to bail out if the scene was aborted mid-playback.
+
+**Message bubble sizing**: Bubble width is set by `scripts/ui/messageswidth.gd` (attached to each Bubble PanelContainer) after layout via `get_viewport_rect().size.x * 0.45`. Image thumbnails use `custom_minimum_size` set via code after the texture is loaded (texture dimensions are available immediately on `load()`; no frame await needed).
+
+**Localisation**: UI strings use `tr("KEY")` with keys defined in `translations/ui.csv`. Dialogue text is in the JSON files themselves — no TR keys.
+
+**Theme application**: `ThemeManager` methods duplicate existing `StyleBoxFlat` resources rather than mutating them, to avoid cross-node contamination.
+
+## Authoring dialogue (quick reference)
+
+Full spec: `docs/authoring_en.md`
+
+- Scene chain: `next` (after `free_input` or `trigger_after_scene`), `choices[].next`
+- Conditional display: `requires_flag` (string or array) or `condition` (structured with `and`/`or`/`flag`/`var`)
+- Effects on message or choice: `{ "op": "set"|"add"|"sub", "var": "...", "value": ... }` or `{ "op": "rename"|"set_status", "contact": "...", "value": "..." }`
+- `free_input`: captures player text into a variable; use `free_input_placeholder` for the hint text; variable available as `{var_name}` in later messages
+- `text` as array: expands into multiple bubbles; `pause`/`effects` on first, `time` on last
+- `resume_after_delay`: accepts `300`, `"5m"`, `"1h"` — delay is wall-clock time, survives game restarts
+- Max 4 choices per scene (extras silently ignored)
+- `_notes` field on any scene is ignored by the engine (safe to use freely)

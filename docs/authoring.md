@@ -615,3 +615,39 @@ nom_joueur=Alice
 Cliquez sur **Jump** pour appliquer l'état et lancer la scène. La conversation en cours est remplacée immédiatement.
 
 **Fermer** (ou F9) referme l'overlay sans rien changer à l'état du jeu.
+
+## 16. Emoji
+
+Les emoji fonctionnent dans tous les champs textuels : `text`, `message`, `free_input_placeholder`.
+
+### Copier-coller direct
+
+Collez le caractère emoji directement dans le JSON — aucun encodage particulier n'est nécessaire.
+
+```json
+{ "text": "Ça m'a fait rire 😂" }
+```
+
+### Raccourcis texte
+
+Si vous ne pouvez pas copier-coller un emoji, utilisez les raccourcis texte habituels — le moteur les convertit automatiquement à l'affichage.
+
+| Raccourci | Emoji | | Raccourci | Emoji |
+|-----------|-------|-|-----------|-------|
+| `:)`  | 😊 | | `:-)`  | 😊 |
+| `:D`  | 😄 | | `:-D`  | 😄 |
+| `:(`  | 😢 | | `:-(`  | 😢 |
+| `;)`  | 😉 | | `;-)`  | 😉 |
+| `:P`  | 😛 | | `:-P`  | 😛 |
+| `:O`  | 😮 | | `:-O`  | 😮 |
+| `:*`  | 😘 | | `:-*`  | 😘 |
+| `:/`  | 😕 | | `:-/`  | 😕 |
+| `:\|` | 😐 | | `:-\|` | 😐 |
+| `:'(` | 😭 | | `:')`  | 🥲 |
+| `>:(` | 😠 | | `>:)`  | 😈 |
+| `O:)` | 😇 | | `B)`   | 😎 |
+| `=D`  | 😁 | | `XD`   | 😆 |
+| `^^`  | 😄 | | `^_^`  | 😊 |
+| `T_T` | 😭 | | `-_-`  | 😑 |
+| `>_<` | 😣 | | `o.O`  | 🤨 |
+| `<3`  | ❤️  | | `</3`  | 💔 |
