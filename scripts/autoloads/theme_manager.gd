@@ -37,13 +37,13 @@ func _load() -> void:
 		return
 	var file = FileAccess.open(THEME_PATH, FileAccess.READ)
 	if file == null:
-		push_warning("ThemeManager: impossible d'ouvrir theme.json (code %d) — thème par défaut utilisé." % FileAccess.get_open_error())
+		push_warning("ThemeManager: cannot open theme.json (code %d) — using defaults." % FileAccess.get_open_error())
 		return
 	var json = JSON.new()
 	var err  = json.parse(file.get_as_text())
 	file.close()
 	if err != OK:
-		push_warning("ThemeManager: theme.json invalide — thème par défaut utilisé.")
+		push_warning("ThemeManager: invalid theme.json — using defaults.")
 		return
 	var data = json.get_data()
 	if not data is Dictionary:

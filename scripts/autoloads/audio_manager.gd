@@ -49,7 +49,7 @@ func play_music(path: String) -> void:
 	_current_music_path = path
 	var stream = load(path)
 	if stream == null:
-		push_warning("AudioManager: musique introuvable — %s" % path)
+		push_warning("AudioManager: music file not found — %s" % path)
 		return
 	_kill_tween()
 	_music_player.stream = stream

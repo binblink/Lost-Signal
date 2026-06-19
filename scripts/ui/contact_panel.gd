@@ -45,7 +45,7 @@ func hide_panel() -> void:
 	if not _is_open:
 		return
 	_is_open = false
-	# Cacher le contenu immédiatement avant l'animation
+	# Hide content immediately before the slide animation starts
 	$VBoxContainer.visible = false
 	var tween = create_tween()
 	tween.set_ease(Tween.EASE_IN)
@@ -85,7 +85,7 @@ func _rebuild_list() -> void:
 		return
 	for contact in contacts:
 		var contact_id = contact.get("id", "")
-		# Ne pas afficher les contacts sans historique
+		# Skip contacts with no message history yet
 		if not _last_messages.has(contact_id):
 			continue
 		var item = ContactItem.instantiate()

@@ -53,7 +53,7 @@ func _build_ui() -> void:
 	margin.add_child(vbox)
 
 	var title := Label.new()
-	title.text = "DEBUG — Jump to Scene  [F9 pour fermer]"
+	title.text = "DEBUG — Jump to Scene  [F9 to close]"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 
@@ -73,7 +73,7 @@ func _build_ui() -> void:
 	vbox.add_child(HSeparator.new())
 
 	var lbl_flags := Label.new()
-	lbl_flags.text = "Flags à activer :"
+	lbl_flags.text = "Flags to activate:"
 	vbox.add_child(lbl_flags)
 
 	var scroll := ScrollContainer.new()
@@ -88,7 +88,7 @@ func _build_ui() -> void:
 	vbox.add_child(HSeparator.new())
 
 	var lbl_vars := Label.new()
-	lbl_vars.text = "Vars (clé=valeur, une par ligne) :"
+	lbl_vars.text = "Vars (key=value, one per line):"
 	vbox.add_child(lbl_vars)
 
 	_vars_edit = TextEdit.new()
@@ -108,7 +108,7 @@ func _build_ui() -> void:
 	btn_row.add_child(btn_jump)
 
 	var btn_close := Button.new()
-	btn_close.text = "Fermer"
+	btn_close.text = "Close"
 	btn_close.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_close.pressed.connect(_close)
 	btn_row.add_child(btn_close)

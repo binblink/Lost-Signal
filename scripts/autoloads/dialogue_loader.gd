@@ -13,7 +13,7 @@ var validation_warnings: Array = []
 func _ready() -> void:
 	_load_story()
 	_load_dialogues_dir()
-	print("DialogueLoader: %d scènes, %d contacts chargés." % [_scenes.size(), _contacts.size()])
+	print("DialogueLoader: %d scenes, %d contacts loaded." % [_scenes.size(), _contacts.size()])
 	_validate()
 
 func reload_for_locale() -> void:
@@ -47,7 +47,7 @@ func _load_story() -> void:
 func _load_dialogues_dir() -> void:
 	var dir = DirAccess.open(DIALOGUES_DIR)
 	if dir == null:
-		push_error("DialogueLoader: dossier introuvable → " + DIALOGUES_DIR)
+		push_error("DialogueLoader: directory not found — " + DIALOGUES_DIR)
 		return
 
 	var locale := SettingsManager.language
@@ -92,7 +92,7 @@ func _load_scenes_from(path: String) -> void:
 				expanded.append_array(_normalize_message(m))
 			scene["messages_in"] = expanded
 		if _scenes.has(scene["id"]):
-			push_warning("DialogueLoader: ID en double « %s » dans %s — ignoré." % [scene["id"], path])
+			push_warning("DialogueLoader: duplicate ID '%s' in %s — skipped." % [scene["id"], path])
 			continue
 		_scenes[scene["id"]] = scene
 		var trigger = scene.get("trigger_after_scene", null)
@@ -133,21 +133,21 @@ func _normalize_message(m) -> Array:
 
 func _parse_json(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
-		push_error("DialogueLoader: fichier introuvable → " + path)
+		push_error("DialogueLoader: file not found — " + path)
 		return {}
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		push_error("DialogueLoader: impossible d'ouvrir %s (code %d)." % [path, FileAccess.get_open_error()])
+		push_error("DialogueLoader: cannot open %s (code %d)." % [path, FileAccess.get_open_error()])
 		return {}
 	var json  = JSON.new()
 	var err   = json.parse(file.get_as_text())
 	file.close()
 	if err != OK:
-		push_error("DialogueLoader: erreur JSON dans %s ligne %d : %s" % [path, json.get_error_line(), json.get_error_message()])
+		push_error("DialogueLoader: JSON error in %s line %d: %s" % [path, json.get_error_line(), json.get_error_message()])
 		return {}
 	return json.get_data()
 
-# --- API publique ---
+# --- Public API ---
 
 func get_start_scene() -> String:
 	return _start_scene
@@ -198,7 +198,7 @@ func _validate() -> void:
 
 	var contact_ids: Array = _contacts.map(func(c): return c.get("id", ""))
 
-	# Collecte tous les flags posés par des choix (seule source possible)
+	# Collect all flags set by choices (the only possible source)
 	var flags_set: Array = []
 	for scene in _scenes.values():
 		for choice in scene.get("choices", []):
@@ -206,16 +206,16 @@ func _validate() -> void:
 			if f != null and not f in flags_set:
 				flags_set.append(f)
 
-	# pending_scene dans les contacts de story.json
+	# pending_scene in story.json contacts
 	for contact in _contacts:
 		var cid: String = contact.get("id", "?")
 		var ps: String = contact.get("pending_scene", "")
 		if ps != "" and not _scenes.has(ps):
-			errors.append("Contact '%s' : pending_scene '%s' introuvable." % [cid, ps])
+			errors.append("Contact '%s': pending_scene '%s' not found." % [cid, ps])
 
 	# start_scene
 	if not _scenes.has(_start_scene):
-		errors.append("start_scene '%s' introuvable dans les scènes chargées." % _start_scene)
+		errors.append("start_scene '%s' not found in loaded scenes." % _start_scene)
 
 	for scene_id in _scenes.keys():
 		var scene: Dictionary = _scenes[scene_id]
@@ -224,11 +224,11 @@ func _validate() -> void:
 		# contact_id
 		var cid: String = scene.get("contact_id", "")
 		if cid != "" and not cid in contact_ids:
-			errors.append("%s contact_id '%s' absent de story.json." % [ctx, cid])
+			errors.append("%s contact_id '%s' not found in story.json." % [ctx, cid])
 
 		# messages_in
 		if not scene.has("messages_in"):
-			errors.append("%s 'messages_in' manquant." % ctx)
+			errors.append("%s missing 'messages_in'." % ctx)
 		else:
 			var msgs: Array = scene["messages_in"]
 			for i in range(msgs.size()):
@@ -237,23 +237,23 @@ func _validate() -> void:
 		# trigger_after_scene
 		var trigger = scene.get("trigger_after_scene", null)
 		if trigger != null and not _scenes.has(trigger):
-			errors.append("%s trigger_after_scene '%s' introuvable." % [ctx, trigger])
+			errors.append("%s trigger_after_scene '%s' not found." % [ctx, trigger])
 
 		# resume_after_flag
 		var resume_flag = scene.get("resume_after_flag", null)
 		if resume_flag != null and not resume_flag in flags_set:
-			warnings.append("%s resume_after_flag '%s' jamais posé par aucun choix." % [ctx, resume_flag])
+			warnings.append("%s resume_after_flag '%s' is never set by any choice." % [ctx, resume_flag])
 
 		# free_input
 		var free_input = scene.get("free_input", null)
 		if free_input != null:
 			if not free_input is String or free_input.is_empty():
-				errors.append("%s free_input doit être une chaîne non vide (nom de variable)." % ctx)
+				errors.append("%s free_input must be a non-empty string (variable name)." % ctx)
 			var fi_next = scene.get("next", null)
 			if fi_next == null:
-				warnings.append("%s free_input présent mais 'next' absent — la narration s'arrêtera après la saisie." % ctx)
+				warnings.append("%s free_input present but 'next' is missing — narration will stop after input." % ctx)
 			elif not _scenes.has(fi_next):
-				errors.append("%s next '%s' introuvable." % [ctx, fi_next])
+				errors.append("%s next '%s' not found." % [ctx, fi_next])
 
 		# choices
 		var choices: Array = scene.get("choices", [])
@@ -271,9 +271,9 @@ func _validate() -> void:
 		push_warning("Validator: " + w)
 
 	if errors.is_empty() and warnings.is_empty():
-		print("Validator: %d scènes vérifiées — aucune erreur." % _scenes.size())
+		print("Validator: %d scenes checked — no errors." % _scenes.size())
 	else:
-		print("Validator: %d erreur(s), %d avertissement(s)." % [errors.size(), warnings.size()])
+		print("Validator: %d error(s), %d warning(s)." % [errors.size(), warnings.size()])
 
 
 func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, errors: Array, warnings: Array) -> void:
@@ -284,21 +284,21 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 	if media != null:
 		var mtype = media.get("type", null)
 		if mtype == null:
-			errors.append("%s media sans 'type'." % label)
+			errors.append("%s media missing 'type'." % label)
 		elif not mtype in ["image", "audio"]:
-			errors.append("%s type média '%s' inconnu (valeurs : image, audio)." % [label, mtype])
+			errors.append("%s unknown media type '%s' (accepted: image, audio)." % [label, mtype])
 		if not media.has("path") or str(media.get("path", "")) == "":
-			errors.append("%s media sans 'path'." % label)
+			errors.append("%s media missing 'path'." % label)
 	elif text == null:
 		var has_effects:   bool = msg.get("effects", []).size() > 0
 		var has_pause:     bool = msg.get("pause", null) != null
 		var is_corrupted:  bool = msg.get("corrupted", false)
 		if not has_effects and not has_pause and not is_corrupted:
-			warnings.append("%s message silencieux sans effets ni pause (sera ignoré)." % label)
+			warnings.append("%s silent message with no effects or pause (will be skipped)." % label)
 
 	var req_flag = msg.get("requires_flag", null)
 	if req_flag != null and not req_flag in flags_set:
-		warnings.append("%s requires_flag '%s' jamais posé par aucun choix." % [label, req_flag])
+		warnings.append("%s requires_flag '%s' is never set by any choice." % [label, req_flag])
 
 	var cond = msg.get("condition", null)
 	if cond != null:
@@ -306,7 +306,7 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 
 	var pause = msg.get("pause", null)
 	if pause != null and not pause in ["short", "medium", "long"]:
-		warnings.append("%s valeur pause '%s' inconnue (short / medium / long)." % [label, pause])
+		warnings.append("%s unknown pause value '%s' (accepted: short / medium / long)." % [label, pause])
 
 	var efx: Array = msg.get("effects", [])
 	for k in range(efx.size()):
@@ -316,21 +316,21 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 func _check_choice(choice: Dictionary, ctx: String, j: int, errors: Array, warnings: Array) -> void:
 	var label := "%s choice[%d]" % [ctx, j]
 	if not choice.has("text") or choice["text"] == null:
-		errors.append("%s 'text' manquant." % label)
+		errors.append("%s missing 'text'." % label)
 	if not choice.has("next"):
-		warnings.append("%s 'next' absent (choix terminal)." % label)
+		warnings.append("%s no 'next' (terminal choice)." % label)
 	else:
 		var next_id = choice.get("next", null)
 		if next_id != null and not _scenes.has(next_id):
-			errors.append("%s next '%s' introuvable." % [label, next_id])
+			errors.append("%s next '%s' not found." % [label, next_id])
 	var msg_data = choice.get("message", null)
 	if msg_data != null:
 		if msg_data is Array:
 			for k in range(msg_data.size()):
 				if not msg_data[k] is String:
-					errors.append("%s message[%d] doit être une chaîne." % [label, k])
+					errors.append("%s message[%d] must be a string." % [label, k])
 		elif not msg_data is String:
-			errors.append("%s 'message' doit être une chaîne ou un tableau de chaînes." % label)
+			errors.append("%s 'message' must be a string or array of strings." % label)
 	var efx: Array = choice.get("effects", [])
 	for k in range(efx.size()):
 		_check_effect(efx[k], "%s effect[%d]" % [label, k], errors, warnings)
@@ -348,10 +348,10 @@ func _check_condition(cond: Dictionary, label: String, errors: Array) -> void:
 	if cond.has("flag"):
 		return
 	if not cond.has("var") or not cond.has("op") or not cond.has("value"):
-		errors.append("%s condition mal formée (champs requis : var, op, value ou flag)." % label)
+		errors.append("%s malformed condition (required fields: var, op, value or flag)." % label)
 		return
 	if not cond["op"] in ["eq", "neq", "gt", "gte", "lt", "lte"]:
-		errors.append("%s condition op '%s' inconnu (eq/neq/gt/gte/lt/lte)." % [label, cond["op"]])
+		errors.append("%s unknown condition op '%s' (eq/neq/gt/gte/lt/lte)." % [label, cond["op"]])
 
 
 func _detect_trigger_cycles(errors: Array) -> void:
@@ -371,7 +371,7 @@ func _dfs_trigger(scene_id: String, color: Dictionary, stack: Array, errors: Arr
 		elif color[triggered_id] == 1:
 			var cycle_start: int = stack.find(triggered_id)
 			var cycle: Array = stack.slice(cycle_start) + [triggered_id]
-			errors.append("Cycle de déclenchement détecté : %s" % " → ".join(cycle))
+			errors.append("Trigger cycle detected: %s" % " → ".join(cycle))
 	stack.pop_back()
 	color[scene_id] = 2
 
@@ -379,14 +379,14 @@ func _dfs_trigger(scene_id: String, color: Dictionary, stack: Array, errors: Arr
 func _check_effect(effect: Dictionary, label: String, errors: Array, warnings: Array) -> void:
 	var op = effect.get("op", null)
 	if op == null:
-		errors.append("%s effect sans 'op'." % label)
+		errors.append("%s effect missing 'op'." % label)
 		return
 	match op:
 		"set", "add", "sub":
 			if not effect.has("var") or not effect.has("value"):
-				errors.append("%s effect '%s' requiert 'var' et 'value'." % [label, op])
+				errors.append("%s effect '%s' requires 'var' and 'value'." % [label, op])
 		"rename", "set_status":
 			if not effect.has("contact") or not effect.has("value"):
-				errors.append("%s effect '%s' requiert 'contact' et 'value'." % [label, op])
+				errors.append("%s effect '%s' requires 'contact' and 'value'." % [label, op])
 		_:
-			warnings.append("%s effect op '%s' inconnu." % [label, op])
+			warnings.append("%s unknown effect op '%s'." % [label, op])

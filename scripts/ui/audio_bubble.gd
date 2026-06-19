@@ -21,7 +21,7 @@ func setup(path: String, time: String) -> void:
 	if ResourceLoader.exists(path):
 		var stream = load(path)
 		if stream == null:
-			push_error("AudioBubble: échec du chargement de %s." % path)
+			push_error("AudioBubble: failed to load %s." % path)
 			play_button.disabled = true
 		else:
 			player.stream = stream

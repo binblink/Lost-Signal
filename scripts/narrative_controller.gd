@@ -78,7 +78,7 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	if _abort:
 		return
 	if not DialogueLoader.has_scene(scene_id):
-		push_error("[play_scene] scène introuvable : " + scene_id)
+		push_error("[play_scene] scene not found: " + scene_id)
 		return
 	if current_scene.get("id", "") != scene_id:
 		current_message_index = 0
@@ -323,7 +323,7 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 			"gte": return val >= target
 			"lt":  return val < target
 			"lte": return val <= target
-	push_warning("NarrativeController: condition inconnue ignorée : %s" % str(cond))
+	push_warning("NarrativeController: unknown condition ignored: %s" % str(cond))
 	return false
 
 
@@ -367,7 +367,7 @@ func set_state(data: Dictionary) -> void:
 	waiting_for_choice      = data.get("waiting_for_choice", false)
 	played_secondary_scenes = data.get("played_secondary_scenes", [])
 	pending_choices         = data.get("pending_choices", {})
-	# "messages" est l'ancienne clé — conservé pour compatibilité avec les sauvegardes existantes
+	# "messages" is the legacy key — kept for backward compatibility with existing saves
 	contact_histories       = data.get("contact_histories", data.get("messages", {}))
 	current_music_path      = data.get("current_music_path", "")
 	if current_music_path != "":

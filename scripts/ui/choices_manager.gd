@@ -4,7 +4,7 @@ signal choice_selected(index: int)
 
 const SCROLL_STEP := 60
 
-# Références passées par main.gd au _ready
+# References injected by main.gd before _ready
 var message_display: VBoxContainer = null
 var scroll_container: ScrollContainer = null
 var input_bar: Control = null

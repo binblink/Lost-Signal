@@ -9,7 +9,7 @@ const MAX_PREVIEW_LENGTH = 80
 @onready var unread_badge    = %UnreadBadge
 
 func _ready() -> void:
-	# Forcer les size flags par code car layout_mode 2 les expose différemment en 4.6
+	# layout_mode 2 exposes size flags differently in 4.6 — set them in code
 	$MarginContainer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	$MarginContainer/HBoxContainer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	$MarginContainer/HBoxContainer/TextColumn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -44,7 +44,6 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 			preview = preview.substr(0, MAX_PREVIEW_LENGTH) + "…"
 		contact_preview.text = prefix + preview
 
-	# Avatar image si disponible
 	var avatar_path = contact.get("avatar", null)
 	if avatar_path != null and ResourceLoader.exists(avatar_path):
 		var tex = load(avatar_path)
