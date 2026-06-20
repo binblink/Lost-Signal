@@ -2,6 +2,7 @@ extends RefCounted
 
 var start_scene: String = ""
 var contacts: Array = []
+var chosen_files: Dictionary = {}   # base_name → file_name (relatif à dialogues/)
 var error_message: String = ""
 
 
@@ -47,6 +48,7 @@ func parse_all() -> Dictionary:
 		elif parts.size() == 1:
 			if not chosen.has(base):
 				chosen[base] = file_name
+	chosen_files = chosen
 
 	var main_contact_id := ""
 	for c in contacts:
@@ -61,6 +63,7 @@ func parse_all() -> Dictionary:
 				if scene.has("id"):
 					if not scene.has("contact_id"):
 						scene["contact_id"] = main_contact_id
+					scene["_editor_file"] = file_name
 					scenes[scene["id"]] = scene
 
 	return scenes

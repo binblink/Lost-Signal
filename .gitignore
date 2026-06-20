@@ -17,3 +17,7 @@ export_presets.cfg
 
 # Sauvegardes utilisateur uniquement
 *.save
+
+# Autres fichiers à ignorer
+*.log
+*.pdf

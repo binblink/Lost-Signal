@@ -162,6 +162,24 @@ Pre-fill `free_input` variables, set trust or stress scores, toggle flags on or 
 
 ---
 
+### 🗺 Visual story graph — see your narrative at a glance
+A built-in Godot editor plugin renders your entire story as an **interactive graph** — every scene as a node, every connection as an arrow.
+
+Enable it once in Project Settings → Plugins. Hit Refresh after any JSON edit and the graph updates instantly.
+
+**What you see:**
+- **▶** marks the starting scene
+- **✎** marks scenes with free-text player input
+- **⛔ Dead end** (red) flags scenes with no outgoing connections — likely an authoring mistake
+- **⚠ Isolated** (yellow) flags scenes nothing links to — they can never be reached
+- Arrows are color-coded: gray for normal flow, **orange** for automatic triggers, **purple** for flag-based resumes
+
+**Click any node** to inspect its full content in the detail panel: contact, all messages with pauses and conditions, choices with their effects and destinations, and special fields like music or delays.
+
+> The plugin reads your JSON files directly and does not affect the game in any way.
+
+---
+
 ### ⚙️ Player settings — out of the box
 A fully functional settings menu is included with no setup required:
 
@@ -279,6 +297,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Theme system (`theme.json`) with animated glitch title (configurable)
 - Playable demo scenario
 - Bilingual authoring guide (EN + FR) with full syntax reference
+- **Visual story graph** — built-in Godot editor plugin showing all scenes, connections, dead ends, and isolated scenes at a glance
 
 ---
 

@@ -428,10 +428,10 @@ func _build_exit_dialog() -> Control:
 	btn_desktop.custom_minimum_size = Vector2(220, 40)
 	vbox.add_child(btn_desktop)
 
-	var btn_cancel := _make_dialog_button(tr("BTN_CANCEL"), ThemeManager.topbar_color.lightened(0.08), ThemeManager.time_color)
-	btn_cancel.pressed.connect(_on_exit_cancel)
-	btn_cancel.custom_minimum_size = Vector2(220, 40)
-	vbox.add_child(btn_cancel)
+	var cancel_btn := _make_dialog_button(tr("BTN_CANCEL"), ThemeManager.topbar_color.lightened(0.08), ThemeManager.time_color)
+	cancel_btn.pressed.connect(_on_exit_cancel)
+	cancel_btn.custom_minimum_size = Vector2(220, 40)
+	vbox.add_child(cancel_btn)
 
 	return panel
 

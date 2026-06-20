@@ -59,17 +59,26 @@ translations/ui.csv ← UI strings (keys, en, fr columns)
 
 ### Story Editor plugin (`addons/story_editor/`)
 
-An `@tool` EditorPlugin that renders a visual graph of all narrative scenes. Activated via Project Settings → Plugins. Does not touch any runtime file.
+An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and supports direct JSON editing from the graph. Activated via Project Settings → Plugins.
 
 | File | Role |
 |---|---|
 | `plugin.cfg` | Godot plugin manifest |
 | `plugin.gd` | `EditorPlugin` — mounts/unmounts the bottom panel |
 | `StoryEditorPanel.tscn` | Panel scene: `HSplitContainer[GraphEdit, ScrollContainer]` |
-| `StoryEditorPanel.gd` | Graph rendering, BFS layout, detail panel, visual indicators |
+| `StoryEditorPanel.gd` | Graph rendering, BFS layout, detail panel, editing, JSON writing |
 | `scene_parser.gd` | Standalone `RefCounted` that reads JSON files with locale support (uses `OS.get_locale_language()`, not `SettingsManager`) |
 
-**Key constraints**: `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context. Only `GraphNode` children of `GraphEdit` are freed on rebuild — never `get_children()` blindly, as that would delete the internal `connection_layer` node and corrupt the graph.
+**Editing actions** (all write directly to JSON and trigger an auto-refresh):
+- **Right-click on background** → create a new scene (ID, contact, target file)
+- **Drag output port → input port** → writes `next` or `choices[i].next`
+- **Right-click on node** → disconnect a specific outgoing connection, or delete the scene (cleans up all references across all files)
+
+**Key constraints**:
+- `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context.
+- Only `GraphNode` children of `GraphEdit` are freed on rebuild — never `get_children()` blindly, as that would delete the internal `connection_layer` node and corrupt the graph.
+- `_editor_file` meta-key is injected per scene in memory by `scene_parser.gd` to track which file to write to; it is never written to disk.
+- `_write_json()` applies `_ordered_scene()` (semantic key order) then `_json_expand()` (custom serializer, compact at depth ≥ 4) before writing.
 
 Full user-facing docs: `docs/story_editor_en.md` (English), `docs/story_editor.md` (French).
 

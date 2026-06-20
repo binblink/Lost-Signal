@@ -85,8 +85,8 @@ func receive_image_message(path: String, _time: String) -> MarginContainer:
 		var tex_w := float(thumbnail.texture.get_width())
 		var tex_h := float(thumbnail.texture.get_height())
 		if tex_w > 0 and tex_h > 0:
-			var scale := minf(240.0 / tex_w, 180.0 / tex_h)
-			thumbnail.custom_minimum_size = Vector2(tex_w * scale, tex_h * scale)
+			var img_scale := minf(240.0 / tex_w, 180.0 / tex_h)
+			thumbnail.custom_minimum_size = Vector2(tex_w * img_scale, tex_h * img_scale)
 	thumbnail.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			image_clicked.emit(path)
