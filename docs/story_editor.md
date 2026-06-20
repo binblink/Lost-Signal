@@ -29,8 +29,9 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 ```
 
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
+- **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
-- **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet.
+- **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 
 ---
 
@@ -63,7 +64,7 @@ Chaque nœud a :
 - **Un port d'entrée** (gauche) — reçoit les connexions des scènes précédentes
 - **Un port de sortie par connexion** (droite) — une par `next`, une par choix (`choices[]`)
 
-Si une scène a des choix sans destination (`next` absent), ses ports de sortie apparaissent sans fil — ils sont disponibles pour être connectés.
+Si une scène a des choix sans destination (`next` absent), **chaque choix dispose de son propre port de sortie** — visible sans fil, prêt à être connecté. Glisser depuis ce port vers une autre scène écrit le `next` dans le bon choix.
 
 Si une scène n'a ni choix ni `next`, un port **→ ?** est affiché : il permet de tirer une connexion vers une autre scène, ce qui ajoutera un `next` de scène.
 
@@ -133,15 +134,40 @@ Sur confirmation :
 
 ---
 
+## Édition du contenu dans le panneau de détail
+
+Cliquer sur un nœud ouvre le panneau de détail à droite. Les champs suivants sont **directement éditables** :
+
+- **Texte de chaque message** (`messages_in[i].text`) — zone de texte multi-ligne. Si le message est un tableau (plusieurs bulles), chaque bulle est éditable séparément.
+- **Texte corrigé** (`edit[i].corrected_text`) — affiché sous le texte initial avec l'indicateur `✎ corrigé en (+Xs) :`, éditable.
+- **Texte de chaque choix** (`choices[i].text`) — la phrase affichée sur le bouton de choix.
+
+Les autres champs (conditions, effets, flags, pauses, `next`) restent en lecture seule dans le panneau. La modification d'un champ est sauvegardée **dès que le champ perd le focus** (clic ailleurs ou Tab). Le graphe n'est pas reconstruit lors d'une édition de texte — seul le fichier JSON est mis à jour.
+
+---
+
 ## Format JSON produit par l'éditeur
 
-L'éditeur écrit le JSON en respectant l'ordre sémantique des clés :
+L'éditeur écrit le JSON en respectant l'ordre sémantique des clés à trois niveaux :
 
+**Scène :**
 ```
-id → contact_id → messages_in → free_input → free_input_placeholder → next → choices
+_notes → id → contact_id → trigger_after_scene → resume_after_flag → resume_after_delay → messages_in → free_input → free_input_placeholder → music → next → choices
 ```
 
-Les messages et les choix restent compacts (une ligne par élément). L'indentation utilise des tabulations, cohérente avec le reste du fichier.
+**Message :**
+```
+text → edit → effects → media → pause → requires_flag → condition
+```
+
+**Choix :**
+```
+text → message → flag → requires_flag → condition → next → effects
+```
+
+Les messages et les choix restent compacts (une ligne par élément). L'indentation utilise des tabulations.
+
+Le bouton **Reformater** applique cet ordre à tous les fichiers existants sans modifier aucun contenu — pratique après une édition manuelle ou une migration.
 
 ---
 

@@ -10,10 +10,11 @@ const COLOR_RESUME  := Color(0.7, 0.3, 1.0)
 const H_SPACING := 480.0
 const V_SPACING := 280.0
 
-@onready var _status_label:   Label         = %StatusLabel
-@onready var _refresh_button: Button        = %RefreshButton
-@onready var _graph:          GraphEdit     = %GraphEdit
-@onready var _detail_content: VBoxContainer = %DetailContent
+@onready var _status_label:    Label         = %StatusLabel
+@onready var _refresh_button:  Button        = %RefreshButton
+@onready var _reformat_button: Button        = %ReformatButton
+@onready var _graph:           GraphEdit     = %GraphEdit
+@onready var _detail_content:  VBoxContainer = %DetailContent
 
 var _parser  := SceneParser.new()
 var _scenes:   Dictionary = {}
@@ -22,11 +23,28 @@ var _outgoing: Dictionary = {}
 
 func _ready() -> void:
 	_refresh_button.pressed.connect(_on_refresh_pressed)
+	_reformat_button.pressed.connect(_on_reformat_pressed)
 	_graph.node_selected.connect(_on_node_selected)
 	_graph.gui_input.connect(_on_graph_gui_input)
 	_graph.connection_request.connect(_on_connection_request)
 	_graph.disconnection_request.connect(_on_disconnection_request)
 	_graph.delete_nodes_request.connect(_on_delete_nodes_request)
+
+
+func _on_reformat_pressed() -> void:
+	if _parser.chosen_files.is_empty():
+		_status_label.text = _t("Cliquez d'abord sur Refresh", "Click Refresh first")
+		return
+	for fname in _parser.chosen_files.values():
+		var path: String = "res://dialogues/" + str(fname)
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			continue
+		var data = JSON.parse_string(f.get_as_text())
+		f.close()
+		if data is Dictionary and data.has("scenes"):
+			_write_json(path, data)
+	_on_refresh_pressed()
 
 
 func _on_refresh_pressed() -> void:
@@ -606,9 +624,27 @@ func _json_stringify_file(data: Dictionary) -> String:
 	return _json_expand(data, "") + "\n"
 
 
+func _json_compact(value) -> String:
+	if value is Dictionary:
+		if (value as Dictionary).is_empty():
+			return "{}"
+		var parts: Array[String] = []
+		for key in value:
+			parts.append(JSON.stringify(str(key)) + ": " + _json_compact(value[key]))
+		return "{" + ", ".join(parts) + "}"
+	if value is Array:
+		if (value as Array).is_empty():
+			return "[]"
+		var parts: Array[String] = []
+		for item in value:
+			parts.append(_json_compact(item))
+		return "[" + ", ".join(parts) + "]"
+	return JSON.stringify(value)
+
+
 func _json_expand(value, indent: String) -> String:
 	if indent.length() >= 4:
-		return JSON.stringify(value)
+		return _json_compact(value)
 	if value is Dictionary:
 		if (value as Dictionary).is_empty():
 			return "{}"
@@ -639,6 +675,41 @@ func _ordered_scene(scene: Dictionary) -> Dictionary:
 	for key in scene:
 		if key != "_editor_file" and not result.has(key):
 			result[key] = scene[key]
+	if result.has("messages_in"):
+		var ordered_msgs: Array = []
+		for msg in (result["messages_in"] as Array):
+			ordered_msgs.append(_ordered_message(msg))
+		result["messages_in"] = ordered_msgs
+	if result.has("choices"):
+		var ordered_choices: Array = []
+		for choice in (result["choices"] as Array):
+			ordered_choices.append(_ordered_choice(choice))
+		result["choices"] = ordered_choices
+	return result
+
+
+func _ordered_message(msg: Dictionary) -> Dictionary:
+	const MSG_KEYS := ["text", "edit", "effects", "media", "pause",
+		"requires_flag", "condition", "corrupted", "time"]
+	var result := {}
+	for key in MSG_KEYS:
+		if msg.has(key):
+			result[key] = msg[key]
+	for key in msg:
+		if not result.has(key):
+			result[key] = msg[key]
+	return result
+
+
+func _ordered_choice(choice: Dictionary) -> Dictionary:
+	const CHOICE_KEYS := ["text", "message", "flag", "requires_flag", "condition", "next", "effects"]
+	var result := {}
+	for key in CHOICE_KEYS:
+		if choice.has(key):
+			result[key] = choice[key]
+	for key in choice:
+		if not result.has(key):
+			result[key] = choice[key]
 	return result
 
 
@@ -679,32 +750,66 @@ func _populate_detail(scene_id: String, scene: Dictionary) -> void:
 	var msgs: Array = scene.get("messages_in", [])
 	if msgs.size() > 0:
 		_add_section("%s (%d)" % [_t("Messages", "Messages"), msgs.size()])
-		for msg in msgs:
+		for i in range(msgs.size()):
+			var msg = msgs[i]
+			var msg_idx := i
 			var text = msg.get("text", "")
 			if text is Array:
-				text = " / ".join(text)
-			var line := str(text)
-			var pause = msg.get("pause", "")
-			if pause:
-				line += "  [pause : %s]" % pause
+				for j in range((text as Array).size()):
+					var elem = (text as Array)[j]
+					if elem is String:
+						var text_idx := j
+						_add_text_edit(str(elem), func(val: String) -> void:
+							_patch_field(scene_id, func(s: Dictionary) -> void:
+								((s["messages_in"] as Array)[msg_idx]["text"] as Array)[text_idx] = val))
+					else:
+						var d := elem as Dictionary
+						_add_item("  " + str(d.get("text", "?")))
+			else:
+				_add_text_edit(str(text), func(val: String) -> void:
+					_patch_field(scene_id, func(s: Dictionary) -> void:
+						(s["messages_in"] as Array)[msg_idx]["text"] = val))
+			for k in range(msg.get("edit", []).size()):
+				var edit_op: Dictionary = msg["edit"][k]
+				var edit_idx := k
+				var op: String = edit_op.get("type", "")
+				var delay: float = edit_op.get("delay", 0.0)
+				match op:
+					"correct":
+						_add_item(_t("  ✎ corrigé en (+%.1fs) :" % delay, "  ✎ corrected to (+%.1fs):" % delay))
+						_add_text_edit(str(edit_op.get("corrected_text", "")), func(val: String) -> void:
+							_patch_field(scene_id, func(s: Dictionary) -> void:
+								((s["messages_in"] as Array)[msg_idx]["edit"] as Array)[edit_idx]["corrected_text"] = val))
+					"delete":
+						_add_item(_t("  ✗ supprimé (+%.1fs)" % delay, "  ✗ deleted (+%.1fs)" % delay))
+			var meta := ""
+			if msg.get("pause", ""):
+				meta += "  [pause : %s]" % msg["pause"]
 			if msg.get("requires_flag", "") != "":
-				line += "  (%s %s)" % [_t("si", "if"), msg["requires_flag"]]
-			_add_item(line)
+				meta += "  (%s %s)" % [_t("si", "if"), msg["requires_flag"]]
+			if meta:
+				_add_item(meta)
 			for effect in msg.get("effects", []):
 				_add_effect(effect)
 
 	var choices: Array = scene.get("choices", [])
 	if choices.size() > 0:
 		_add_section("%s (%d)" % [_t("Choix", "Choices"), choices.size()])
-		for c in choices:
-			var line := str(c.get("text", "?"))
+		for i in range(choices.size()):
+			var c = choices[i]
+			var choice_idx := i
+			_add_text_edit(str(c.get("text", "?")), func(val: String) -> void:
+				_patch_field(scene_id, func(s: Dictionary) -> void:
+					(s["choices"] as Array)[choice_idx]["text"] = val))
+			var meta := ""
 			var cnext = c.get("next", "")
 			if cnext:
-				line += " → " + cnext
+				meta += "→ " + cnext
 			var cflag = c.get("flag", "")
 			if cflag:
-				line += "  [%s]" % cflag
-			_add_item(line)
+				meta += "  [%s]" % cflag
+			if meta:
+				_add_item(meta)
 			for effect in c.get("effects", []):
 				_add_effect(effect)
 
@@ -716,6 +821,39 @@ func _populate_detail(scene_id: String, scene: Dictionary) -> void:
 		_add_section(_t("Spécial", "Special"))
 		for s in specials:
 			_add_item(s)
+
+
+func _add_text_edit(initial: String, on_commit: Callable) -> void:
+	var edit := TextEdit.new()
+	edit.text = initial
+	edit.custom_minimum_size = Vector2(0, 52)
+	edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	edit.scroll_fit_content_height = true
+	edit.focus_exited.connect(func() -> void:
+		var val := edit.text
+		if val != initial:
+			on_commit.call(val))
+	_detail_content.add_child(edit)
+
+
+func _patch_field(scene_id: String, setter: Callable) -> void:
+	var file_name: String = _scenes.get(scene_id, {}).get("_editor_file", "")
+	if file_name.is_empty():
+		return
+	var path := "res://dialogues/" + file_name
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return
+	var data = JSON.parse_string(f.get_as_text())
+	f.close()
+	if not data is Dictionary or not data.has("scenes"):
+		return
+	for scene in (data["scenes"] as Array):
+		if scene.get("id", "") != scene_id:
+			continue
+		setter.call(scene)
+		break
+	_write_json(path, data)
 
 
 func _add_header(text: String) -> void:

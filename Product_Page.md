@@ -162,10 +162,10 @@ Pre-fill `free_input` variables, set trust or stress scores, toggle flags on or 
 
 ---
 
-### 🗺 Visual story graph — see your narrative at a glance
-A built-in Godot editor plugin renders your entire story as an **interactive graph** — every scene as a node, every connection as an arrow.
+### 🗺 Visual story graph — build your narrative without leaving Godot
+A built-in Godot editor plugin renders your entire story as an **interactive graph** — every scene as a node, every connection as an arrow — and lets you edit the structure directly.
 
-Enable it once in Project Settings → Plugins. Hit Refresh after any JSON edit and the graph updates instantly.
+Enable it once in Project Settings → Plugins.
 
 **What you see:**
 - **▶** marks the starting scene
@@ -176,7 +176,21 @@ Enable it once in Project Settings → Plugins. Hit Refresh after any JSON edit 
 
 **Click any node** to inspect its full content in the detail panel: contact, all messages with pauses and conditions, choices with their effects and destinations, and special fields like music or delays.
 
-> The plugin reads your JSON files directly and does not affect the game in any way.
+**Edit the structure directly from the graph:**
+- **Right-click on the background** → create a new scene, choose its contact and target file
+- **Drag from an output port to another node** → connects two scenes, writing `next` or `choices[].next` into the JSON automatically
+- **Right-click on a node** → disconnect a specific outgoing link, or delete the scene entirely (all references to it are cleaned up across every file)
+
+**Edit content directly from the detail panel:**
+- Click any node → the detail panel shows all messages and choices as editable text fields
+- Each message bubble, each corrected text, and each choice label can be edited directly — no JSON file to open
+- Changes save automatically when the field loses focus
+
+**Reformat button:** rewrites all dialogue files with the canonical key order without touching any content — useful after manual edits or when switching editors.
+
+Every structural action writes directly to the JSON file and refreshes the graph instantly. Text edits save silently in place.
+
+> The graph and the JSON files are always in sync — the graph is not a separate representation, it is a live view of your files.
 
 ---
 

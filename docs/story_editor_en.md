@@ -29,8 +29,9 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 ```
 
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
+- **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
-- **Detail panel** (right): clicking a node displays its full content.
+- **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
 ---
 
@@ -63,7 +64,7 @@ Each node has:
 - **One input port** (left) — receives connections from preceding scenes
 - **One output port per connection** (right) — one per `next`, one per choice (`choices[]`)
 
-If a scene has choices without a destination (`next` absent), their output ports appear without a wire — they are available to be connected.
+If a scene has choices without a destination (`next` absent), **each choice gets its own output port** — visible without a wire, ready to be connected. Dragging from that port to another node writes `next` into the correct choice.
 
 If a scene has neither choices nor `next`, a **→ ?** port is shown: dragging from it to another node will add a scene-level `next` field.
 
@@ -133,15 +134,40 @@ On confirmation:
 
 ---
 
+## Editing Content in the Detail Panel
+
+Clicking a node opens the detail panel on the right. The following fields are **directly editable**:
+
+- **Each message text** (`messages_in[i].text`) — multi-line text area. If the message is an array (multiple bubbles), each bubble is editable separately.
+- **Corrected text** (`edit[i].corrected_text`) — shown below the initial text with the `✎ corrected to (+Xs):` indicator, editable.
+- **Each choice text** (`choices[i].text`) — the label shown on the choice button.
+
+Other fields (conditions, effects, flags, pauses, `next`) are read-only in the panel. A field is saved **as soon as it loses focus** (click elsewhere or Tab). The graph is not rebuilt on text edits — only the JSON file is updated.
+
+---
+
 ## JSON Format Produced by the Editor
 
-The editor writes JSON using a consistent semantic key order:
+The editor writes JSON using a consistent semantic key order at three levels:
 
+**Scene:**
 ```
-id → contact_id → messages_in → free_input → free_input_placeholder → next → choices
+_notes → id → contact_id → trigger_after_scene → resume_after_flag → resume_after_delay → messages_in → free_input → free_input_placeholder → music → next → choices
 ```
 
-Messages and choices stay compact (one line per element). Indentation uses tabs, consistent with the rest of the file.
+**Message:**
+```
+text → edit → effects → media → pause → requires_flag → condition
+```
+
+**Choice:**
+```
+text → message → flag → requires_flag → condition → next → effects
+```
+
+Messages and choices stay compact (one line per element). Indentation uses tabs.
+
+The **Reformat** button applies this ordering to all existing files without changing any content — useful after a manual edit or migration.
 
 ---
 
