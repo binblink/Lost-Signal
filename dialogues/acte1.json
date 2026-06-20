@@ -108,10 +108,10 @@
 			"id": "scene_08",
 			"messages_in": [
 				{"text": [":D", "Pas de soucis, je t'envoie les coordonnées du propriétaire à la minute où je sais qui c'est!", "Je crois que c'est la première fois que je ris de la journée! xD ", "Ça m'aide pas à sortir d'ici mais ça fait du bien"], "requires_flag": "cosy_room"},
-				{"text": ["PTSD en cours de création", {"pause": "medium", "text": "Veuillez ne pas interrompre le processus."}, "Blague à part tu comprends maintenant pourquoi je suis LÉGÈREMENT stressée de me retrouver enfermée là-dedans?"], "requires_flag": "scary_room"}
+				{"text": ["PTSD en cours de création", {"pause": "medium", "text": "Veuillez ne pas interrompre le processus."}, "Blague à part tu comprends maintenant pourquoi je suis LÉGÈREMENT stressée de me retrouver enfermée là-dedans?"], "effects": [], "requires_flag": "scary_room"}
 			],
 			"choices": [
-				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ca fait vraiment plaisir de trouver des gens sur qui compter! :D", "A défaut de t'aider à sortir d'ici, je suis déja content de te faire rire!", "D'ailleurs en parlant de sortir d'ici..."], "requires_flag": "cosy_room", "effects": []},
+				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ca fait vraiment plaisir de trouver des gens sur qui compter! :D", "A défaut de t'aider à sortir d'ici, je suis déja content de te faire rire!", "D'ailleurs en parlant de sortir d'ici..."], "requires_flag": "cosy_room"},
 				{"text": "Je connais un psy si tu veux!", "message": ["Je connais un psy si tu veux!", "C'est quoi 10 ans de thérapie ?", ""], "requires_flag": "scary_room"}
 			]
 		},
