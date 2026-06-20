@@ -72,15 +72,57 @@ Si une scène n'a ni choix ni `next`, un port **→ ?** est affiché : il permet
 
 ## Panneau de détail
 
-Cliquer sur un nœud affiche dans le panneau de droite :
+> **L'éditeur est une aide pratique pour écrire des scènes sans toucher au JSON.** Il couvre la grande majorité des cas d'usage courants. Certaines fonctionnalités avancées (conditions structurées `and`/`or`, médias, corrections différées, musique) restent accessibles uniquement via l'édition directe du fichier JSON — voir la section [Ce que le JSON permet en plus](#ce-que-le-json-permet-en-plus) en fin de document.
 
-- **ID** de la scène (titre en bleu clair)
-- **Contact** : nom du contact (résolu depuis `story.json`)
-- **Messages** : liste de toutes les bulles, avec pauses, conditions et effets
-- **Choix** : label, destination (`next`), flag associé et effets
-- **Spécial** : champs remarquables (`free_input`, `next`, `trigger_after_scene`, `resume_after_flag`, `music`)
+Cliquer sur un nœud ouvre le panneau de détail à droite. Tous les champs sont **directement éditables** et sauvegardés **dès que le champ perd le focus** (clic ailleurs ou Tab).
 
-Les effets sont affichés en orange. Les conditions sont affichées en langue système.
+### Niveau scène
+
+| Champ | Interface |
+|---|---|
+| Contact | Dropdown — tous les contacts du projet |
+| `trigger_after_scene` | Dropdown de scènes — se déclenche quand la scène choisie vient d'être jouée |
+| `resume_after_flag` | Dropdown de flags — attend en coulisse jusqu'à ce que ce flag soit activé |
+| `resume_after_delay` | Texte libre — accepte `300` (secondes), `"5m"`, `"1h"` |
+| `free_input` (var) | Bouton **+ Saisie libre** → champ texte pour le nom de variable |
+| `free_input_placeholder` | Champ texte — texte indicatif dans le champ de saisie du joueur |
+
+### Par message
+
+| Champ | Interface |
+|---|---|
+| Texte simple | Zone de texte multi-ligne + × pour supprimer |
+| Texte tableau (bulles) | Chaque bulle éditable séparément + **+ bulle** pour en ajouter |
+| `requires_flag` | Dropdown de flags — masque le message si le flag n'est pas actif |
+| `pause` | Dropdown — `(aucune)`, `short`, `medium`, `long` |
+| `effects` | Ligne par effet : dropdown op + dropdown cible + champ valeur + × ; **+ Effet** pour ajouter |
+
+### Par choix
+
+| Champ | Interface |
+|---|---|
+| Texte du bouton | Zone de texte multi-ligne + × pour supprimer |
+| `message` (bulle joueur) | Champ texte — ce qui s'affiche dans la conversation quand le joueur choisit cette option |
+| `flag` | Champ texte — flag activé à la sélection |
+| `requires_flag` | Dropdown de flags — masque ce choix si le flag n'est pas actif |
+| `next` | Dropdown de scènes — scène jouée après ce choix |
+| `effects` | Même interface que les effets de messages |
+
+### Effets (`effects`)
+
+Chaque effet se compose de trois champs :
+
+| Op | Cible | Valeur |
+|---|---|---|
+| `set` | Dropdown de variables | Valeur à affecter |
+| `add` | Dropdown de variables | Valeur à ajouter |
+| `sub` | Dropdown de variables | Valeur à soustraire |
+| `rename` | Dropdown de contacts | Nouveau nom |
+| `set_status` | Dropdown de contacts | `online` / `away` / `offline` / `network_issue` |
+
+### Saisie libre vs Choix
+
+`free_input` et `choices` sont **mutuellement exclusifs** : le moteur ignore les choix si une saisie libre est définie. L'éditeur le reflète : **+ Saisie libre** est grisé si des choix existent, et **+ Choix** est grisé si une saisie libre est active.
 
 ---
 
@@ -134,15 +176,21 @@ Sur confirmation :
 
 ---
 
-## Édition du contenu dans le panneau de détail
+## Ce que le JSON permet en plus
 
-Cliquer sur un nœud ouvre le panneau de détail à droite. Les champs suivants sont **directement éditables** :
+L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suivantes nécessitent encore une édition directe du fichier JSON :
 
-- **Texte de chaque message** (`messages_in[i].text`) — zone de texte multi-ligne. Si le message est un tableau (plusieurs bulles), chaque bulle est éditable séparément.
-- **Texte corrigé** (`edit[i].corrected_text`) — affiché sous le texte initial avec l'indicateur `✎ corrigé en (+Xs) :`, éditable.
-- **Texte de chaque choix** (`choices[i].text`) — la phrase affichée sur le bouton de choix.
+| Fonctionnalité | Pourquoi JSON uniquement |
+|---|---|
+| `condition` structurée (`and`/`or`/`flag`/`var`) | Logique booléenne complexe, `requires_flag` couvre la majorité des cas |
+| `media` (image dans une bulle) | Affiché en lecture seule dans l'éditeur (📷 nom du fichier) |
+| `edit` (corrections différées) | Affiché en lecture seule dans l'éditeur |
+| `time` (délai d'apparition d'un message) | Cas avancé rare |
+| `music` | Cas avancé rare |
+| `_notes` | Commentaires internes, ignorés par le moteur |
+| `resume_after_flag` via code | Géré via le panneau Déclenchement |
 
-Les autres champs (conditions, effets, flags, pauses, `next`) restent en lecture seule dans le panneau. La modification d'un champ est sauvegardée **dès que le champ perd le focus** (clic ailleurs ou Tab). Le graphe n'est pas reconstruit lors d'une édition de texte — seul le fichier JSON est mis à jour.
+Pour toute édition JSON, utiliser le bouton **Reformater** ensuite pour remettre les clés dans l'ordre canonique.
 
 ---
 

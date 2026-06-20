@@ -72,15 +72,57 @@ If a scene has neither choices nor `next`, a **→ ?** port is shown: dragging f
 
 ## Detail Panel
 
-Clicking a node shows in the right panel:
+> **The editor is a practical aid for writing scenes without touching JSON.** It covers the vast majority of common use cases. Some advanced features (structured `and`/`or` conditions, media, deferred corrections, music) are only accessible via direct JSON editing — see [What JSON Allows Beyond the Editor](#what-json-allows-beyond-the-editor) at the end of this document.
 
-- **ID** of the scene (title in light blue)
-- **Contact**: contact name (resolved from `story.json`)
-- **Messages**: all bubbles, with pauses, conditions, and effects
-- **Choices**: label, destination (`next`), associated flag, and effects
-- **Special**: notable fields (`free_input`, `next`, `trigger_after_scene`, `resume_after_flag`, `music`)
+Clicking a node opens the detail panel on the right. All fields are **directly editable** and saved **as soon as the field loses focus** (click elsewhere or Tab).
 
-Effects are displayed in orange. Conditions are shown in the OS language.
+### Scene level
+
+| Field | Interface |
+|---|---|
+| Contact | Dropdown — all contacts in the project |
+| `trigger_after_scene` | Scene dropdown — triggers when the selected scene has just played |
+| `resume_after_flag` | Flag dropdown — waits in the background until this flag is set |
+| `resume_after_delay` | Free text — accepts `300` (seconds), `"5m"`, `"1h"` |
+| `free_input` (var) | **+ Free input** button → text field for the variable name |
+| `free_input_placeholder` | Text field — hint text shown in the player's input field |
+
+### Per message
+
+| Field | Interface |
+|---|---|
+| Simple text | Multi-line text area + × to delete |
+| Array text (bubbles) | Each bubble editable separately + **+ bubble** to add one |
+| `requires_flag` | Flag dropdown — hides the message if the flag is not set |
+| `pause` | Dropdown — `(none)`, `short`, `medium`, `long` |
+| `effects` | One row per effect: op dropdown + target dropdown + value field + ×; **+ Effect** to add |
+
+### Per choice
+
+| Field | Interface |
+|---|---|
+| Button text | Multi-line text area + × to delete |
+| `message` (player bubble) | Text field — what appears in the chat when the player picks this option |
+| `flag` | Text field — flag set when this choice is selected |
+| `requires_flag` | Flag dropdown — hides this choice if the flag is not set |
+| `next` | Scene dropdown — scene played after this choice |
+| `effects` | Same interface as message effects |
+
+### Effects (`effects`)
+
+Each effect has three fields:
+
+| Op | Target | Value |
+|---|---|---|
+| `set` | Variable dropdown | Value to assign |
+| `add` | Variable dropdown | Value to add |
+| `sub` | Variable dropdown | Value to subtract |
+| `rename` | Contact dropdown | New display name |
+| `set_status` | Contact dropdown | `online` / `away` / `offline` / `network_issue` |
+
+### Free input vs Choices
+
+`free_input` and `choices` are **mutually exclusive**: the engine ignores choices if free input is defined. The editor reflects this: **+ Free input** is greyed out if choices exist, and **+ Choice** is greyed out if free input is active.
 
 ---
 
@@ -134,15 +176,20 @@ On confirmation:
 
 ---
 
-## Editing Content in the Detail Panel
+## What JSON Allows Beyond the Editor
 
-Clicking a node opens the detail panel on the right. The following fields are **directly editable**:
+The editor covers the vast majority of scenarios. The following features still require direct JSON editing:
 
-- **Each message text** (`messages_in[i].text`) — multi-line text area. If the message is an array (multiple bubbles), each bubble is editable separately.
-- **Corrected text** (`edit[i].corrected_text`) — shown below the initial text with the `✎ corrected to (+Xs):` indicator, editable.
-- **Each choice text** (`choices[i].text`) — the label shown on the choice button.
+| Feature | Why JSON only |
+|---|---|
+| Structured `condition` (`and`/`or`/`flag`/`var`) | Complex boolean logic; `requires_flag` covers most cases |
+| `media` (image bubble) | Shown read-only in the editor (📷 filename) |
+| `edit` (deferred corrections) | Shown read-only in the editor |
+| `time` (message appearance delay) | Advanced, rarely needed |
+| `music` | Advanced, rarely needed |
+| `_notes` | Internal comments, ignored by the engine |
 
-Other fields (conditions, effects, flags, pauses, `next`) are read-only in the panel. A field is saved **as soon as it loses focus** (click elsewhere or Tab). The graph is not rebuilt on text edits — only the JSON file is updated.
+After any JSON edit, use the **Reformat** button to restore canonical key ordering.
 
 ---
 
