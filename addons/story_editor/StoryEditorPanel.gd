@@ -25,6 +25,7 @@ var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
 
 
+# Returns the inner VBoxContainer so callers add children directly without knowing about the PanelContainer wrapper.
 func _make_stripe(index: int) -> VBoxContainer:
 	var stripe := PanelContainer.new()
 	var style := StyleBoxFlat.new()
@@ -93,6 +94,7 @@ func _on_refresh_pressed() -> void:
 	await _rebuild_graph(_scenes)
 
 
+# Only GraphNode children are freed — GraphEdit has an internal connection_layer node that must not be touched.
 func _rebuild_graph(scenes: Dictionary) -> void:
 	# Ne supprimer que les GraphNode — le connection_layer de GraphEdit doit rester intact
 	for child in _graph.get_children():
@@ -135,6 +137,8 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 # ---------------------------------------------------------------------------
 # Connexions sortantes
 
+# Trigger and resume_after_flag edges don't live in the source scene's JSON — they're reverse-looked-up
+# from the target and stored here as virtual outgoing connections so the graph can draw them.
 func _build_outgoing(scenes: Dictionary) -> Dictionary:
 	var result: Dictionary = {}
 	for scene_id in scenes:
@@ -385,6 +389,8 @@ func _write_disconnection_to_file(from_id: String, from_port: int) -> void:
 				choices[choice_index].erase("next"))
 
 
+# Shared read-parse-mutate-write cycle for both connecting and disconnecting ports.
+# Port index is mapped to a connection type via _outgoing, which was built at last refresh.
 func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> void:
 	var from_scene: Dictionary = _scenes.get(from_id, {})
 	if from_scene.is_empty():
@@ -588,6 +594,7 @@ func _write_scene_to_file(scene_id: String, contact_id: String, file_name: Strin
 	_on_refresh_pressed()
 
 
+# Always re-orders scenes before writing so git diffs stay readable regardless of edit order.
 func _write_json(path: String, data: Dictionary) -> bool:
 	var ordered_scenes: Array = []
 	for s in (data["scenes"] as Array):
@@ -623,6 +630,7 @@ func _json_compact(value) -> String:
 	return JSON.stringify(value)
 
 
+# Expands top-level structure for readability, then falls back to compact past depth 4 (inside effects/choices arrays).
 func _json_expand(value, indent: String) -> String:
 	if indent.length() >= 4:
 		return _json_compact(value)
@@ -645,6 +653,7 @@ func _json_expand(value, indent: String) -> String:
 	return JSON.stringify(value)
 
 
+# Enforces a stable key order so unrelated edits don't produce noisy diffs. _editor_file is stripped — it's runtime-only.
 func _ordered_scene(scene: Dictionary) -> Dictionary:
 	const SCENE_KEYS := ["_notes", "id", "contact_id", "trigger_after_scene",
 		"resume_after_flag", "resume_after_delay", "messages_in",
@@ -1345,6 +1354,8 @@ func _add_text_edit_row(container: VBoxContainer, initial: String, on_commit: Ca
 	container.add_child(row)
 
 
+# Opens the scene's source file, finds the scene by ID, runs setter on it, then writes back.
+# Also syncs _scenes in memory so the detail panel stays consistent without a full graph refresh.
 func _patch_field(scene_id: String, setter: Callable) -> void:
 	var file_name: String = _scenes.get(scene_id, {}).get("_editor_file", "")
 	if file_name.is_empty():

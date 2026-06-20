@@ -23,8 +23,8 @@ extends Control
 @onready var _clock_label = %ClockLabel
 
 var _total_unread: int = 0
-var _blink_tween: Tween = null
 var _free_input_tween: Tween = null
+var _top_bar: Node = null
 var _free_input_indicator: Panel = null
 var _narrative: Node = null
 var _validation_dialog: Control = null
@@ -64,7 +64,7 @@ func _ready() -> void:
 	btn_cancel.pressed.connect(_on_cancel_pressed)
 	btn_restart.pressed.connect(_on_startover_pressed)
 	_exit_button.pressed.connect(_on_exit_button_pressed)
-	_exit_dialog = _build_exit_dialog()
+	_exit_dialog = preload("res://scripts/ui/exit_dialog.gd").new()
 	_exit_dialog.anchor_left   = 0.5
 	_exit_dialog.anchor_right  = 0.5
 	_exit_dialog.anchor_top    = 0.5
@@ -74,6 +74,9 @@ func _ready() -> void:
 	_exit_dialog.z_index = 10
 	_exit_dialog.visible = false
 	add_child(_exit_dialog)
+	_exit_dialog.menu_requested.connect(_on_exit_to_menu)
+	_exit_dialog.desktop_requested.connect(_on_exit_to_desktop)
+	_exit_dialog.close_requested.connect(_on_exit_cancel)
 
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	_contact_panel.contacts = DialogueLoader.get_contacts()
@@ -94,7 +97,14 @@ func _ready() -> void:
 	_validation_dialog.z_index = 10
 	add_child(_validation_dialog)
 
-	_update_topbar(_narrative.active_contact_id)
+	_top_bar = preload("res://scripts/ui/top_bar.gd").new()
+	_top_bar.name_label    = contact_name_label
+	_top_bar.status_dot    = _status_dot
+	_top_bar.status_text   = _status_text
+	_top_bar.status_warning = _status_warning
+	add_child(_top_bar)
+
+	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	_contact_panel.show_panel()
 
 	if DialogueLoader.has_validation_issues():
@@ -109,6 +119,8 @@ func _ready() -> void:
 	if SaveManager.has_save():
 		await load_game()
 	else:
+		# Pre-load history and pending scenes from story.json for secondary contacts
+		# so they appear populated before the main narrative even starts.
 		for contact in DialogueLoader.get_contacts():
 			var cid: String = contact.get("id", "")
 			if contact.get("is_main", false):
@@ -150,53 +162,6 @@ func _apply_theme() -> void:
 	_clock_label.add_theme_color_override("font_color", ThemeManager.time_color)
 
 
-# ---------------------------------------------------------------------------
-# Topbar
-# ---------------------------------------------------------------------------
-
-func _get_display_name(contact_id: String) -> String:
-	if _narrative.contact_names.has(contact_id):
-		return _narrative.contact_names[contact_id]
-	var contact = DialogueLoader.get_contact(contact_id)
-	if contact.is_empty():
-		contact = DialogueLoader.get_main_contact()
-	return contact.get("name", "")
-
-func _update_topbar(contact_id: String) -> void:
-	contact_name_label.text = _get_display_name(contact_id)
-	_apply_status_ui(contact_id)
-
-func _get_status(contact_id: String) -> String:
-	if _narrative.contact_statuses.has(contact_id):
-		return _narrative.contact_statuses[contact_id]
-	return DialogueLoader.get_contact(contact_id).get("status", "online")
-
-func _apply_status_ui(contact_id: String) -> void:
-	if _blink_tween:
-		_blink_tween.kill()
-		_blink_tween = null
-	_status_dot.modulate.a = 1.0
-	match _get_status(contact_id):
-		"online":
-			_status_dot.add_theme_color_override("font_color", Color(0.2, 0.85, 0.4))
-			_status_text.text = tr("STATUS_ONLINE")
-			_status_warning.visible = false
-		"away":
-			_status_dot.add_theme_color_override("font_color", Color(1.0, 0.80, 0.1))
-			_status_text.text = tr("STATUS_AWAY")
-			_status_warning.visible = false
-		"offline":
-			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
-			_status_text.text = tr("STATUS_OFFLINE")
-			_status_warning.visible = false
-		"network_issue":
-			_status_dot.add_theme_color_override("font_color", Color(0.9, 0.25, 0.25))
-			_status_text.text = tr("STATUS_NETWORK_ISSUE")
-			_status_warning.visible = true
-			_blink_tween = create_tween().set_loops()
-			_blink_tween.tween_property(_status_dot, "modulate:a", 0.1, 0.5)
-			_blink_tween.tween_property(_status_dot, "modulate:a", 1.0, 0.5)
-
 
 # ---------------------------------------------------------------------------
 # Contacts panel
@@ -228,6 +193,8 @@ func _on_contacts_button_pressed() -> void:
 func _update_panel_button() -> void:
 	panel_button.text = "☰●" if _total_unread > 0 else "☰"
 
+# Snapshots the live UI back into contact_histories before switching — this is the only place that happens.
+# Without it, messages typed or received in the current conversation would be lost on switch.
 func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	if _narrative.is_busy:
 		return
@@ -238,7 +205,7 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 		return
 	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
 	_narrative.active_contact_id = contact_id
-	_update_topbar(contact_id)
+	_top_bar.refresh(contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	var contact_data = DialogueLoader.get_contact(contact_id)
 	var is_main = contact_data.get("is_main", false)
 	line_edit.editable = is_main
@@ -258,6 +225,8 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 func _on_save_requested(notify_panel: bool) -> void:
 	save_game(notify_panel)
 
+# NarrativeController already wrote messages directly into contact_histories — nothing to render here.
+# Just mark unread, update the panel preview, and save.
 func _on_secondary_scene_received(contact_id: String) -> void:
 	AudioManager.play_notification()
 	_contact_panel.mark_unread(contact_id)
@@ -269,17 +238,18 @@ func _on_secondary_scene_received(contact_id: String) -> void:
 func _on_contact_renamed(contact_id: String, new_name: String) -> void:
 	_contact_panel.set_contact_name(contact_id, new_name)
 	if contact_id == _narrative.active_contact_id:
-		_update_topbar(contact_id)
+		_top_bar.refresh(contact_id, _narrative.contact_names, _narrative.contact_statuses)
 
 func _on_contact_status_changed(contact_id: String, _new_status: String) -> void:
 	if contact_id == _narrative.active_contact_id:
-		_apply_status_ui(contact_id)
+		_top_bar.refresh(contact_id, _narrative.contact_names, _narrative.contact_statuses)
 
 
 # ---------------------------------------------------------------------------
 # Save / Load
 # ---------------------------------------------------------------------------
 
+# Must snapshot the active contact before saving — contact_histories only updates on contact switch otherwise.
 func save_game(notify_panel: bool = true) -> void:
 	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
 	SaveManager.save(_narrative.get_state())
@@ -294,7 +264,7 @@ func load_game() -> void:
 	for cid in _narrative.contact_names:
 		_contact_panel.set_contact_name(cid, _narrative.contact_names[cid])
 	_narrative.active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
-	_update_topbar(_narrative.active_contact_id)
+	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	message_display.clear_messages()
 	await get_tree().process_frame
 	await message_display.render_history(_narrative.contact_histories.get(_narrative.active_contact_id, []))
@@ -317,6 +287,8 @@ func load_game() -> void:
 # Global UI
 # ---------------------------------------------------------------------------
 
+# line_edit.clear() runs first to flush any stale text before setting placeholder_text.
+# placeholder_text is set twice — the second time after the await because the frame process resets it on first layout.
 func _start_free_input_visual(placeholder: String) -> void:
 	line_edit.clear()
 	var _ph := placeholder if placeholder != "" else tr("INPUT_PLACEHOLDER")
@@ -383,80 +355,6 @@ func _on_startover_pressed() -> void:
 # Exit dialog
 # ---------------------------------------------------------------------------
 
-func _build_exit_dialog() -> Control:
-	var panel := PanelContainer.new()
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = ThemeManager.topbar_color
-	panel_style.corner_radius_top_left    = 12
-	panel_style.corner_radius_top_right   = 12
-	panel_style.corner_radius_bottom_right = 12
-	panel_style.corner_radius_bottom_left  = 12
-	panel_style.shadow_color = Color(0, 0, 0, 0.4)
-	panel_style.shadow_size  = 8
-	panel_style.shadow_offset = Vector2(0, 4)
-	panel.add_theme_stylebox_override("panel", panel_style)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left",   28)
-	margin.add_theme_constant_override("margin_top",    24)
-	margin.add_theme_constant_override("margin_right",  28)
-	margin.add_theme_constant_override("margin_bottom", 24)
-	panel.add_child(margin)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 10)
-	margin.add_child(vbox)
-
-	var title := Label.new()
-	title.text = tr("EXIT_TITLE")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_color_override("font_color", ThemeManager.text_color)
-	title.add_theme_font_size_override("font_size", 15)
-	vbox.add_child(title)
-
-	var spacer := Control.new()
-	spacer.custom_minimum_size = Vector2(0, 4)
-	vbox.add_child(spacer)
-
-	var btn_menu := _make_dialog_button(tr("EXIT_MAIN_MENU"), ThemeManager.accent_color, ThemeManager.text_color)
-	btn_menu.pressed.connect(_on_exit_to_menu)
-	btn_menu.custom_minimum_size = Vector2(220, 40)
-	vbox.add_child(btn_menu)
-
-	var btn_desktop := _make_dialog_button(tr("EXIT_DESKTOP"), Color(0.55, 0.12, 0.12, 1), ThemeManager.text_color)
-	btn_desktop.pressed.connect(_on_exit_to_desktop)
-	btn_desktop.custom_minimum_size = Vector2(220, 40)
-	vbox.add_child(btn_desktop)
-
-	var cancel_btn := _make_dialog_button(tr("BTN_CANCEL"), ThemeManager.topbar_color.lightened(0.08), ThemeManager.time_color)
-	cancel_btn.pressed.connect(_on_exit_cancel)
-	cancel_btn.custom_minimum_size = Vector2(220, 40)
-	vbox.add_child(cancel_btn)
-
-	return panel
-
-
-func _make_dialog_button(label: String, bg: Color, fg: Color) -> Button:
-	var btn := Button.new()
-	btn.text = label
-	var style := StyleBoxFlat.new()
-	style.bg_color = bg
-	style.corner_radius_top_left    = 8
-	style.corner_radius_top_right   = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left  = 8
-	btn.add_theme_stylebox_override("normal",  style)
-	btn.add_theme_stylebox_override("focus",   style)
-	var hover_style := style.duplicate() as StyleBoxFlat
-	hover_style.bg_color = bg.lightened(0.12)
-	btn.add_theme_stylebox_override("hover", hover_style)
-	var pressed_style := style.duplicate() as StyleBoxFlat
-	pressed_style.bg_color = bg.darkened(0.15)
-	btn.add_theme_stylebox_override("pressed", pressed_style)
-	btn.add_theme_color_override("font_color", fg)
-	return btn
-
-
 func _on_exit_button_pressed() -> void:
 	overlay.visible = true
 	_exit_dialog.visible = true
@@ -468,10 +366,14 @@ func _on_exit_cancel() -> void:
 
 
 func _on_exit_to_menu() -> void:
+	overlay.visible = false
+	_exit_dialog.visible = false
 	save_game(false)
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 
 func _on_exit_to_desktop() -> void:
+	overlay.visible = false
+	_exit_dialog.visible = false
 	save_game(false)
 	get_tree().quit()
