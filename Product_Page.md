@@ -182,9 +182,15 @@ Enable it once in Project Settings → Plugins.
 - **Right-click on a node** → disconnect a specific outgoing link, or delete the scene entirely (all references to it are cleaned up across every file)
 
 **Edit content directly from the detail panel:**
-- Click any node → the detail panel shows all messages and choices as editable text fields
-- Each message bubble, each corrected text, and each choice label can be edited directly — no JSON file to open
-- Changes save automatically when the field loses focus
+The detail panel is a full scene editor — no JSON file to open.
+
+- **Messages**: edit each bubble's text, set a `requires_flag` condition, choose a pause, add effects
+- **Choices**: edit the button text and the player message, assign a flag, set `requires_flag`, pick the next scene from a dropdown, add effects
+- **Effects**: choose the operation (`set` / `add` / `sub` for variables, `rename` / `set_status` for contacts) from a dropdown, pick the target from a pre-populated list, enter the value — or choose `online` / `away` / `offline` / `network_issue` from a status dropdown
+- **Triggers**: set `trigger_after_scene`, `resume_after_flag`, and `resume_after_delay` directly from dropdowns and text fields
+- **Free input**: add a free-text prompt with a single button, set the variable name and placeholder inline — mutually exclusive with choices (the editor enforces this)
+
+All dropdowns are populated from your actual project: scene IDs, flag names, contact IDs, and variable names are discovered automatically. Changes save when a field loses focus. For advanced features (structured `and`/`or` conditions, media, music, deferred corrections), the JSON remains the source of truth — the editor handles the common 90% without touching a file.
 
 **Reformat button:** rewrites all dialogue files with the canonical key order without touching any content — useful after manual edits or when switching editors.
 

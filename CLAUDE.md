@@ -73,6 +73,7 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 - **Right-click on background** → create a new scene (ID, contact, target file)
 - **Drag output port → input port** → writes `next` or `choices[i].next`
 - **Right-click on node** → disconnect a specific outgoing connection, or delete the scene (cleans up all references across all files)
+- **Click node → detail panel** → full scene editor: message text/pause/requires_flag/effects, choice text/message/flag/requires_flag/next/effects, free_input, trigger_after_scene, resume_after_flag, resume_after_delay — all via form controls with dropdowns populated from live project data (scene IDs, flags, contacts, vars). Advanced fields (structured `condition`, media, music, `edit`) remain JSON-only.
 
 **Key constraints**:
 - `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context.
