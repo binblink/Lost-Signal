@@ -651,3 +651,38 @@ Si vous ne pouvez pas copier-coller un emoji, utilisez les raccourcis texte habi
 | `T_T` | 😭 | | `-_-`  | 😑 |
 | `>_<` | 😣 | | `o.O`  | 🤨 |
 | `<3`  | ❤️  | | `</3`  | 💔 |
+
+## 17. Menu principal
+
+Le menu principal est entièrement configuré depuis `story.json` et `theme.json` — aucune modification de code n'est nécessaire.
+
+### Titre
+
+Le champ `title` dans `story.json` définit le texte affiché en grand dans le menu principal.
+
+```json
+{
+  "title": "Mon Histoire",
+  "start_scene": "intro",
+  "contacts": [ ... ]
+}
+```
+
+Si le champ est absent, le titre reste vide.
+
+### Effet de glitch
+
+Par défaut, le titre s'affiche avec une animation de glitch : les caractères s'affichent comme du bruit au chargement, puis se décodent progressivement, avec des corruptions aléatoires en idle.
+
+Pour désactiver cet effet, ajoutez `"title_glitch": false` dans `theme.json` :
+
+```json
+{
+  "title_glitch": false
+}
+```
+
+| Valeur | Comportement |
+|--------|-------------|
+| `true` (défaut) | Animation de décodage au chargement + glitches aléatoires en idle |
+| `false` | Titre statique, affiché immédiatement |

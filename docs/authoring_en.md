@@ -651,3 +651,38 @@ If you can't copy-paste an emoji, use the standard text shortcuts — the engine
 | `T_T` | 😭 | | `-_-`  | 😑 |
 | `>_<` | 😣 | | `o.O`  | 🤨 |
 | `<3`  | ❤️  | | `</3`  | 💔 |
+
+## 17. Main Menu
+
+The main menu is fully configured from `story.json` and `theme.json` — no code changes needed.
+
+### Title
+
+The `title` field in `story.json` sets the text displayed prominently on the main menu.
+
+```json
+{
+  "title": "My Story",
+  "start_scene": "intro",
+  "contacts": [ ... ]
+}
+```
+
+If the field is absent, the title is left empty.
+
+### Glitch effect
+
+By default, the title plays a glitch animation on load: characters appear as noise, then decode progressively, with random corruptions at idle.
+
+To disable the effect, add `"title_glitch": false` in `theme.json`:
+
+```json
+{
+  "title_glitch": false
+}
+```
+
+| Value | Behaviour |
+|-------|-----------|
+| `true` (default) | Decode animation on load + random idle glitches |
+| `false` | Static title, displayed immediately |

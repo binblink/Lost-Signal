@@ -263,6 +263,12 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "⟳"
 
+[node name="ExitButton" type="Button" parent="RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer" unique_id=1234560001]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.18, 0.18, 1)
+text = "✕"
+
 [node name="Messages" type="ScrollContainer" parent="RootHBox/VBoxContainer" unique_id=1896642000]
 layout_mode = 2
 size_flags_vertical = 3

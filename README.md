@@ -71,7 +71,8 @@ Le joueur change la langue via le menu **Paramètres** (bouton ⚙ en haut à dr
 
 ### Ce qui est sans risque
 
-- **`theme.json`** : couleurs, taille de police, vitesse de frappe. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
+- **`theme.json`** : couleurs, taille de police, vitesse de frappe, et options d'interface. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
+  - `title_glitch` (`true` / `false`) : active ou désactive l'animation de glitch sur le titre du menu principal. Défaut : `true`.
 - **Repositionner ou redimensionner** des nœuds dans l'éditeur Godot.
 - **Modifier les marges, espacements, couleurs** dans l'inspecteur.
 
@@ -85,7 +86,7 @@ Les nœuds protégés dans chaque scène :
 
 | Scène | Nœuds protégés |
 |-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
+| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, ExitButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
 | `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
 | `ContactPanel.tscn` | ContactList, CloseButton |
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |

@@ -71,7 +71,8 @@ Players change the language via the **Settings** menu (⚙ button, top right). I
 
 ### Safe to Change
 
-- **`theme.json`**: colors, font size, typing speed. All fields are optional — an invalid or missing file simply falls back to the default theme.
+- **`theme.json`**: colors, font size, typing speed, and interface options. All fields are optional — an invalid or missing file simply falls back to the default theme.
+  - `title_glitch` (`true` / `false`): enables or disables the glitch animation on the main menu title. Default: `true`.
 - **Repositioning or resizing** nodes in the Godot editor.
 - **Adjusting margins, spacing, and colors** in the Inspector.
 
@@ -85,7 +86,7 @@ Protected nodes per scene:
 
 | Scene | Protected Nodes |
 |-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
+| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, ExitButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
 | `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
 | `ContactPanel.tscn` | ContactList, CloseButton |
 | `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |

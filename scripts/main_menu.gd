@@ -8,11 +8,12 @@ extends Control
 @onready var _overlay         = %Overlay
 @onready var _settings_dialog = %SettingsDialog
 
-const TITLE_TEXT   := "Maeve // Lost Signal"
+var TITLE_TEXT: String
 const GLITCH_CHARS := "!@#$%&*?|▓█░▒╔╗╚╝║═▌▐▀▄01~^;:"
 
 
 func _ready() -> void:
+	TITLE_TEXT = DialogueLoader.get_title()
 	_background.color = ThemeManager.background_color.lerp(ThemeManager.accent_color, 0.04)
 	var _bg_fx := preload("res://scripts/ui/main_menu_background.gd").new()
 	add_child(_bg_fx)
@@ -50,7 +51,8 @@ func _ready() -> void:
 	_settings_dialog.cancelled.connect(func(): _overlay.visible = false)
 
 	_title.text = TITLE_TEXT
-	_run_glitch_loop()
+	if ThemeManager.title_glitch:
+		_run_glitch_loop()
 
 
 func _run_glitch_loop() -> void:

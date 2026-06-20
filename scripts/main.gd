@@ -19,6 +19,7 @@ extends Control
 @onready var _contact_panel     = %ContactPanel
 @onready var btn_cancel  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
 @onready var btn_restart = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
+@onready var _exit_button = %ExitButton
 @onready var _clock_label = %ClockLabel
 
 var _total_unread: int = 0
@@ -27,6 +28,7 @@ var _free_input_tween: Tween = null
 var _free_input_indicator: Panel = null
 var _narrative: Node = null
 var _validation_dialog: Control = null
+var _exit_dialog: Control = null
 
 
 func _ready() -> void:
@@ -61,6 +63,17 @@ func _ready() -> void:
 	photo_overlay.gui_input.connect(_on_photo_overlay_input)
 	btn_cancel.pressed.connect(_on_cancel_pressed)
 	btn_restart.pressed.connect(_on_startover_pressed)
+	_exit_button.pressed.connect(_on_exit_button_pressed)
+	_exit_dialog = _build_exit_dialog()
+	_exit_dialog.anchor_left   = 0.5
+	_exit_dialog.anchor_right  = 0.5
+	_exit_dialog.anchor_top    = 0.5
+	_exit_dialog.anchor_bottom = 0.5
+	_exit_dialog.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_exit_dialog.grow_vertical   = Control.GROW_DIRECTION_BOTH
+	_exit_dialog.z_index = 10
+	_exit_dialog.visible = false
+	add_child(_exit_dialog)
 
 	_contact_panel.contact_selected.connect(_on_contact_selected)
 	_contact_panel.contacts = DialogueLoader.get_contacts()
@@ -364,3 +377,101 @@ func _on_startover_pressed() -> void:
 	SaveManager.delete_save()
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
+
+
+# ---------------------------------------------------------------------------
+# Exit dialog
+# ---------------------------------------------------------------------------
+
+func _build_exit_dialog() -> Control:
+	var panel := PanelContainer.new()
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = ThemeManager.topbar_color
+	panel_style.corner_radius_top_left    = 12
+	panel_style.corner_radius_top_right   = 12
+	panel_style.corner_radius_bottom_right = 12
+	panel_style.corner_radius_bottom_left  = 12
+	panel_style.shadow_color = Color(0, 0, 0, 0.4)
+	panel_style.shadow_size  = 8
+	panel_style.shadow_offset = Vector2(0, 4)
+	panel.add_theme_stylebox_override("panel", panel_style)
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left",   28)
+	margin.add_theme_constant_override("margin_top",    24)
+	margin.add_theme_constant_override("margin_right",  28)
+	margin.add_theme_constant_override("margin_bottom", 24)
+	panel.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	margin.add_child(vbox)
+
+	var title := Label.new()
+	title.text = tr("EXIT_TITLE")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override("font_color", ThemeManager.text_color)
+	title.add_theme_font_size_override("font_size", 15)
+	vbox.add_child(title)
+
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, 4)
+	vbox.add_child(spacer)
+
+	var btn_menu := _make_dialog_button(tr("EXIT_MAIN_MENU"), ThemeManager.accent_color, ThemeManager.text_color)
+	btn_menu.pressed.connect(_on_exit_to_menu)
+	btn_menu.custom_minimum_size = Vector2(220, 40)
+	vbox.add_child(btn_menu)
+
+	var btn_desktop := _make_dialog_button(tr("EXIT_DESKTOP"), Color(0.55, 0.12, 0.12, 1), ThemeManager.text_color)
+	btn_desktop.pressed.connect(_on_exit_to_desktop)
+	btn_desktop.custom_minimum_size = Vector2(220, 40)
+	vbox.add_child(btn_desktop)
+
+	var btn_cancel := _make_dialog_button(tr("BTN_CANCEL"), ThemeManager.topbar_color.lightened(0.08), ThemeManager.time_color)
+	btn_cancel.pressed.connect(_on_exit_cancel)
+	btn_cancel.custom_minimum_size = Vector2(220, 40)
+	vbox.add_child(btn_cancel)
+
+	return panel
+
+
+func _make_dialog_button(label: String, bg: Color, fg: Color) -> Button:
+	var btn := Button.new()
+	btn.text = label
+	var style := StyleBoxFlat.new()
+	style.bg_color = bg
+	style.corner_radius_top_left    = 8
+	style.corner_radius_top_right   = 8
+	style.corner_radius_bottom_right = 8
+	style.corner_radius_bottom_left  = 8
+	btn.add_theme_stylebox_override("normal",  style)
+	btn.add_theme_stylebox_override("focus",   style)
+	var hover_style := style.duplicate() as StyleBoxFlat
+	hover_style.bg_color = bg.lightened(0.12)
+	btn.add_theme_stylebox_override("hover", hover_style)
+	var pressed_style := style.duplicate() as StyleBoxFlat
+	pressed_style.bg_color = bg.darkened(0.15)
+	btn.add_theme_stylebox_override("pressed", pressed_style)
+	btn.add_theme_color_override("font_color", fg)
+	return btn
+
+
+func _on_exit_button_pressed() -> void:
+	overlay.visible = true
+	_exit_dialog.visible = true
+
+
+func _on_exit_cancel() -> void:
+	overlay.visible = false
+	_exit_dialog.visible = false
+
+
+func _on_exit_to_menu() -> void:
+	save_game(false)
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
+
+
+func _on_exit_to_desktop() -> void:
+	save_game(false)
+	get_tree().quit()

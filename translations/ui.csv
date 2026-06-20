@@ -36,3 +36,6 @@ VALID_COUNT_WARNINGS,%d warning(s),%d avertissement(s)
 VALID_COPY,Copy,Copier
 MSG_DELETED,Message deleted,Message supprimé
 MSG_CORRUPTED,Corrupted message,Message corrompu
+EXIT_TITLE,Exit?,Quitter ?
+EXIT_MAIN_MENU,Main menu,Menu principal
+EXIT_DESKTOP,Quit to desktop,Bureau

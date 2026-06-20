@@ -178,13 +178,15 @@ Settings persist between sessions and are applied automatically on launch.
 - Theme system via `theme.json` — colors, typography, bubble sizing, typing speed
 - No code changes needed to reskin the entire game
 - Designed to adapt to different visual identities
+- Animated main menu title with glitch effect — configurable via `title_glitch` in `theme.json`
+- Main menu title driven by `story.json` — no code to touch when shipping a new story
 
 ---
 
 ### 💾 Automatic save system
 - Story state is saved **after every player choice and every received message** — players never lose progress
 - Full persistence: variables, flags, conversation history, contact names and statuses
-- Main menu with New Game / Continue
+- Main menu with New Game / Continue and in-game exit dialog (main menu / desktop / cancel)
 - Save file is human-readable JSON
 
 ---
@@ -274,7 +276,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Main menu (New Game / Continue)
 - Player settings menu (language, volume, resolution, display mode)
 - Localization system (per-language dialogue files + UI translation CSV)
-- Theme system (`theme.json`)
+- Theme system (`theme.json`) with animated glitch title (configurable)
 - Playable demo scenario
 - Bilingual authoring guide (EN + FR) with full syntax reference
 

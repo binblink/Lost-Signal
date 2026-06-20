@@ -6,6 +6,7 @@ const DIALOGUES_DIR = "res://dialogues/"
 var _scenes:      Dictionary = {}
 var _contacts:    Array      = []
 var _start_scene: String     = "scene_01"
+var _title:       String     = ""
 var _triggers:    Dictionary = {}
 var validation_errors:   Array = []
 var validation_warnings: Array = []
@@ -39,10 +40,9 @@ func _load_story() -> void:
 	var data = _parse_json(STORY_PATH)
 	if data.is_empty():
 		return
-	if data.has("start_scene"):
-		_start_scene = data["start_scene"]
-	if data.has("contacts"):
-		_contacts = data["contacts"]
+	if data.has("title"):       _title       = data["title"]
+	if data.has("start_scene"): _start_scene = data["start_scene"]
+	if data.has("contacts"):    _contacts    = data["contacts"]
 
 func _load_dialogues_dir() -> void:
 	var dir = DirAccess.open(DIALOGUES_DIR)
@@ -148,6 +148,9 @@ func _parse_json(path: String) -> Dictionary:
 	return json.get_data()
 
 # --- Public API ---
+
+func get_title() -> String:
+	return _title
 
 func get_start_scene() -> String:
 	return _start_scene
