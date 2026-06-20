@@ -1,0 +1,8 @@
+{
+  "title": "Maeve // Lost Signal",
+  "start_scene": "ch1_intro",
+  "contacts": [
+	{ "id": "maeve", "name": "+33 6 23 11 47 05", "is_main": true,  "avatar": null, "status": "online" },
+	{ "id": "alex",  "name": "Alex",              "is_main": false, "avatar": null, "status": "online" }
+  ]
+}

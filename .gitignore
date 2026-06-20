@@ -2,10 +2,18 @@
 .godot/
 /android/
 
+# Fichiers générés par Godot (ne pas versionner)
+*.uid
+*.import
+*.tmp
+*.translation
+
+# Données utilisateur et exports
 *.save
-*.json
 user://
 .import/
 .export/
-.export_presets.cfg
-*.translation
+export_presets.cfg
+
+# Sauvegardes utilisateur uniquement
+*.save

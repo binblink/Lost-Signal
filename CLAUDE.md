@@ -57,6 +57,22 @@ translations/ui.csv ← UI strings (keys, en, fr columns)
 
 `DialogueLoader` prefers locale-specific files (`base.locale.json`) over the base file. Scene IDs must be globally unique across all loaded files.
 
+### Story Editor plugin (`addons/story_editor/`)
+
+An `@tool` EditorPlugin that renders a visual graph of all narrative scenes. Activated via Project Settings → Plugins. Does not touch any runtime file.
+
+| File | Role |
+|---|---|
+| `plugin.cfg` | Godot plugin manifest |
+| `plugin.gd` | `EditorPlugin` — mounts/unmounts the bottom panel |
+| `StoryEditorPanel.tscn` | Panel scene: `HSplitContainer[GraphEdit, ScrollContainer]` |
+| `StoryEditorPanel.gd` | Graph rendering, BFS layout, detail panel, visual indicators |
+| `scene_parser.gd` | Standalone `RefCounted` that reads JSON files with locale support (uses `OS.get_locale_language()`, not `SettingsManager`) |
+
+**Key constraints**: `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context. Only `GraphNode` children of `GraphEdit` are freed on rebuild — never `get_children()` blindly, as that would delete the internal `connection_layer` node and corrupt the graph.
+
+Full user-facing docs: `docs/story_editor_en.md` (English), `docs/story_editor.md` (French).
+
 ### State machine in NarrativeController
 
 Key state variables:

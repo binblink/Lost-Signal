@@ -1,0 +1,13 @@
+{
+  "_note": "Supprimer ce fichier pour revenir au thème par défaut. Couleurs au format #RRGGBB.",
+  "background_color": "#0B0E11",
+  "topbar_color":     "#1F2C34",
+  "bubble_in_color":  "#21303D",
+  "bubble_out_color": "#00705C",
+  "accent_color":     "#00A884",
+  "text_color":       "#E9EDEF",
+  "time_color":       "#8696A0",
+  "font_size":        15,
+  "typing_speed":     0.05,
+  "title_glitch":     true
+}

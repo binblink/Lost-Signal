@@ -24,6 +24,8 @@ Visual novel au format SMS réalisé avec Godot 4.6. Tout le contenu narratif es
 
 **Validation** : Le jeu valide automatiquement `story.json` et les fichiers `dialogues/*.json` au lancement dans Godot. Si des erreurs existent, une fenêtre s'affiche immédiatement.
 
+**Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives — voir `docs/story_editor.md`. À activer via **Projet → Paramètres du projet → Plugins**.
+
 ---
 
 ## Organisation des fichiers

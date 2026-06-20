@@ -1,0 +1,105 @@
+{
+  "scenes": [
+	{
+	  "_notes": "Opening scene — Maeve looking for contact",
+	  "id": "ch1_intro",
+	  "messages_in": [
+		"Hello?",
+		{ "text": "Is anyone receiving my messages?", "pause": "short" }
+	  ],
+	  "choices": [
+		{ "text": "Yes, who are you?",     "message": "Yes, I got your message. Who are you?",                    "next": "ch1_explication", "flag": "rep_a" },
+		{ "text": "What's this about?",    "message": "What's this about?",                                        "next": "ch1_explication", "flag": "rep_b" },
+		{ "text": "Is this a joke?",       "message": "Is this a joke? You're texting random numbers?",           "next": "ch1_explication", "flag": "rep_c" }
+	  ]
+	},
+
+	{
+	  "_notes": "Maeve responds based on choice 1 (requires_flag), then explains her situation",
+	  "id": "ch1_explication",
+	  "messages_in": [
+		{ "text": "Thank you for answering",                                                                                          "requires_flag": "rep_a" },
+		{ "text": "Sorry",                                                                                                            "requires_flag": "rep_b" },
+		{ "text": "Kind of, yes… Sorry",                                                                                             "requires_flag": "rep_c" },
+		{ "text": "I know this is strange but I need help and I have no one else to turn to",                         "pause": "short" },
+		{ "text": "I just woke up in a room that looks like a hospital room, but it's not a hospital.",               "pause": "short" },
+		{ "text": "There was this phone on the floor with nothing but this messaging app and no contacts.",            "pause": "short" },
+		{ "text": "I've tried dozens of numbers but no messages go through except to this one apparently…",           "pause": "short" },
+		{ "text": "I know it sounds unbelievable but I really need help",                                             "pause": "short" }
+	  ],
+	  "choices": [
+		{ "text": "This isn't funny.",   "message": "If this is a joke it's really not funny.",  "next": "ch1_reaction", "flag": "react_r" },
+		{ "text": "I'll help you.",      "message": "I'll help you",                             "next": "ch1_reaction", "flag": "react_t" },
+		{ "text": "Ok, calm down.",      "message": "Ok, calm down",                             "next": "ch1_reaction", "flag": "react_u" }
+	  ]
+	},
+
+	{
+	  "_notes": "Maeve's reaction based on player attitude — 3 conditional branches, then commitment choice",
+	  "id": "ch1_reaction",
+	  "messages_in": [
+		{ "text": "I promise it's not!",                                                                                              "pause": "short", "requires_flag": "react_r" },
+		{ "text": "Please, stay with me! I really need help!",                                                                        "pause": "short", "requires_flag": "react_r" },
+		{ "text": "Really?",                                                                                                          "requires_flag": "react_t" },
+		{ "text": "Finally something good in this awful day!",                                                                        "pause": "short", "requires_flag": "react_t" },
+		{ "text": "Thank you thank you thank you",                                                                                    "pause": "short", "requires_flag": "react_t" },
+		{ "text": "Yes, sorry… You're right…",                                                                                       "requires_flag": "react_u" },
+		{ "text": "It's not easy but I need to keep a clear head if I want to get out of here",                       "pause": "short", "requires_flag": "react_u" },
+		{ "text": "Thank you! Having someone to share this with should help.",                                         "pause": "short", "requires_flag": "react_u" }
+	  ],
+	  "choices": [
+		{ "text": "Hmm… curious though.",  "message": ["Hmm, I'm still not really convinced…", "but I'm curious to see where this is going"],  "next": "ch1_presentation", "flag": "commit_r" },
+		{ "text": "I'll stay.",            "message": ["Ok ok I don't know what to think but I'll stay…", "For now"],                          "next": "ch1_presentation", "flag": "commit_s" },
+		{ "text": "Ok. I'm with you.",     "message": "Ok. I'm staying with you. Tell me what you need.",                                      "next": "ch1_presentation", "flag": "commit_t" }
+	  ]
+	},
+
+	{
+	  "_notes": "Maeve introduces herself — rename triggered on message, then exploration choice",
+	  "id": "ch1_presentation",
+	  "messages_in": [
+		{ "text": "That's honest. I'll do the same.",                                                                  "requires_flag": "commit_r" },
+		{ "text": "For now that's already a lot. Thank you.",                                                          "requires_flag": "commit_s" },
+		{ "text": "You can't know how good it feels to hear that.",                                                    "requires_flag": "commit_t" },
+		{ "text": "My name is Maeve.", "pause": "short", "effects": [{ "op": "rename", "contact": "maeve", "value": "Maeve" }] },
+		{ "text": "Well… I think so. My name is the only thing I'm really sure of right now.", "pause": "short" },
+        "And you?"
+	  ],
+	  "free_input": "nom_joueur",
+	  "next": "ch1_exploration"
+	},
+
+	{
+	  "_notes": "Maeve acknowledges the name via {nom_joueur} template, then exploration choice",
+	  "id": "ch1_exploration",
+	  "messages_in": [
+		{ "text": "{nom_joueur}…", "pause": "short" },
+		{ "text": "Ok {nom_joueur}. Right. We need to try to figure out what's going on.", "pause": "short" }
+	  ],
+	  "choices": [
+		{ "text": "You don't remember anything else?", "message": "You don't remember anything other than your name?",  "next": "ch1_connaissance", "flag": "demande_memoire" },
+		{ "text": "Describe the room to me.",          "message": "Describe what you see around you.",                  "next": "ch1_connaissance", "flag": "demande_lieu" },
+		{ "text": "Are you in pain anywhere?",         "message": "Physically — are you in pain anywhere?",            "next": "ch1_connaissance", "flag": "demande_etat" }
+	  ]
+	},
+
+	{
+	  "_notes": "First exploration — 3 conditional branches (memory / location / state), converging on battery constraint",
+	  "id": "ch1_connaissance",
+	  "messages_in": [
+		{ "text": "No. Not really.",                                                                                                  "requires_flag": "demande_memoire" },
+		{ "text": "I'm trying but it's blurry. Images, sounds. Nothing concrete.",                                    "pause": "short", "requires_flag": "demande_memoire" },
+		{ "text": "You know that feeling of something on the tip of your tongue? Except it's your entire life.",       "pause": "short", "requires_flag": "demande_memoire" },
+		{ "text": "White. Very white. Too white.",                                                                                    "requires_flag": "demande_lieu" },
+		{ "text": "A bed, medical equipment but everything is off, unplugged. And this phone.",                        "pause": "short", "requires_flag": "demande_lieu" },
+		{ "text": "No window. And… I've been looking for a door this whole time.",                                     "pause": "short", "requires_flag": "demande_lieu" },
+		{ "text": "Physically I'm more or less okay. My head is spinning a little.",                                                  "requires_flag": "demande_etat" },
+		{ "text": "What hurts the most is not understanding what brought me here.",                                    "pause": "short", "requires_flag": "demande_etat" },
+		{ "text": "Like I slept too long. Or not enough. I can't tell anymore.",                                       "pause": "short", "requires_flag": "demande_etat" },
+		{ "text": "I don't know how long this phone will last.",                                      "pause": "medium" },
+		{ "text": "The battery is at 34%. And I don't know if it charges.",                           "pause": "short" },
+		{ "text": "We need to figure out what's going on before I lose signal.",                      "pause": "short" }
+	  ]
+	}
+  ]
+}
