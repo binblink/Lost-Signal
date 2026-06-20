@@ -184,7 +184,7 @@ The editor covers the vast majority of scenarios. The following features still r
 |---|---|
 | Structured `condition` (`and`/`or`/`flag`/`var`) | Complex boolean logic; `requires_flag` covers most cases |
 | `media` (image bubble) | Shown read-only in the editor (📷 filename) |
-| `edit` (deferred corrections) | Shown read-only in the editor |
+| `edit` (deferred corrections) | The corrected text (`corrected_text`) is editable; type and delay remain read-only |
 | `time` (message appearance delay) | Advanced, rarely needed |
 | `music` | Advanced, rarely needed |
 | `_notes` | Internal comments, ignored by the engine |

@@ -184,7 +184,7 @@ L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suiva
 |---|---|
 | `condition` structurée (`and`/`or`/`flag`/`var`) | Logique booléenne complexe, `requires_flag` couvre la majorité des cas |
 | `media` (image dans une bulle) | Affiché en lecture seule dans l'éditeur (📷 nom du fichier) |
-| `edit` (corrections différées) | Affiché en lecture seule dans l'éditeur |
+| `edit` (corrections différées) | Le texte corrigé (`corrected_text`) est éditable ; le type et le délai restent en lecture seule |
 | `time` (délai d'apparition d'un message) | Cas avancé rare |
 | `music` | Cas avancé rare |
 | `_notes` | Commentaires internes, ignorés par le moteur |

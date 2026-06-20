@@ -1469,14 +1469,14 @@ func _add_effect_row(container: VBoxContainer, scene_id: String, eff_idx: int, e
 		call_deferred("_populate_detail", scene_id))
 	row.add_child(op_opts)
 
-	var target_opts := OptionButton.new()
-	target_opts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if is_contact_op:
 		var contact_ids: Array = []
 		for c in _parser.contacts:
 			contact_ids.append(c.get("id", ""))
 		if target_val and not contact_ids.has(target_val):
 			contact_ids.append(target_val)
+		var target_opts := OptionButton.new()
+		target_opts.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		target_opts.add_item(_t("(aucun)", "(none)"))
 		var target_sel := 0
 		for ci in range(contact_ids.size()):
@@ -1490,25 +1490,45 @@ func _add_effect_row(container: VBoxContainer, scene_id: String, eff_idx: int, e
 					get_effs.call(s)[eff_idx].erase(target_key)
 				else:
 					get_effs.call(s)[eff_idx][target_key] = contact_ids[idx - 1]))
+		row.add_child(target_opts)
 	else:
 		var all_vars := _collect_vars()
 		if target_val and not all_vars.has(target_val):
 			all_vars.append(target_val)
 			all_vars.sort()
-		target_opts.add_item(_t("(aucune)", "(none)"))
-		var target_sel := 0
-		for vi in range(all_vars.size()):
-			target_opts.add_item(all_vars[vi])
-			if all_vars[vi] == target_val:
-				target_sel = vi + 1
-		target_opts.selected = target_sel
-		target_opts.item_selected.connect(func(idx: int) -> void:
+		var var_container := HBoxContainer.new()
+		var_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var var_edit := LineEdit.new()
+		var_edit.text = target_val
+		var_edit.placeholder_text = _t("nom de variable", "variable name")
+		var_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var_edit.focus_exited.connect(func() -> void:
+			var val := var_edit.text.strip_edges()
 			_patch_field(scene_id, func(s: Dictionary) -> void:
-				if idx == 0:
+				if val.is_empty():
 					get_effs.call(s)[eff_idx].erase(target_key)
 				else:
-					get_effs.call(s)[eff_idx][target_key] = all_vars[idx - 1]))
-	row.add_child(target_opts)
+					get_effs.call(s)[eff_idx][target_key] = val))
+		var_container.add_child(var_edit)
+		if not all_vars.is_empty():
+			var pick_btn := Button.new()
+			pick_btn.text = "▾"
+			pick_btn.flat = true
+			pick_btn.custom_minimum_size = Vector2(28, 0)
+			pick_btn.pressed.connect(func() -> void:
+				var popup := PopupMenu.new()
+				for v in all_vars:
+					popup.add_item(v)
+				add_child(popup)
+				popup.id_pressed.connect(func(idx: int) -> void:
+					var chosen: String = all_vars[idx]
+					var_edit.text = chosen
+					_patch_field(scene_id, func(s: Dictionary) -> void:
+						get_effs.call(s)[eff_idx][target_key] = chosen)
+					popup.queue_free())
+				popup.popup_on_parent(Rect2(pick_btn.global_position + Vector2(0, pick_btn.size.y), Vector2.ZERO)))
+			var_container.add_child(pick_btn)
+		row.add_child(var_container)
 
 	var eq_lbl := Label.new()
 	eq_lbl.text = "="

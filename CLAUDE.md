@@ -33,6 +33,8 @@ Key responsibilities of `main.gd` that live outside `NarrativeController`:
 - **Image popup**: `_on_image_clicked(path)` loads the texture into `%PhotoImage` and shows `%PhotoOverlay`. Clicking the overlay hides it.
 - **Startup validation**: if `DialogueLoader.has_validation_issues()`, an overlay + `ValidationDialog` block the UI immediately before any narrative starts.
 - **Debug overlay**: `scripts/debug_overlay.gd` is added as a child only when `OS.is_debug_build()` — absent from release exports automatically.
+- **TopBar** (`scripts/ui/top_bar.gd`): separate Node instantiated by main.gd; receives node refs via properties; exposes `refresh(contact_id, names, statuses)`. Owns the blink tween for `network_issue` status.
+- **ExitDialog** (`scripts/ui/exit_dialog.gd`): separate PanelContainer instantiated by main.gd; emits `menu_requested`, `desktop_requested`, `close_requested`. main.gd handles save + navigation on those signals.
 
 `NarrativeController` (`scripts/narrative_controller.gd`) is the story engine. It calls `play_scene(id)`, which:
 1. Walks `messages_in` sequentially, evaluating conditions and effects
@@ -73,7 +75,7 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 - **Right-click on background** → create a new scene (ID, contact, target file)
 - **Drag output port → input port** → writes `next` or `choices[i].next`
 - **Right-click on node** → disconnect a specific outgoing connection, or delete the scene (cleans up all references across all files)
-- **Click node → detail panel** → full scene editor: message text/pause/requires_flag/effects, choice text/message/flag/requires_flag/next/effects, free_input, trigger_after_scene, resume_after_flag, resume_after_delay — all via form controls with dropdowns populated from live project data (scene IDs, flags, contacts, vars). Advanced fields (structured `condition`, media, music, `edit`) remain JSON-only.
+- **Click node → detail panel** → full scene editor: message text/pause/requires_flag/effects, choice text/message/flag/requires_flag/next/effects, free_input, trigger_after_scene, resume_after_flag, resume_after_delay — all via form controls with dropdowns populated from live project data (scene IDs, flags, contacts, vars). Advanced fields (structured `condition`, media, music) remain JSON-only. For `edit` ops, `corrected_text` is editable in the panel; type and delay are read-only.
 
 **Key constraints**:
 - `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context.
