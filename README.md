@@ -19,6 +19,8 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 ## Documentation
 
+**Documentation en ligne : [lost-signal.pages.dev](https://lost-signal.pages.dev/index_en/)**
+
 **Consultez `docs/authoring.md`** pour la documentation complète :
 - Structure des fichiers JSON (story.json, dialogues/*.json)
 - Messages, choix, conditions, effets

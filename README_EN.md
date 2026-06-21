@@ -19,6 +19,8 @@ Includes a visual scene graph editor built directly into Godot.
 
 ## Documentation
 
+**Full documentation online: [lost-signal.pages.dev](https://lost-signal.pages.dev/index_en/)**
+
 **See `docs/authoring_en.md`** for the full documentation:
 - JSON file structure (story.json, dialogues/*.json)
 - Messages, choices, conditions, effects
