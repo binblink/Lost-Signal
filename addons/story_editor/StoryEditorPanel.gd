@@ -13,6 +13,7 @@ const V_SPACING := 280.0
 @onready var _status_label:    Label         = %StatusLabel
 @onready var _refresh_button:  Button        = %RefreshButton
 @onready var _reformat_button: Button        = %ReformatButton
+@onready var _contacts_button: Button        = %ContactsButton
 @onready var _graph:           GraphEdit     = %GraphEdit
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
@@ -23,6 +24,7 @@ var _parser  := SceneParser.new()
 var _scenes:   Dictionary = {}
 var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
+var _contacts_win: Window = null
 
 
 # Returns the inner VBoxContainer so callers add children directly without knowing about the PanelContainer wrapper.
@@ -42,6 +44,7 @@ func _make_stripe(index: int) -> VBoxContainer:
 func _ready() -> void:
 	_refresh_button.pressed.connect(_on_refresh_pressed)
 	_reformat_button.pressed.connect(_on_reformat_pressed)
+	_contacts_button.pressed.connect(_on_contacts_pressed)
 	_graph.node_selected.connect(_on_node_selected)
 	_graph.gui_input.connect(_on_graph_gui_input)
 	_graph.connection_request.connect(_on_connection_request)
@@ -54,6 +57,47 @@ func _ready() -> void:
 		"Open in a separate window.\nThe window can be maximized.")
 	detach_btn.pressed.connect(_on_detach_pressed)
 	_refresh_button.get_parent().add_child(detach_btn)
+
+
+func _on_contacts_pressed() -> void:
+	if _contacts_win != null and is_instance_valid(_contacts_win):
+		_contacts_win.show()
+		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
+		return
+	_contacts_win = Window.new()
+	_contacts_win.title = _t("Configuration des contacts", "Contact configuration")
+	_contacts_win.size = Vector2i(620, 750)
+	_contacts_win.wrap_controls = true
+	_contacts_win.close_requested.connect(func() -> void: _contacts_win.hide())
+	var panel := preload("res://addons/story_editor/ContactsPanel.gd").new()
+	panel.name = "ContactsPanel"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.get_scene_ids = func() -> Array: return _scenes.keys()
+	panel.story_modified.connect(_on_refresh_pressed)
+	panel.rename_contact_requested.connect(_rename_contact_in_dialogues)
+	panel.error_occurred.connect(func(msg: String) -> void: _status_label.text = msg)
+	_contacts_win.add_child(panel)
+	get_tree().get_root().add_child(_contacts_win)
+	_contacts_win.popup_centered()
+
+
+func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
+	for fname in _parser.chosen_files.values():
+		var path := "res://dialogues/" + str(fname)
+		var f := FileAccess.open(path, FileAccess.READ)
+		if f == null:
+			continue
+		var data = JSON.parse_string(f.get_as_text())
+		f.close()
+		if not data is Dictionary or not data.has("scenes"):
+			continue
+		var modified := false
+		for scene in (data["scenes"] as Array):
+			if scene.get("contact_id", "") == old_id:
+				scene["contact_id"] = new_id
+				modified = true
+		if modified:
+			_write_json(path, data)
 
 
 func _on_detach_pressed() -> void:
@@ -901,9 +945,15 @@ func _populate_message_row(stripe: VBoxContainer, scene_id: String, msg_idx: int
 			var elem = (text as Array)[j]
 			if elem is String:
 				var text_idx := j
-				_add_text_edit(stripe, str(elem), func(val: String) -> void:
-					_patch_field(scene_id, func(s: Dictionary) -> void:
-						((s["messages_in"] as Array)[msg_idx]["text"] as Array)[text_idx] = val))
+				_add_text_edit_row(stripe, str(elem),
+					func(val: String) -> void:
+						_patch_field(scene_id, func(s: Dictionary) -> void:
+							((s["messages_in"] as Array)[msg_idx]["text"] as Array)[text_idx] = val),
+					func() -> void:
+						_patch_field(scene_id, func(s: Dictionary) -> void:
+							((s["messages_in"] as Array)[msg_idx]["text"] as Array).remove_at(text_idx))
+						call_deferred("_populate_detail", scene_id),
+					_t("✉ texte", "✉ text"))
 			else:
 				var d := elem as Dictionary
 				var dict_idx := j

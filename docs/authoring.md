@@ -27,7 +27,8 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
 
 ### Champs autorisés
 
-- `start_scene` : ID de la scène de départ.
+- `start_scene` : ID de la première scène que le moteur joue au démarrage d'une nouvelle partie. C'est toujours la scène d'ouverture du contact principal.
+- `start_contact` : ID du contact dont la conversation est affichée à l'écran au lancement. Par défaut, le jeu s'ouvre sur le contact principal. Utilisez ce champ si vous voulez que le joueur démarre dans la conversation d'un autre contact — le contact principal n'apparaîtra pas du tout dans la liste avant qu'il écrive. Requiert que la première scène du contact principal utilise `resume_after_flag` (pour qu'elle attende un flag avant de démarrer, plutôt que de s'exécuter pendant que le joueur regarde une autre conversation).
 - `contacts` : tableau de contacts.
   - `id` : identifiant unique du contact.
   - `name` : texte affiché dans le bandeau.
@@ -36,6 +37,36 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
   - `status` : `online`, `away`, `offline`, `network_issue`.
   - `history` : messages pré-existants affichés dès le début d'une nouvelle partie. Voir ci-dessous.
   - `pending_scene` : ID d'une scène dont les choix seront proposés au joueur dès qu'il ouvre la conversation. Voir ci-dessous.
+
+### Comment la partie démarre
+
+Deux approches sont possibles :
+
+---
+
+**Option A — Contact principal visible dès le départ (par défaut)**
+
+Aucune configuration nécessaire. Le jeu s'ouvre directement sur la conversation du contact principal. Le joueur le voit immédiatement, avant même qu'un message ait été échangé. Les contacts secondaires peuvent envoyer des messages en arrière-plan pendant l'histoire via `trigger_after_scene`.
+
+À utiliser quand le joueur sait déjà à qui il parle, ou quand c'est le contact principal qui écrit en premier.
+
+---
+
+**Option B — Contacts secondaires d'abord, contact principal déclenché plus tard**
+
+Le joueur démarre dans la conversation d'un contact secondaire. Le contact principal n'apparaît nulle part dans la liste tant qu'une réponse spécifique ne le débloque pas. Le joueur peut avoir de courtes conversations avec un ou plusieurs contacts secondaires — et l'une de ces réponses déclenche le premier message du contact principal.
+
+À utiliser quand le contact principal est un inconnu. Voir une conversation vide avec un contact hors-ligne avant qu'il ait écrit quoi que ce soit serait étrange — mieux vaut le faire apparaître naturellement, comme s'il venait de prendre contact.
+
+Trois éléments doivent fonctionner ensemble :
+
+| Quoi | Où | Pourquoi |
+|------|-----|---------|
+| `start_contact` | `story.json` | Définit quel contact est affiché au lancement |
+| `history` + `pending_scene` | sur chaque contact secondaire dans `story.json` | Messages pré-existants et questions sans réponse |
+| `resume_after_flag` | sur la première scène du contact principal | Le fait attendre un flag avant d'apparaître |
+
+---
 
 ### Conversations pré-existantes (`history` et `pending_scene`)
 
@@ -82,6 +113,79 @@ ID d'une scène existante dont les **choix** seront présentés au joueur dès q
 La scène référencée par `pending_scene` doit exister dans les fichiers de dialogue et contenir un champ `choices`. Lorsque le joueur sélectionne un choix, la scène reprend normalement — la suite narrative (`next`, flags, effets) s'applique comme pour n'importe quelle scène.
 
 > Ces deux champs sont ignorés si une sauvegarde existe — le jeu restaure l'état sauvegardé, pas l'état initial.
+
+### Exemple complet : option B — contacts secondaires avant le contact principal
+
+`story.json` :
+```json
+{
+  "title": "Mon Histoire",
+  "start_scene": "maeve_intro",
+  "start_contact": "alex",
+  "contacts": [
+    { "id": "maeve", "name": "Maeve", "is_main": true, "status": "offline" },
+    {
+      "id": "alex", "name": "Alex", "status": "online",
+      "history": [
+        { "text": "T'as vu les infos ?", "time": "09:14", "out": false },
+        { "text": "Rappelle-moi.", "time": "09:16", "out": false }
+      ],
+      "pending_scene": "alex_pending"
+    }
+  ]
+}
+```
+
+`dialogues/scenes.json` :
+```json
+{
+  "scenes": [
+    {
+      "id": "alex_pending",
+      "contact_id": "alex",
+      "messages_in": [],
+      "choices": [
+        {
+          "text": "J'arrive.",
+          "message": "J'arrive dans 20 minutes.",
+          "flag": "maeve_peut_ecrire",
+          "next": "alex_fin"
+        },
+        {
+          "text": "Pas ce soir.",
+          "message": "Désolé, ce soir c'est compliqué.",
+          "flag": "maeve_peut_ecrire",
+          "next": "alex_fin"
+        }
+      ]
+    },
+    {
+      "id": "alex_fin",
+      "contact_id": "alex",
+      "messages_in": [
+        { "text": "Ok, on se voit plus tard alors." }
+      ]
+    },
+    {
+      "id": "maeve_intro",
+      "contact_id": "maeve",
+      "resume_after_flag": "maeve_peut_ecrire",
+      "messages_in": [
+        { "text": "Allô ?" },
+        { "text": "Est-ce que quelqu'un reçoit mes messages ?" }
+      ],
+      "choices": [ ... ]
+    }
+  ]
+}
+```
+
+**Ce qui se passe au lancement :**
+- Le jeu s'ouvre sur la conversation d'Alex, ses messages sont déjà visibles et les choix de réponse sont affichés
+- Maeve n'existe nulle part à l'écran
+- Le joueur répond à Alex → le flag `maeve_peut_ecrire` est activé → les messages de Maeve arrivent (badge non-lu) → le joueur ouvre sa conversation et l'histoire commence
+
+**Plusieurs contacts secondaires :** ajoutez autant de contacts que nécessaire, chacun avec son propre `history` et `pending_scene`. Le joueur peut naviguer librement entre eux. Le flag qui débloque le contact principal peut être posé par n'importe laquelle de ces réponses — c'est l'auteur qui choisit laquelle.
 
 ## 3. Fichier de dialogue (`dialogues/*.json`)
 

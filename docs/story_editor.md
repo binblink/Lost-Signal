@@ -16,7 +16,7 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 
 ```
 +------------------------------------------------------------------------------+
-| [Refresh]  [Reformater]                          11 scenes chargees          |
+| [Refresh]  [Reformater]  [Contacts]               11 scenes chargees          |
 +------------------------------------------+-----------------------------------+
 |                                          |  scene_04                         |
 |  [> ch1_intro] --> [scene_01] -------->  |  Contact  [Maeve         v]       |
@@ -42,6 +42,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
 - **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
+- **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour éditer `story.json` sans ouvrir le fichier.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 
@@ -188,6 +189,41 @@ Sur confirmation :
 
 ---
 
+## Panneau Contacts
+
+Cliquer sur le bouton **Contacts** dans la toolbar ouvre une fenêtre flottante pour éditer `story.json` — le fichier qui définit les personnages et la configuration globale. Chaque modification est écrite immédiatement, sans bouton Enregistrer.
+
+### Champs globaux
+
+| Champ | Interface |
+|---|---|
+| `title` | Texte libre — affiché dans les menus et la barre de titre de la fenêtre |
+| `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
+| `start_contact` | Dropdown de contacts — contact affiché à l'écran après la scène de départ ; si vide, le contact principal est utilisé |
+
+### Liste des contacts
+
+Chaque contact est affiché sous forme de carte avec tous ses champs éditables :
+
+| Champ | Interface |
+|---|---|
+| `id` | Texte libre — si modifié, toutes les références `contact_id` dans les fichiers de dialogue sont mises à jour automatiquement |
+| `name` | Texte libre — nom affiché dans la liste de contacts et la barre de titre |
+| `is_main` | Case à cocher — désigne le contact qui reçoit toutes les scènes sans `contact_id` explicite ; cocher un contact décoche automatiquement tous les autres |
+| `avatar` | Texte libre — chemin vers une image (ex : `res://assets/images/maeve.png`), vide pour aucun avatar |
+| `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
+| `pending_scene` | Dropdown de scènes — scène mise en attente pour ce contact au démarrage ; le joueur voit un choix en suspens dès l'ouverture de la conversation |
+| `history` | Liste de lignes — chaque entrée a une case `→` (envoyé par le joueur), un champ `HH:MM` et un champ texte |
+
+- **+ Contact** — ajoute une nouvelle carte contact
+- **×** sur une carte — demande une confirmation avant de supprimer le contact de `story.json`
+- **+ msg** sur une carte — ajoute une entrée d'historique
+- **×** sur une ligne d'historique — supprime l'entrée immédiatement
+
+> **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue chargés et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
+
+---
+
 ## Ce que le JSON permet en plus
 
 L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suivantes nécessitent encore une édition directe du fichier JSON :
@@ -247,10 +283,13 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 |---|---|
 | `plugin.cfg` | Manifest Godot (nom, version) |
 | `plugin.gd` | `EditorPlugin` — ajoute/retire le panneau |
-| `StoryEditorPanel.tscn` | Scène du panneau (`HSplitContainer[GraphEdit, ScrollContainer]`) |
-| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON |
+| `StoryEditorPanel.tscn` | Scène du panneau (`HSplitContainer[GraphEdit, ScrollContainer]`) + bouton Contacts dans la toolbar |
+| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON ; ouvre la fenêtre Contacts |
+| `ContactsPanel.gd` | Panneau Contacts — lit et écrit `story.json` ; communique avec le panneau principal via signaux uniquement |
 | `scene_parser.gd` | `RefCounted` autonome — lit `story.json` + `dialogues/*.json` avec support locale |
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).
 
-Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `_json_expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà).
+`ContactsPanel.gd` est de même découplé de `StoryEditorPanel.gd` : il reçoit uniquement un callable `get_scene_ids` pour peupler les dropdowns de scènes, et communique via trois signaux (`story_modified`, `rename_contact_requested`, `error_occurred`). Les écritures dans les fichiers de dialogue lors d'un renommage sont déléguées à `StoryEditorPanel`, qui possède déjà `_write_json`.
+
+Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `_json_expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.

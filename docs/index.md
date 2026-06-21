@@ -19,7 +19,7 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 **Validation** : Le jeu valide automatiquement `story.json` et les fichiers `dialogues/*.json` au lancement dans Godot. Si des erreurs existent, une fenêtre s'affiche immédiatement.
 
-**Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives — voir le [Story Editor](story_editor.md). À activer via **Projet → Paramètres du projet → Plugins**.
+**Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives, et inclut un **panneau Contacts** pour configurer les personnages et les paramètres globaux sans éditer `story.json` directement — voir le [Story Editor](story_editor.md). À activer via **Projet → Paramètres du projet → Plugins**.
 
 ---
 

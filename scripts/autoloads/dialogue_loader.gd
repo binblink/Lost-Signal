@@ -3,11 +3,12 @@ extends Node
 const STORY_PATH    = "res://story.json"
 const DIALOGUES_DIR = "res://dialogues/"
 
-var _scenes:      Dictionary = {}
-var _contacts:    Array      = []
-var _start_scene: String     = "scene_01"
-var _title:       String     = ""
-var _triggers:    Dictionary = {}
+var _scenes:         Dictionary = {}
+var _contacts:       Array      = []
+var _start_scene:    String     = "scene_01"
+var _start_contact:  String     = ""
+var _title:          String     = ""
+var _triggers:       Dictionary = {}
 var validation_errors:   Array = []
 var validation_warnings: Array = []
 
@@ -40,9 +41,10 @@ func _load_story() -> void:
 	var data = _parse_json(STORY_PATH)
 	if data.is_empty():
 		return
-	if data.has("title"):       _title       = data["title"]
-	if data.has("start_scene"): _start_scene = data["start_scene"]
-	if data.has("contacts"):    _contacts    = data["contacts"]
+	if data.has("title"):         _title         = data["title"]
+	if data.has("start_scene"):   _start_scene   = data["start_scene"]
+	if data.has("start_contact"): _start_contact = data["start_contact"]
+	if data.has("contacts"):      _contacts      = data["contacts"]
 
 func _load_dialogues_dir() -> void:
 	var dir = DirAccess.open(DIALOGUES_DIR)
@@ -155,6 +157,9 @@ func get_title() -> String:
 func get_start_scene() -> String:
 	return _start_scene
 
+func get_start_contact() -> String:
+	return _start_contact
+
 func get_scene(id: String) -> Dictionary:
 	return _scenes.get(id, {})
 
@@ -208,6 +213,10 @@ func _validate() -> void:
 			var f = choice.get("flag", null)
 			if f != null and not f in flags_set:
 				flags_set.append(f)
+
+	# start_contact
+	if _start_contact != "" and not _start_contact in contact_ids:
+		errors.append("start_contact '%s' not found in contacts." % _start_contact)
 
 	# pending_scene in story.json contacts
 	for contact in _contacts:

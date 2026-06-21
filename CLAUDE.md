@@ -109,6 +109,22 @@ Key state variables:
 
 **Theme application**: `ThemeManager` methods duplicate existing `StyleBoxFlat` resources rather than mutating them, to avoid cross-node contamination.
 
+## GDScript typing rules
+
+Warnings are treated as errors in this project. The most common violation:
+
+**Never use `:=` when the right-hand side returns a `Variant`** — this infers the variable as `Variant` and triggers `INFERRED_DECLARATION_UNKNOWN_TYPE`. Always provide an explicit type instead:
+
+```gdscript
+# WRONG — Dictionary.get() returns Variant, := infers Variant
+var is_main := some_dict.get("is_main", false)
+
+# CORRECT
+var is_main: bool = some_dict.get("is_main", false)
+```
+
+This applies to any call that returns `Variant`: `Dictionary.get()`, `Array` element access by index, untyped function return values, etc. When in doubt, annotate the type explicitly.
+
 ## Authoring dialogue (quick reference)
 
 Full spec: `docs/authoring_en.md`

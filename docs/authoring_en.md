@@ -27,7 +27,8 @@ A dialogue file always contains a root object with a `scenes` key.
 
 ### Allowed Fields
 
-- `start_scene`: ID of the starting scene.
+- `start_scene`: ID of the first scene the engine plays when a new game starts. This is always the main contact's opening scene.
+- `start_contact`: ID of the contact whose conversation is shown on screen at launch. Defaults to the main contact. Set this to a secondary contact if you want the player to start in someone else's chat — the main contact won't appear in the list at all until they write. Requires the main contact's first scene to use `resume_after_flag` (so it waits for a flag before starting, rather than trying to play while the player is looking at another conversation).
 - `contacts`: array of contacts.
   - `id`: unique identifier for the contact.
   - `name`: text displayed in the top bar.
@@ -37,7 +38,37 @@ A dialogue file always contains a root object with a `scenes` key.
   - `history`: pre-existing messages shown at the start of a new game. See below.
   - `pending_scene`: ID of a scene whose choices will be presented to the player as soon as they open the conversation. See below.
 
-### Pre-existing Conversations (`history` and `pending_scene`)
+### How the game opens
+
+There are two ways to set up the game's opening:
+
+---
+
+**Option A — Main contact visible from the start (default)**
+
+No setup needed. The game opens directly on the main contact's conversation. The player sees the main contact immediately, even before any message is exchanged. Secondary contacts can send messages in the background during the story using `trigger_after_scene`.
+
+Use this when the player already knows who they're talking to, or when the main contact writes first.
+
+---
+
+**Option B — Secondary contacts first, main contact triggered later**
+
+The player starts in a secondary contact's conversation. The main contact doesn't appear in the list at all until a specific reply unlocks them. The player can have short conversations with one or more secondary contacts — and one of those replies triggers the main contact's first message.
+
+Use this when the main contact is a stranger. Seeing an empty conversation with an offline contact before they've written anything would feel odd — it's better to have them appear naturally, as if they just reached out.
+
+This requires three things working together:
+
+| What | Where | Why |
+|------|-------|-----|
+| `start_contact` | `story.json` | Sets which contact is shown on launch |
+| `history` + `pending_scene` | on each secondary contact in `story.json` | Pre-existing messages and unanswered questions |
+| `resume_after_flag` | on the main contact's first scene | Makes them wait for a specific reply before appearing |
+
+---
+
+### Pre-existing conversations (`history` and `pending_scene`)
 
 These two fields give the impression that the player has already been using the messaging app before the story begins. At the start of a new game, affected contacts immediately show an unread badge.
 
@@ -82,6 +113,79 @@ ID of an existing scene whose **choices** are presented to the player as soon as
 The scene referenced by `pending_scene` must exist in the dialogue files and contain a `choices` field. When the player selects a choice, the scene resumes normally — the narrative continuation (`next`, flags, effects) applies exactly as for any other scene.
 
 > Both fields are ignored if a save file exists — the game restores the saved state, not the initial state.
+
+### Full example: Option B — secondary contacts before the main contact
+
+`story.json`:
+```json
+{
+  "title": "My Story",
+  "start_scene": "maeve_intro",
+  "start_contact": "alex",
+  "contacts": [
+    { "id": "maeve", "name": "Maeve", "is_main": true, "status": "offline" },
+    {
+      "id": "alex", "name": "Alex", "status": "online",
+      "history": [
+        { "text": "Did you see the news?", "time": "09:14", "out": false },
+        { "text": "Call me back.",         "time": "09:16", "out": false }
+      ],
+      "pending_scene": "alex_pending"
+    }
+  ]
+}
+```
+
+`dialogues/scenes.json`:
+```json
+{
+  "scenes": [
+    {
+      "id": "alex_pending",
+      "contact_id": "alex",
+      "messages_in": [],
+      "choices": [
+        {
+          "text": "On my way.",
+          "message": "I'll be there in 20 minutes.",
+          "flag": "maeve_can_write",
+          "next": "alex_end"
+        },
+        {
+          "text": "Not tonight.",
+          "message": "Sorry, tonight's complicated.",
+          "flag": "maeve_can_write",
+          "next": "alex_end"
+        }
+      ]
+    },
+    {
+      "id": "alex_end",
+      "contact_id": "alex",
+      "messages_in": [
+        { "text": "Ok, talk later then." }
+      ]
+    },
+    {
+      "id": "maeve_intro",
+      "contact_id": "maeve",
+      "resume_after_flag": "maeve_can_write",
+      "messages_in": [
+        { "text": "Hello?" },
+        { "text": "Is anyone receiving my messages?" }
+      ],
+      "choices": [ ... ]
+    }
+  ]
+}
+```
+
+**What happens at launch:**
+- The game opens on Alex's conversation, with his messages already visible and reply choices ready
+- Maeve doesn't exist anywhere on screen yet
+- The player replies to Alex → flag `maeve_can_write` is set → Maeve's messages arrive (unread badge) → the player opens her conversation and the story begins
+
+**Multiple secondary contacts:** add as many contacts as needed, each with their own `history` and `pending_scene`. The player can switch freely between them. The flag that unlocks the main contact can be set by any one of those replies — whichever the author designates.
 
 ## 3. Dialogue File (`dialogues/*.json`)
 

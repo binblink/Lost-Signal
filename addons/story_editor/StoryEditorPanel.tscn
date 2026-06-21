@@ -32,6 +32,11 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Reformater"
 
+[node name="ContactsButton" type="Button" parent="VBoxContainer/Toolbar"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Contacts"
+
 [node name="StatusLabel" type="Label" parent="VBoxContainer/Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2

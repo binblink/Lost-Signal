@@ -79,7 +79,7 @@ Write your entire story in JSON. The engine handles the rest.
 ### 📬 Pre-existing conversations
 Secondary contacts can have a conversation history and a pending choice waiting before the player even receives Maeve's first message. The player opens the app and already has unread messages — as if their character had a life before the story began.
 
-Both the message history and the pending choice are defined directly in `story.json`, alongside the contact's name and status.
+Both the message history and the pending choice are defined directly in `story.json`, alongside the contact's name and status. The built-in **Contacts panel** lets you set all of this from inside Godot — no JSON file to open.
 
 ---
 
@@ -191,6 +191,13 @@ The detail panel is a full scene editor — no JSON file to open.
 - **Free input**: add a free-text prompt with a single button, set the variable name and placeholder inline — mutually exclusive with choices (the editor enforces this)
 
 All dropdowns are populated from your actual project: scene IDs, flag names, contact IDs, and variable names are discovered automatically. Changes save when a field loses focus. For advanced features (structured `and`/`or` conditions, media, music, deferred corrections), the JSON remains the source of truth — the editor handles the common 90% without touching a file.
+
+**Configure your cast without touching `story.json`:**
+The **Contacts** button in the toolbar opens a dedicated panel where you can manage everything in `story.json`:
+- Add, rename, or remove contacts — renaming an ID propagates the change across every dialogue file automatically
+- Set each contact's display name, status, avatar, and whether they are the main contact
+- Define pre-existing message histories for secondary contacts (time, direction, text)
+- Set which contact the player sees first, and which scene plays on a new game
 
 **Reformat button:** rewrites all dialogue files with the canonical key order without touching any content — useful after manual edits or when switching editors.
 
@@ -317,7 +324,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Theme system (`theme.json`) with animated glitch title (configurable)
 - Playable demo scenario
 - Bilingual authoring guide (EN + FR) with full syntax reference
-- **Visual story graph** — built-in Godot editor plugin showing all scenes, connections, dead ends, and isolated scenes at a glance
+- **Visual story graph + Contacts panel** — built-in Godot editor plugin: scene graph with full detail editing, and a dedicated Contacts panel to configure `story.json` (characters, histories, start scene) without touching a file
 
 ---
 

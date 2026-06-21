@@ -138,6 +138,19 @@ func _ready() -> void:
 				_total_unread += 1
 		_update_panel_button()
 		await _narrative.play_scene(DialogueLoader.get_start_scene())
+		var start_cid: String = DialogueLoader.get_start_contact()
+		if start_cid != "" and start_cid != _narrative.active_contact_id:
+			_narrative.active_contact_id = start_cid
+			_top_bar.refresh(start_cid, _narrative.contact_names, _narrative.contact_statuses)
+			var start_contact_data := DialogueLoader.get_contact(start_cid)
+			var is_main: bool = start_contact_data.get("is_main", false)
+			line_edit.editable = is_main
+			line_edit.mouse_filter = Control.MOUSE_FILTER_STOP if is_main else Control.MOUSE_FILTER_IGNORE
+			message_display.clear_messages()
+			await get_tree().process_frame
+			await message_display.render_history(_narrative.contact_histories.get(start_cid, []))
+			await message_display.scroll_to_bottom()
+			await _narrative.restore_pending_choice_for(start_cid)
 
 
 # ---------------------------------------------------------------------------

@@ -16,7 +16,7 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 
 ```
 +------------------------------------------------------------------------------+
-| [Refresh]  [Reformat]                               11 scenes loaded         |
+| [Refresh]  [Reformat]  [Contacts]                   11 scenes loaded         |
 +------------------------------------------+-----------------------------------+
 |                                          |  scene_04                         |
 |  [> ch1_intro] --> [scene_01] --------> |  Contact  [Maeve         v]        |
@@ -42,6 +42,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
 - **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
+- **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for editing `story.json` without opening the file.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
@@ -188,6 +189,41 @@ On confirmation:
 
 ---
 
+## Contacts Panel
+
+Click the **Contacts** button in the toolbar to open a floating window for editing `story.json` — the file that defines your characters and global settings. Everything writes immediately on change, with no Save button required.
+
+### Global fields
+
+| Field | Interface |
+|---|---|
+| `title` | Text field — displayed in menus and the window title bar |
+| `start_scene` | Scene dropdown — first scene played on a new game |
+| `start_contact` | Contact dropdown — contact shown on screen after the start scene; if empty, the main contact is used |
+
+### Contact list
+
+Each contact is displayed as a card with all its configurable fields:
+
+| Field | Interface |
+|---|---|
+| `id` | Text field — if changed, all `contact_id` references across every dialogue file are updated automatically |
+| `name` | Text field — display name in the contact list and title bar |
+| `is_main` | Checkbox — marks the contact that receives all scenes without an explicit `contact_id`; checking one unchecks all others automatically |
+| `avatar` | Text field — path to an image file (e.g. `res://assets/images/maeve.png`), or empty for none |
+| `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
+| `pending_scene` | Scene dropdown — scene queued for this contact at startup; the player sees a pending choice as soon as they open this conversation |
+| `history` | Row list — each entry has a `→` checkbox (sent by player), a `HH:MM` time field, and a text field |
+
+- **+ Contact** — adds a new contact card; fill in its fields right away
+- **×** on a card — prompts for confirmation before removing the contact from `story.json`
+- **+ msg** on any card — appends a history entry to that contact
+- **×** on a history row — removes that entry immediately
+
+> **Renaming an `id`** is safe: the panel scans all currently loaded dialogue files and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
+
+---
+
 ## What JSON Allows Beyond the Editor
 
 The editor covers the vast majority of scenarios. The following features still require direct JSON editing:
@@ -246,10 +282,13 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 |---|---|
 | `plugin.cfg` | Godot manifest (name, version) |
 | `plugin.gd` | `EditorPlugin` — adds/removes the panel |
-| `StoryEditorPanel.tscn` | Panel scene (`HSplitContainer[GraphEdit, ScrollContainer]`) |
-| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing |
+| `StoryEditorPanel.tscn` | Panel scene (`HSplitContainer[GraphEdit, ScrollContainer]`) + Contacts toolbar button |
+| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing; opens the Contacts window |
+| `ContactsPanel.gd` | Contacts panel — reads and writes `story.json`; communicates with the main panel via signals only |
 | `scene_parser.gd` | Standalone `RefCounted` — reads `story.json` + `dialogues/*.json` with locale support |
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).
 
-Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `_json_expand()` (custom serializer: expands to depth 3, compact beyond).
+`ContactsPanel.gd` is likewise decoupled from `StoryEditorPanel.gd`: it only receives a `get_scene_ids` callable for populating dropdowns, and communicates back via three signals (`story_modified`, `rename_contact_requested`, `error_occurred`). All dialogue file writes on contact rename go through `StoryEditorPanel`, which already owns `_write_json`.
+
+Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `_json_expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.

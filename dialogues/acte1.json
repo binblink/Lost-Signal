@@ -64,7 +64,7 @@
 				{"text": ["Juste être là m'aide déjà!", "Je vais pas vous mentir, moi aussi je comprends pas grand chose à la situation.", "Et j'envoie pas des messages au hasard pour demander de l'aide tous les jours."], "requires_flag": "ok_doubt"},
 				{"text": ["Je sais que c'est difficile à croire mais là j'ai pas vraiment d'autre choix", "Vous croyez vraiment que j'écrirai à un inconnu si j'étais pas désespérée?", "Je vous demande juste une chance de vous prouver que je dis la vérité", "Y'aura pas d'histoires de fenêtres ou de panneaux solaires."], "requires_flag": "spam_cautious"},
 				{"text": "Quitte à rester ensemble quelque temps, autant savoir qui on est non ?"},
-				{"text": "Moi c'est Maeve et vous ?", "effects": [{"contact": "maeve", "op": "rename", "value": "Maeve"}]}
+				{"text": "Moi c'est Maeve et vous ?", "effects": [{"op": "rename", "value": "Maeve", "contact": "maeve"}]}
 			],
 			"free_input": "player_name",
 			"free_input_placeholder": "Entrez votre prénom…",
@@ -117,12 +117,7 @@
 		},
 		{
 			"id": "scene_09",
-			"messages_in": [
-				{"text": ["", ""]}
-			],
-			"choices": [
-				{"text": ""}
-			]
+			"messages_in": []
 		}
 	]
 }
