@@ -1,0 +1,16 @@
+site_name: Lost Signal
+docs_dir: docs
+theme:
+  name: material
+  language: fr
+
+nav:
+  - Home:
+      - English: index_en.md
+      - Français: index.md
+  - Authoring Guide:
+      - English: authoring_en.md
+      - Français: authoring.md
+  - Story Editor:
+      - English: story_editor_en.md
+      - Français: story_editor.md

@@ -1,4 +1,4 @@
-﻿# Lost Signal
+# Lost Signal
 
 Un moteur narratif pour Godot 4.6 qui simule une vraie application de messagerie.
 
@@ -8,18 +8,9 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 ---
 
-## Sommaire
-
-1. [Documentation](#documentation)
-2. [Organisation des fichiers](#organisation-des-fichiers)
-3. [Concepts clés](#concepts-clés)
-4. [Modifier le visuel](#modifier-le-visuel)
-
----
-
 ## Documentation
 
-**Consultez `docs/authoring.md`** pour la documentation complète :
+**Consultez le [Guide auteur](authoring.md)** pour la documentation complète :
 - Structure des fichiers JSON (story.json, dialogues/*.json)
 - Messages, choix, conditions, effets
 - Flags, variables, templates, déclencheurs
@@ -28,7 +19,7 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 **Validation** : Le jeu valide automatiquement `story.json` et les fichiers `dialogues/*.json` au lancement dans Godot. Si des erreurs existent, une fenêtre s'affiche immédiatement.
 
-**Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives — voir `docs/story_editor.md`. À activer via **Projet → Paramètres du projet → Plugins**.
+**Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives — voir le [Story Editor](story_editor.md). À activer via **Projet → Paramètres du projet → Plugins**.
 
 ---
 
@@ -53,7 +44,7 @@ projet/
 ### Pour ajouter du contenu
 
 1. **Créer** un fichier `.json` dans `dialogues/`
-2. **Écrire** des scènes avec messages et choix (voir `docs/authoring.md` pour la syntaxe)
+2. **Écrire** des scènes avec messages et choix (voir le [Guide auteur](authoring.md) pour la syntaxe)
 3. **Placer les assets** :
    - Images dans `assets/images/`
    - Sons dans `assets/sounds/`
@@ -73,39 +64,6 @@ Le joueur change la langue via le menu **Paramètres** (bouton ⚙ en haut à dr
 
 ---
 
-## Modifier le visuel
-
-### Ce qui est sans risque
-
-- **`theme.json`** : couleurs, taille de police, vitesse de frappe, et options d'interface. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
-  - `title_glitch` (`true` / `false`) : active ou désactive l'animation de glitch sur le titre du menu principal. Défaut : `true`.
-- **Repositionner ou redimensionner** des nœuds dans l'éditeur Godot.
-- **Modifier les marges, espacements, couleurs** dans l'inspecteur.
-
-### Ce qui fait planter le jeu
-
-**Renommer un nœud** référencé par le code. Les nœuds critiques sont marqués avec une icône de chaîne (🔗) dans l'éditeur Godot — ce sont ceux déclarés *Access as Unique Name*. Ne pas les renommer.
-
-Pour identifier ces nœuds : dans l'éditeur Godot, les nœuds avec l'icône de lien dans le panneau *Scene* sont protégés. Changer leur **nom** casse la référence. Changer leur **position dans l'arbre** est sans danger.
-
-Les nœuds protégés dans chaque scène :
-
-| Scène | Nœuds protégés |
-|-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, ExitButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
-| `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
-| `ContactPanel.tscn` | ContactList, CloseButton |
-| `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |
-| `MessageBubbleAudioIn.tscn` | Bubble, PlayButton, Progress, Duration, TimeAndStatus, AudioStreamPlayer |
-| `TypingIndicator.tscn` | Dot1, Dot2, Dot3 |
-| `ValidationDialog.tscn` | Title, Body, CopyButton, CloseButton |
-
-### Ce qui n'existe pas dans ce projet
-
-Déplacer un nœud marqué *unique* n'importe où dans l'arbre de la scène est **toujours sûr** — le code le retrouve par son nom, pas par son chemin.
-
----
-
 ## Concepts clés
 
 Le framework utilise quelques concepts simples pour construire des histoires :
@@ -117,3 +75,20 @@ Le framework utilise quelques concepts simples pour construire des histoires :
 - **Effets** : modifier les variables et contacts lors d'un choix
 - **Triggers** : enchaîner les scènes automatiquement ou les différer
 - **Contacts secondaires** : des scènes peuvent arriver en arrière-plan dans la conversation d'un autre contact — le joueur reçoit une notification, bascule quand il le souhaite, et peut y avoir une vraie conversation avec choix et réponses
+
+---
+
+## Modifier le visuel
+
+### Ce qui est sans risque
+
+- **`theme.json`** : couleurs, taille de police, vitesse de frappe, et options d'interface. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
+  - `title_glitch` (`true` / `false`) : active ou désactive l'animation de glitch sur le titre du menu principal. Défaut : `true`.
+- **Repositionner ou redimensionner** des nœuds dans l'éditeur Godot.
+- **Modifier les marges, espacements, couleurs** dans l'inspecteur.
+
+### Ce qui fait planter le jeu
+
+**Renommer un nœud** référencé par le code. Les nœuds critiques sont marqués avec une icône de chaîne dans l'éditeur Godot — ce sont ceux déclarés *Access as Unique Name*. Ne pas les renommer.
+
+Changer leur **position dans l'arbre** est sans danger — le code les retrouve par leur nom, pas par leur chemin.

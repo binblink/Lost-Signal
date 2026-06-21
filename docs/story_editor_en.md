@@ -15,18 +15,30 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 ## Interface
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  [Refresh]  11 scenes loaded                                 │
-├─────────────────────────────────────┬────────────────────────┤
-│                                     │  scene_04              │
-│  [▶ ch1_intro] → [scene_01] → …  │  Contact: Maeve         │
-│                                     │  ─────────────────     │
-│               Graph                 │  Messages (3)          │
-│                                     │  …                     │
-│                                     │  Choices (2)           │
-│                                     │  …                     │
-└─────────────────────────────────────┴────────────────────────┘
++------------------------------------------------------------------------------+
+| [Refresh]  [Reformat]                               11 scenes loaded         |
++------------------------------------------+-----------------------------------+
+|                                          |  scene_04                         |
+|  [> ch1_intro] --> [scene_01] --------> |  Contact  [Maeve         v]        |
+|                         |               |                                    |
+|  [! orphan]      [X scene_02]           |  Messages -------------------      |
+|                                          |                                   |
+|  [~ scene_03] - - - trigger - - - ->    |   Hello!                  [x]      |
+|                                          |   +---------------------------+   |
+|                                          |   | I'm writing from the     |    |
+|                                          |   | train.                   |    |
+|                                          |   +---------------------------+   |
+|                                          |   pause    [medium  v]            |
+|                                          |   requires [--      v]            |
+|                                          |                                   |
+|                                          |  Choices  ----------------        |
+|                                          |   That's spam    -> [-- v] [x]    |
+|                                          |   Yes, I hear you-> [-- v] [x]    |
+|                                          |   [+ choice]                      |
++------------------------------------------+-----------------------------------+
 ```
+
+Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[~ id]` = free input · `- - ->` = trigger connection
 
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
 - **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.

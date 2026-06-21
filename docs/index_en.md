@@ -8,18 +8,9 @@ Includes a visual scene graph editor built directly into Godot.
 
 ---
 
-## Table of Contents
-
-1. [Documentation](#documentation)
-2. [File Structure](#file-structure)
-3. [Key Concepts](#key-concepts)
-4. [Modifying the Visuals](#modifying-the-visuals)
-
----
-
 ## Documentation
 
-**See `docs/authoring_en.md`** for the full documentation:
+**See the [Authoring Guide](authoring_en.md)** for the full documentation:
 - JSON file structure (story.json, dialogues/*.json)
 - Messages, choices, conditions, effects
 - Flags, variables, templates, triggers
@@ -28,7 +19,7 @@ Includes a visual scene graph editor built directly into Godot.
 
 **Validation**: The game automatically validates `story.json` and all `dialogues/*.json` files on launch in Godot. If errors are found, a window appears immediately with a full report.
 
-**Story Editor**: A built-in Godot plugin displays a visual graph of all narrative scenes — see `docs/story_editor_en.md`. Enable it via **Project → Project Settings → Plugins**.
+**Story Editor**: A built-in Godot plugin displays a visual graph of all narrative scenes — see the [Story Editor](story_editor_en.md). Enable it via **Project → Project Settings → Plugins**.
 
 ---
 
@@ -53,7 +44,7 @@ project/
 ### Adding Content
 
 1. **Create** a `.json` file in `dialogues/`
-2. **Write** scenes with messages and choices (see `docs/authoring_en.md` for the syntax)
+2. **Write** scenes with messages and choices (see the [Authoring Guide](authoring_en.md) for the syntax)
 3. **Place assets**:
    - Images in `assets/images/`
    - Sounds in `assets/sounds/`
@@ -73,39 +64,6 @@ Players change the language via the **Settings** menu (⚙ button, top right). I
 
 ---
 
-## Modifying the Visuals
-
-### Safe to Change
-
-- **`theme.json`**: colors, font size, typing speed, and interface options. All fields are optional — an invalid or missing file simply falls back to the default theme.
-  - `title_glitch` (`true` / `false`): enables or disables the glitch animation on the main menu title. Default: `true`.
-- **Repositioning or resizing** nodes in the Godot editor.
-- **Adjusting margins, spacing, and colors** in the Inspector.
-
-### What Will Break the Game
-
-**Renaming a node** that is referenced by code. Critical nodes are marked with a chain icon (🔗) in the Godot editor — these are declared as *Access as Unique Name*. Do not rename them.
-
-To identify them: in the Godot editor, nodes with a link icon in the *Scene* panel are protected. Changing their **name** breaks the reference. Changing their **position in the tree** is always safe.
-
-Protected nodes per scene:
-
-| Scene | Protected Nodes |
-|-------|----------------|
-| `Main.tscn` | MessagesList, InputBar, TextInput, ChoicesLayer, ConfirmDialog, SettingsDialog, Overlay, Reset, PanelButton, SettingsButton, ExitButton, PhotoOverlay, PhotoImage, ContactName, StatusDot, StatusText, StatusWarning, ContactPanel, ClockLabel, ContactList, CloseButton, ButtonsContainer |
-| `MainMenu.tscn` | Background, GameTitle, BtnContinue, BtnNewGame |
-| `ContactPanel.tscn` | ContactList, CloseButton |
-| `ContactItem.tscn` | InitialLabel, ContactName, ContactTime, ContactPreview, UnreadBadge |
-| `MessageBubbleAudioIn.tscn` | Bubble, PlayButton, Progress, Duration, TimeAndStatus, AudioStreamPlayer |
-| `TypingIndicator.tscn` | Dot1, Dot2, Dot3 |
-| `ValidationDialog.tscn` | Title, Body, CopyButton, CloseButton |
-
-### Moving Unique Nodes
-
-Moving a *unique name* node anywhere in the scene tree is **always safe** — the code finds it by name, not by path.
-
----
-
 ## Key Concepts
 
 The framework uses a small set of concepts to build stories:
@@ -117,3 +75,20 @@ The framework uses a small set of concepts to build stories:
 - **Effects**: modify variables and contacts when a choice is made
 - **Triggers**: chain scenes automatically, or defer them until a condition is met
 - **Secondary contacts**: scenes can arrive in the background in another contact's conversation — the player gets a notification badge, switches when they choose, and can have a full conversation with choices and replies
+
+---
+
+## Modifying the Visuals
+
+### Safe to Change
+
+- **`theme.json`**: colors, font size, typing speed, and interface options. All fields are optional — an invalid or missing file simply falls back to the default theme.
+  - `title_glitch` (`true` / `false`): enables or disables the glitch animation on the main menu title. Default: `true`.
+- **Repositioning or resizing** nodes in the Godot editor.
+- **Adjusting margins, spacing, and colors** in the Inspector.
+
+### What Will Break the Game
+
+**Renaming a node** that is referenced by code. Critical nodes are marked with a link icon in the Godot editor — these are declared as *Access as Unique Name*. Do not rename them.
+
+Moving a *unique name* node anywhere in the scene tree is **always safe** — the code finds it by name, not by path.

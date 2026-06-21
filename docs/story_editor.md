@@ -15,18 +15,30 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 ## Interface
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  [Refresh]  11 scènes chargées                               │
-├─────────────────────────────────────┬────────────────────────┤
-│                                     │  scene_04              │
-│   [▶ ch1_intro] → [scene_01] → … │  Contact: Maeve         │
-│                                     │  ─────────────────     │
-│                 Graphe              │  Messages (3)          │
-│                                     │  …                     │
-│                                     │  Choix (2)             │
-│                                     │  …                     │
-└─────────────────────────────────────┴────────────────────────┘
++------------------------------------------------------------------------------+
+| [Refresh]  [Reformater]                          11 scenes chargees          |
++------------------------------------------+-----------------------------------+
+|                                          |  scene_04                         |
+|  [> ch1_intro] --> [scene_01] -------->  |  Contact  [Maeve         v]       |
+|                         |                |                                   |
+|  [! orpheline]   [X scene_02]            |  Messages -------------------     |
+|                                          |                                   |
+|  [~ scene_03] - - - trigger - - - ->     |   Bonjour !               [x]     |
+|                                          |   +------------------------+      |
+|                                          |   | Je t'ecris depuis le  |       |
+|                                          |   | train.                |       |
+|                                          |   +------------------------+      |
+|                                          |   pause    [medium  v]            |
+|                                          |   requires [--      v]            |
+|                                          |                                   |
+|                                          |  Choix  ------------------        |
+|                                          |   C'est du spam -> [-- v] [x]     |
+|                                          |   Je vous recois-> [-- v] [x]     |
+|                                          |   [+ choix]                       |
++------------------------------------------+-----------------------------------+
 ```
+
+Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X id]` = fin de parcours · `[~ id]` = saisie libre · `- - ->` = connexion trigger
 
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
 - **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
