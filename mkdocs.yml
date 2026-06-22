@@ -8,6 +8,9 @@ nav:
   - Home:
       - English: index_en.md
       - Français: index.md
+  - Getting Started:
+      - English: getting_started_en.md
+      - Français: getting_started.md
   - Authoring Guide:
       - English: authoring_en.md
       - Français: authoring.md
