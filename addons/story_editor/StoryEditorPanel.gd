@@ -644,12 +644,18 @@ func _write_json(path: String, data: Dictionary) -> bool:
 	for s in (data["scenes"] as Array):
 		ordered_scenes.append(_ordered_scene(s))
 	data["scenes"] = ordered_scenes
-	var write_file := FileAccess.open(path, FileAccess.WRITE)
+	var tmp_path: String = path + ".tmp"
+	var write_file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if write_file == null:
 		return false
 	write_file.store_string(_json_stringify_file(data))
 	write_file.close()
-	return true
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+	var dir := DirAccess.open(path.get_base_dir())
+	if dir == null:
+		return false
+	return dir.rename(path.get_file() + ".tmp", path.get_file()) == OK
 
 
 func _json_stringify_file(data: Dictionary) -> String:

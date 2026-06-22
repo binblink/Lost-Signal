@@ -58,12 +58,23 @@ func _read_story() -> Dictionary:
 
 
 func _write_story(data: Dictionary) -> void:
-	var f := FileAccess.open(STORY_PATH, FileAccess.WRITE)
+	var tmp_path: String = STORY_PATH + ".tmp"
+	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if f == null:
 		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
 		return
 	f.store_string(_json_expand(_ordered_story(data), "") + "\n")
 	f.close()
+	if FileAccess.file_exists(STORY_PATH):
+		DirAccess.remove_absolute(STORY_PATH)
+	var dir := DirAccess.open("res://")
+	if dir == null:
+		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+		return
+	var err := dir.rename("story.json.tmp", "story.json")
+	if err != OK:
+		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+		return
 	story_modified.emit()
 
 

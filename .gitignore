@@ -13,7 +13,7 @@
 user://
 .import/
 .export/
-export_presets.cfg
+exports/
 
 # Sauvegardes utilisateur uniquement
 *.save

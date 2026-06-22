@@ -45,7 +45,7 @@ func hide_choices() -> void:
 	visible = false
 	for btn in _choice_buttons:
 		btn.visible = true
-	if _spacer:
+	if is_instance_valid(_spacer):
 		_spacer.queue_free()
 		_spacer = null
 
