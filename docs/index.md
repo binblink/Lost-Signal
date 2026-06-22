@@ -10,6 +10,10 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 ## Documentation
 
+**Nouveau sur le moteur ?** Commencez par le **[Guide de démarrage](getting_started.md)** — de l'ouverture du projet à votre premier dialogue en jeu, en 8 étapes.
+
+---
+
 **Consultez le [Guide auteur](authoring.md)** pour la documentation complète :
 - Structure des fichiers JSON (story.json, dialogues/*.json)
 - Messages, choix, conditions, effets

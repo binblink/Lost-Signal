@@ -10,6 +10,10 @@ Includes a visual scene graph editor built directly into Godot.
 
 ## Documentation
 
+**New to the engine?** Start with the **[Getting Started guide](getting_started_en.md)** — from opening the project to your first dialogue running in-game, in 8 steps.
+
+---
+
 **See the [Authoring Guide](authoring_en.md)** for the full documentation:
 - JSON file structure (story.json, dialogues/*.json)
 - Messages, choices, conditions, effects
