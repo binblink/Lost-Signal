@@ -240,7 +240,7 @@ Each file contains:
 
 ### Scene Fields
 
-- `id`: unique identifier.
+- `id`: unique identifier. IDs are global — every scene across all your files must have a different ID. **Recommended convention**: prefix with the file or act name to avoid collisions on larger projects (`act1_intro`, `act2_confrontation`). A short ID (`intro`) is fine for single-file projects.
 - `contact_id`: identifier of the contact speaking.
 - `_notes`: ignored by the engine — use freely to annotate your scenes. E.g. `"_notes": "Opening scene — revision planned"`.
 - `trigger_after_scene`: ID of a scene after which this one plays automatically.

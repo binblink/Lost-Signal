@@ -170,8 +170,8 @@ The scene is appended to the file with an empty message `{ "text": "" }`. It app
 ```
 Delete this scene
 ─────────────────────
-Disconnect: C'est du spam → scene_02
-Disconnect: Oui, je vous reçois → scene_02
+Disconnect: That's spam → scene_02
+Disconnect: Yes, I hear you → scene_02
 ```
 
 Clicking a "Disconnect" entry removes the corresponding `next` from the JSON (the choice or scene `next` remains but without a destination).

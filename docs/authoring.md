@@ -240,7 +240,7 @@ Chaque fichier contient :
 
 ### Champs de scène
 
-- `id` : identifiant unique.
+- `id` : identifiant unique. Les IDs sont globaux — chaque scène dans tous vos fichiers doit avoir un ID différent. **Convention recommandée** : préfixez avec le fichier ou l'acte pour éviter les collisions sur les grands projets (`acte1_intro`, `acte2_confrontation`). Un ID court (`intro`) suffit pour un projet à fichier unique.
 - `contact_id` : identifiant du contact qui parle.
 - `_notes` : champ ignoré par le moteur — utilisez-le librement pour annoter vos scènes. Ex : `"_notes": "Scène d'ouverture — révision prévue"`.
 - `trigger_after_scene` : ID d'une scène après laquelle celle-ci est jouée automatiquement.

@@ -237,7 +237,6 @@ L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suiva
 | `time` (délai d'apparition d'un message) | Cas avancé rare |
 | `music` | Cas avancé rare |
 | `_notes` | Commentaires internes, ignorés par le moteur |
-| `resume_after_flag` via code | Géré via le panneau Déclenchement |
 
 Pour toute édition JSON, utiliser le bouton **Reformater** ensuite pour remettre les clés dans l'ordre canonique.
 
