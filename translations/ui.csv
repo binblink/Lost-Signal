@@ -34,6 +34,7 @@ VALID_OK_BODY,No format issues detected.,Aucun problème de format détecté.
 VALID_COUNT_ERRORS,%d error(s),%d erreur(s)
 VALID_COUNT_WARNINGS,%d warning(s),%d avertissement(s)
 VALID_COPY,Copy,Copier
+MSG_YOU_PREFIX,You: ,Vous :
 MSG_DELETED,Message deleted,Message supprimé
 MSG_CORRUPTED,Corrupted message,Message corrompu
 EXIT_TITLE,Exit?,Quitter ?

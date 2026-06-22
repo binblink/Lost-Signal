@@ -46,7 +46,7 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 		contact_preview.text = "Aucun message"
 	else:
 		contact_time.text = _format_time_display(last_message.get("time", ""))
-		var prefix = "Vous : " if last_message.get("out", false) else ""
+		var prefix: String = tr("MSG_YOU_PREFIX") if last_message.get("out", false) else ""
 		var raw = last_message.get("text", null)
 		var media = last_message.get("media", null)
 		var preview: String
