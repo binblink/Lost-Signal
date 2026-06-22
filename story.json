@@ -7,20 +7,34 @@
 			"id": "maeve",
 			"name": "+33 6 23 11 47 05 25",
 			"is_main": true,
-			"avatar": null,
+			"avatar": "res://assets/avatars/6889375.png",
 			"status": "online"
 		},
 		{
 			"id": "salesman",
 			"name": "+445 828 828 555",
 			"is_main": false,
-			"avatar": null,
+			"avatar": "res://assets/avatars/3135715.png",
 			"status": "online",
 			"history": [
 				{"text": "IMPORTANT\n\nAprès analyse de votre consommation d'eau, votre foyer fait partie des bénéficiaires potentiels du dispositif national ROBINETS ÉCONOMIQUES HAUTE PERFORMANCE.\nInstallation offerte pour les personnes réactives.\nAppelez sans attendre le 09 83 67 12 55 et communiquez le code AQUA-777.\nCette offre est réservée aux logements présentant un fort potentiel hydrique.\n\nPour ne plus recevoir d'offre, répondez STOP.", "time": "00:00", "out": false},
 				{"text": "GÉNIAL !!!\n\nVous avez été identifié comme conducteur exemplaire et bénéficiez d'un accès privilégié à notre opération VÉLO ÉLECTRIQUE GRATUIT.\nVotre profil correspond parfaitement aux critères du programme mobilité verte citoyenne.\nAppelez le 09 76 31 88 44 avec le code VELO-300 pour réserver votre modèle.\n\nCouleur attribuée selon disponibilité et mérite écologique.", "time": "2025-09-21 13:24", "out": false},
 				{"text": "EXCELLENTE NOUVELLE !!!\n\nVotre toiture a été présélectionnée parmi les habitations éligibles au programme national de PANNEAUX SOLAIRES OFFERTS.\nSuite à une étude aérienne, votre exposition au soleil a été jugée remarquable.\n\nConfirmez votre participation avant minuit au 09 74 85 63 12 en indiquant le code SOLEIL-500.\nLes places sont limitées afin de préserver l'équilibre énergétique de votre région.", "time": "2026-01-17 04:32", "out": false},
 				{"text": "FÉLICITATIONS !!!\n\nAprès tirage au sort national des habitations françaises, votre logement fait partie des 7 heureux gagnants de votre département sélectionnés pour bénéficier de l'INSTALLATION GRATUITE DE FENÊTRES PREMIUM grâce aux nouvelles aides de l'État.\nDossier validé automatiquement si vous confirmez votre inscription avant minuit.\nAppelez immédiatement le 09 87 54 21 63 en indiquant le code FEN-777.\nNe laissez pas passer cette opportunité exceptionnelle réservée aux propriétaires de bon goût.\n\nPour ne plus recevoir d'offre, répondez STOP.", "time": "10:11", "out": false}
+			]
+		},
+		{
+			"id": "Maman",
+			"name": "Maman",
+			"avatar": "res://assets/avatars/560219.png",
+			"status": "online",
+			"history": [
+				{"text": "C'est maman! Tu as pensé à nourrir le chat? Bises. Maman", "time": "00:00", "out": false},
+				{"text": "Oui maman", "time": "00:00", "out": true},
+				{"text": "C'est Maman! J'ai fait des patates pour le diner.\\nJe t'en garde? Bises. Maman", "time": "00:00", "out": false},
+				{"text": "Non maman", "time": "00:00", "out": true},
+				{"text": "C'est Maman! Tu as appelé mamie pour lui souhaiter sa fête? Bises. Maman", "time": "00:00", "out": false},
+				{"text": "Oui maman", "time": "00:00", "out": true}
 			]
 		}
 	]

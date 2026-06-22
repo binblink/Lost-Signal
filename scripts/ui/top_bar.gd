@@ -4,13 +4,51 @@ var name_label:    Label
 var status_dot:    Node
 var status_text:   Label
 var status_warning: Node
+var avatar_node:   Control = null
 
 var _blink_tween: Tween = null
+var _avatar_initial: Label = null
+var _avatar_texture: TextureRect = null
 
 
 func refresh(contact_id: String, contact_names: Dictionary, contact_statuses: Dictionary) -> void:
 	name_label.text = _get_display_name(contact_id, contact_names)
 	_apply_status(contact_id, contact_statuses)
+	_apply_avatar(contact_id, contact_names)
+
+
+func _apply_avatar(contact_id: String, contact_names: Dictionary) -> void:
+	if avatar_node == null:
+		return
+	if _avatar_initial == null:
+		avatar_node.clip_contents = true
+		_avatar_initial = Label.new()
+		_avatar_initial.set_anchors_preset(Control.PRESET_FULL_RECT)
+		_avatar_initial.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		_avatar_initial.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		_avatar_initial.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_avatar_initial.add_theme_color_override("font_color", Color.WHITE)
+		avatar_node.add_child(_avatar_initial)
+	var display_name: String = _get_display_name(contact_id, contact_names)
+	_avatar_initial.text = display_name[0].to_upper() if display_name.length() > 0 else "?"
+	_avatar_initial.visible = true
+	if is_instance_valid(_avatar_texture):
+		_avatar_texture.queue_free()
+		_avatar_texture = null
+	var contact: Dictionary = DialogueLoader.get_contact(contact_id)
+	var avatar_path: String = str(contact.get("avatar", ""))
+	if avatar_path != "" and ResourceLoader.exists(avatar_path):
+		var tex = load(avatar_path)
+		if tex != null:
+			_avatar_texture = TextureRect.new()
+			_avatar_texture.set_anchors_preset(Control.PRESET_FULL_RECT)
+			_avatar_texture.texture = tex
+			_avatar_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			_avatar_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+			_avatar_texture.clip_contents = true
+			_avatar_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			avatar_node.add_child(_avatar_texture)
+			_avatar_initial.visible = false
 
 
 func _get_display_name(contact_id: String, contact_names: Dictionary) -> String:

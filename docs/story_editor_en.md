@@ -210,7 +210,7 @@ Each contact is displayed as a card with all its configurable fields:
 | `id` | Text field — if changed, all `contact_id` references across every dialogue file are updated automatically |
 | `name` | Text field — display name in the contact list and title bar |
 | `is_main` | Checkbox — marks the contact that receives all scenes without an explicit `contact_id`; checking one unchecks all others automatically |
-| `avatar` | Text field — path to an image file (e.g. `res://assets/images/maeve.png`), or empty for none |
+| `avatar` | Text field + **…** button — clicking `…` opens Godot's file browser directly in `assets/avatars/`. The path can also be typed manually (e.g. `res://assets/avatars/maeve.png`). Empty = contact's name initial on a colored background. Accepted formats: PNG, JPG, JPEG, WEBP. |
 | `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
 | `pending_scene` | Scene dropdown — scene queued for this contact at startup; the player sees a pending choice as soon as they open this conversation |
 | `names` | "Localized names" section — a list of language code / name pairs. The **+ Language** button adds a new entry (a `??` placeholder appears in orange — replace it with the actual code). A code is highlighted orange if no matching dialogue file (`*.{code}.json`) is found in `dialogues/`. See the `names` section of the authoring guide. |

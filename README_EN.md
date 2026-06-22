@@ -21,6 +21,8 @@ Includes a visual scene graph editor built directly into Godot.
 
 **Full documentation online: [lost-signal.pages.dev](https://lost-signal.pages.dev/index_en/)**
 
+**New to the engine?** Start with **`docs/getting_started_en.md`** — from opening the project to your first dialogue running in-game, in 8 steps.
+
 **See `docs/authoring_en.md`** for the full documentation:
 - JSON file structure (story.json, dialogues/*.json)
 - Messages, choices, conditions, effects
@@ -44,6 +46,7 @@ project/
 │   ├── acte1.en.json             ← English variant (optional)
 │   └── ...other .json files
 ├── assets/
+│   ├── avatars/                  ← contact profile pictures (PNG, JPG, WEBP)
 │   ├── images/                   ← images for message bubbles (PNG, JPG, WEBP)
 │   ├── sounds/                   ← audio messages (OGG, MP3, WAV)
 │   └── music/                    ← background music tracks (OGG, MP3, WAV)

@@ -61,6 +61,7 @@ Corrupted messages, disappearing contacts, unstable conversations.
 - Timestamps and natural message flow
 - Emoji support — paste directly or use text shortcuts (`:)`, `<3`, `^^`…) in any message field
 - Contact status indicators: online, away, offline, network issue — each a narrative tool, not just a UI state. A contact with *network issue* that keeps dropping in and out tells a story before a single message is sent.
+- **Contact avatars** — each contact can have a profile picture (PNG, WEBP, JPG). When no avatar is set, an initial letter on a colored background is shown instead. Avatars appear in both the contact list and the top bar.
 
 ---
 
@@ -309,7 +310,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Full Godot 4.6 project — open and run immediately
 - Complete messaging UI (typing indicators, media bubbles, contact panel)
 - JSON narrative engine with conditions, variables, flags, effects, templates
-- Multi-contact system with status indicators
+- Multi-contact system with status indicators and contact avatars
 - Background conversation and trigger system
 - Pre-existing conversation histories and pending choices at game start
 - Real-time delays — scenes that arrive minutes or hours later, persisted across sessions

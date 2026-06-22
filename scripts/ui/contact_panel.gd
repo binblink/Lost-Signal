@@ -57,6 +57,9 @@ func mark_unread(contact_id: String) -> void:
 	if _is_open:
 		_rebuild_list()
 
+func get_unread(contact_id: String) -> int:
+	return _unread.get(contact_id, 0)
+
 func clear_unread(contact_id: String) -> void:
 	_unread.erase(contact_id)
 	if _is_open:

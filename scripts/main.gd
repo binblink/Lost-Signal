@@ -98,10 +98,11 @@ func _ready() -> void:
 	add_child(_validation_dialog)
 
 	_top_bar = preload("res://scripts/ui/top_bar.gd").new()
-	_top_bar.name_label    = contact_name_label
-	_top_bar.status_dot    = _status_dot
-	_top_bar.status_text   = _status_text
+	_top_bar.name_label     = contact_name_label
+	_top_bar.status_dot     = _status_dot
+	_top_bar.status_text    = _status_text
 	_top_bar.status_warning = _status_warning
+	_top_bar.avatar_node    = $RootHBox/VBoxContainer/TopBar/MarginContainer/HBoxContainer/Avatar
 	add_child(_top_bar)
 
 	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
@@ -146,6 +147,11 @@ func _ready() -> void:
 			var is_main: bool = start_contact_data.get("is_main", false)
 			line_edit.editable = is_main
 			line_edit.mouse_filter = Control.MOUSE_FILTER_STOP if is_main else Control.MOUSE_FILTER_IGNORE
+			var start_unread: int = _contact_panel.get_unread(start_cid)
+			if start_unread > 0:
+				_total_unread = max(0, _total_unread - start_unread)
+				_contact_panel.clear_unread(start_cid)
+				_update_panel_button()
 			message_display.clear_messages()
 			await get_tree().process_frame
 			await message_display.render_history(_narrative.contact_histories.get(start_cid, []))
@@ -274,8 +280,13 @@ func load_game() -> void:
 	if data.is_empty():
 		return
 	_narrative.set_state(data)
-	_narrative.active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
+	var main_id: String = DialogueLoader.get_main_contact().get("id", "maeve")
+	_narrative.active_contact_id = data.get("active_contact_id", main_id)
 	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
+	var loaded_contact: Dictionary = DialogueLoader.get_contact(_narrative.active_contact_id)
+	var loaded_is_main: bool = loaded_contact.get("is_main", false)
+	line_edit.editable = loaded_is_main
+	line_edit.mouse_filter = Control.MOUSE_FILTER_STOP if loaded_is_main else Control.MOUSE_FILTER_IGNORE
 	message_display.clear_messages()
 	await get_tree().process_frame
 	await message_display.render_history(_narrative.contact_histories.get(_narrative.active_contact_id, []))

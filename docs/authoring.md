@@ -34,7 +34,7 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
   - `name` : texte affiché dans le bandeau. Utilisé comme valeur par défaut si aucune traduction n'est définie pour la langue active.
   - `names` : dictionnaire de noms localisés — voir ci-dessous.
   - `is_main` : `true` pour le contact principal scriptable.
-  - `avatar` : chemin d'icône ou `null`.
+  - `avatar` : chemin vers l'image d'avatar du contact, ou `null`. Voir ci-dessous.
   - `status` : `online`, `away`, `offline`, `network_issue`.
   - `history` : messages pré-existants affichés dès le début d'une nouvelle partie. Voir ci-dessous.
   - `pending_scene` : ID d'une scène dont les choix seront proposés au joueur dès qu'il ouvre la conversation. Voir ci-dessous.
@@ -69,6 +69,24 @@ Un prénom propre (`"Maeve"`, `"Alex"`) n'a généralement pas besoin d'être da
 **Le code langue doit correspondre exactement** au suffixe utilisé dans vos fichiers de dialogue. Si vous avez `acte1.en.json`, le code est `"en"`. Si vous avez `acte1.de.json`, le code est `"de"`. Une coquille dans le code (`"EN"` au lieu de `"en"`, `"fr-FR"` au lieu de `"fr"`) fera silencieusement tomber le moteur sur `name` — aucune erreur n'est levée.
 
 > **Nota :** `names` ne gère que le nom affiché avant qu'un renommage narratif ait eu lieu. Si une scène renomme le contact via un effet `rename`, le nouveau nom prend le dessus pour le reste de la session. Pour les renommages narratifs qui doivent eux aussi être traduits, l'effet `rename` accepte un dictionnaire localisé en `value` — voir [Effets](#7-effets) ci-dessous.
+
+---
+
+### Avatars des contacts
+
+Le champ `avatar` accepte un chemin Godot vers une image (PNG, JPG, JPEG ou WEBP), ou `null` pour désactiver l'avatar.
+
+```json
+{ "id": "maeve", "avatar": "res://assets/avatars/maeve.png" }
+```
+
+**Comportement :**
+- Si un avatar est défini et que le fichier existe : l'image s'affiche comme photo de profil dans la liste des contacts et dans le bandeau supérieur.
+- Si aucun avatar n'est défini (`null`) ou si le fichier est introuvable : l'initiale du nom du contact s'affiche sur un fond de couleur accentuée.
+
+**Convention recommandée :** placez les images d'avatar dans `assets/avatars/`. Le panneau Contacts du Story Editor propose un bouton `…` pour sélectionner l'image directement depuis l'explorateur de fichiers Godot.
+
+**Format recommandé :** image carrée, PNG ou WEBP. Le moteur recadre automatiquement l'image au format rond — une image carrée garantit un recadrage centré sans perte.
 
 ---
 

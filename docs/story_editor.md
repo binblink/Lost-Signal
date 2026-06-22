@@ -210,7 +210,7 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 | `id` | Texte libre — si modifié, toutes les références `contact_id` dans les fichiers de dialogue sont mises à jour automatiquement |
 | `name` | Texte libre — nom affiché dans la liste de contacts et la barre de titre |
 | `is_main` | Case à cocher — désigne le contact qui reçoit toutes les scènes sans `contact_id` explicite ; cocher un contact décoche automatiquement tous les autres |
-| `avatar` | Texte libre — chemin vers une image (ex : `res://assets/images/maeve.png`), vide pour aucun avatar |
+| `avatar` | Champ texte + bouton **…** — cliquer sur `…` ouvre l'explorateur de fichiers Godot directement dans `assets/avatars/`. Le chemin peut aussi être saisi manuellement (ex : `res://assets/avatars/maeve.png`). Vide = initiale du nom sur fond coloré. Les formats acceptés sont PNG, JPG, JPEG et WEBP. |
 | `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
 | `pending_scene` | Dropdown de scènes — scène mise en attente pour ce contact au démarrage ; le joueur voit un choix en suspens dès l'ouverture de la conversation |
 | `names` | Section « Noms localisés » — liste de paires code langue / nom. Bouton **+ Langue** pour ajouter une entrée (un placeholder `??` apparaît en orange — le remplacer par le code réel). Le code langue est coloré en orange si aucun fichier de dialogue correspondant (`*.{code}.json`) n'est trouvé dans `dialogues/`. Voir la section `names` du guide auteur. |

@@ -307,15 +307,41 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 	inner.add_child(row2)
 
 	# — avatar
-	_line_edit(inner, "avatar",
-		str(avatar) if avatar != null else "",
-		_t("(chemin image ou vide)", "(image path or empty)"),
-		func(val: String) -> void:
-			var d := _read_story()
-			(d["contacts"] as Array)[ci]["avatar"] = null if val.is_empty() else val
-			_write_story(d),
-		_t("Chemin vers l'image d'avatar (ex : res://images/maeve.png).\nLaisser vide pour aucun avatar.",
-			"Path to the avatar image (e.g. res://images/maeve.png).\nLeave empty for no avatar."))
+	var avatar_row := HBoxContainer.new()
+	_label(avatar_row, "avatar", 110)
+	var avatar_edit := LineEdit.new()
+	avatar_edit.text = str(avatar) if avatar != null else ""
+	avatar_edit.placeholder_text = _t("(chemin image ou vide)", "(image path or empty)")
+	avatar_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	avatar_edit.tooltip_text = _t(
+		"Chemin vers l'image d'avatar (ex : res://assets/avatars/maeve.png).\nLaisser vide pour aucun avatar.",
+		"Path to the avatar image (e.g. res://assets/avatars/maeve.png).\nLeave empty for no avatar.")
+	var save_avatar: Callable = func(val: String) -> void:
+		var d := _read_story()
+		(d["contacts"] as Array)[ci]["avatar"] = null if val.is_empty() else val
+		_write_story(d)
+	avatar_edit.focus_exited.connect(func() -> void:
+		save_avatar.call(avatar_edit.text.strip_edges()))
+	avatar_row.add_child(avatar_edit)
+	var pick_avatar_btn := Button.new()
+	pick_avatar_btn.text = "…"
+	pick_avatar_btn.custom_minimum_size = Vector2(28, 28)
+	pick_avatar_btn.tooltip_text = _t("Choisir une image…", "Browse for image…")
+	pick_avatar_btn.pressed.connect(func() -> void:
+		var dialog := EditorFileDialog.new()
+		dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+		dialog.access = EditorFileDialog.ACCESS_RESOURCES
+		dialog.filters = PackedStringArray(["*.png,*.jpg,*.jpeg,*.webp ; Images"])
+		dialog.current_dir = "res://assets/avatars" if DirAccess.dir_exists_absolute("res://assets/avatars") else "res://assets"
+		get_tree().get_root().add_child(dialog)
+		dialog.file_selected.connect(func(path: String) -> void:
+			avatar_edit.text = path
+			save_avatar.call(path)
+			dialog.queue_free())
+		dialog.canceled.connect(func() -> void: dialog.queue_free())
+		dialog.popup_centered(Vector2i(900, 600)))
+	avatar_row.add_child(pick_avatar_btn)
+	inner.add_child(avatar_row)
 
 	# — pending_scene
 	var scene_ids: Array = get_scene_ids.call()
@@ -366,7 +392,10 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		var e_text: String = str(entry.get("text",  ""))
 		var e_time: String = str(entry.get("time",  "00:00"))
 		var e_out:  bool   =     entry.get("out",   false)
-		var row := HBoxContainer.new()
+		var entry_vbox := VBoxContainer.new()
+		entry_vbox.add_theme_constant_override("separation", 2)
+
+		var meta_row := HBoxContainer.new()
 
 		var out_cb := CheckBox.new()
 		out_cb.text = "→"
@@ -376,7 +405,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 			var d := _read_story()
 			((d["contacts"] as Array)[ci]["history"] as Array)[hi]["out"] = pressed
 			_write_story(d))
-		row.add_child(out_cb)
+		meta_row.add_child(out_cb)
 
 		var e_date: String = ""
 		var e_time_only: String = e_time
@@ -388,18 +417,18 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		var date_edit := LineEdit.new()
 		date_edit.text = e_date
 		date_edit.placeholder_text = "YYYY-MM-DD"
-		date_edit.custom_minimum_size = Vector2(88, 0)
+		date_edit.custom_minimum_size = Vector2(130, 0)
 		date_edit.tooltip_text = _t(
 			"Date optionnelle (ex : 2025-06-20).\nVide = affiché comme un message du jour.",
 			"Optional date (e.g. 2025-06-20).\nEmpty = displayed as a same-day message.")
-		row.add_child(date_edit)
+		meta_row.add_child(date_edit)
 
 		var time_only_edit := LineEdit.new()
 		time_only_edit.text = e_time_only
 		time_only_edit.placeholder_text = "HH:MM"
 		time_only_edit.custom_minimum_size = Vector2(50, 0)
 		time_only_edit.tooltip_text = _t("Heure affichée sous le message.", "Time shown under the message.")
-		row.add_child(time_only_edit)
+		meta_row.add_child(time_only_edit)
 
 		var save_time: Callable = func() -> void:
 			var d_val := date_edit.text.strip_edges()
@@ -419,19 +448,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		pick_btn.tooltip_text = _t("Ouvrir le sélecteur de date et heure.", "Open the date and time picker.")
 		pick_btn.pressed.connect(func() -> void:
 			_open_datetime_picker(pick_btn, date_edit, time_only_edit, save_time))
-		row.add_child(pick_btn)
-
-		var text_edit := LineEdit.new()
-		text_edit.text = e_text
-		text_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text_edit.tooltip_text = _t("Texte du message.", "Message text.")
-		text_edit.focus_exited.connect(func() -> void:
-			var val := text_edit.text
-			if val != e_text:
-				var d := _read_story()
-				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["text"] = val
-				_write_story(d))
-		row.add_child(text_edit)
+		meta_row.add_child(pick_btn)
 
 		var del_btn := Button.new()
 		del_btn.text = "×"
@@ -445,8 +462,24 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 				(d["contacts"] as Array)[ci].erase("history")
 			_write_story(d)
 			call_deferred("refresh"))
-		row.add_child(del_btn)
-		container.add_child(row)
+		meta_row.add_child(del_btn)
+
+		entry_vbox.add_child(meta_row)
+
+		var text_edit := LineEdit.new()
+		text_edit.text = e_text
+		text_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		text_edit.placeholder_text = _t("Texte du message…", "Message text…")
+		text_edit.tooltip_text = _t("Texte du message. Utilisez \\n pour aller à la ligne.", "Message text. Use \\n for a line break.")
+		text_edit.focus_exited.connect(func() -> void:
+			var val := text_edit.text
+			if val != e_text:
+				var d := _read_story()
+				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["text"] = val
+				_write_story(d))
+		entry_vbox.add_child(text_edit)
+
+		container.add_child(entry_vbox)
 
 
 # ---------------------------------------------------------------------------

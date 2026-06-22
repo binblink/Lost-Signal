@@ -34,7 +34,7 @@ A dialogue file always contains a root object with a `scenes` key.
   - `name`: text displayed in the top bar. Used as the fallback if no translation is defined for the active language.
   - `names`: dictionary of localized names — see below.
   - `is_main`: `true` for the main scriptable contact.
-  - `avatar`: icon path or `null`.
+  - `avatar`: path to the contact's avatar image, or `null`. See below.
   - `status`: `online`, `away`, `offline`, `network_issue`.
   - `history`: pre-existing messages shown at the start of a new game. See below.
   - `pending_scene`: ID of a scene whose choices will be presented to the player as soon as they open the conversation. See below.
@@ -69,6 +69,24 @@ A proper first name (`"Maeve"`, `"Alex"`) generally doesn't need to be in `names
 **The language code must match exactly** the suffix used in your dialogue files. If you have `act1.en.json`, the code is `"en"`. If you have `act1.de.json`, the code is `"de"`. A typo in the code (`"EN"` instead of `"en"`, `"fr-FR"` instead of `"fr"`) will silently fall back to `name` — no error is raised.
 
 > **Note:** `names` only controls the name shown in the top bar and contact list before any narrative rename occurs. If a scene renames the contact via a `rename` effect, the renamed name takes over for the rest of the session. For narrative renames that also need to be translated, the `rename` effect supports a localized dict as its `value` — see [Effects](#7-effects) below.
+
+---
+
+### Contact avatars
+
+The `avatar` field accepts a Godot resource path to an image (PNG, JPG, JPEG, or WEBP), or `null` to disable the avatar.
+
+```json
+{ "id": "maeve", "avatar": "res://assets/avatars/maeve.png" }
+```
+
+**Behavior:**
+- If an avatar is set and the file exists: the image is shown as the contact's profile picture in both the contact list and the top bar.
+- If no avatar is set (`null`) or the file is missing: the contact's name initial is shown on an accent-colored background.
+
+**Recommended convention:** place avatar images in `assets/avatars/`. The Story Editor's Contacts panel includes a `…` button to browse and select the image directly from Godot's file picker.
+
+**Recommended format:** square image, PNG or WEBP. The engine automatically clips the image to a circle — a square image ensures centered cropping without loss.
 
 ---
 

@@ -66,7 +66,9 @@ func _on_contacts_pressed() -> void:
 		return
 	_contacts_win = Window.new()
 	_contacts_win.title = _t("Configuration des contacts", "Contact configuration")
-	_contacts_win.size = Vector2i(620, 750)
+	_contacts_win.size = Vector2i(868, 750)
+	_contacts_win.min_size = Vector2i(868, 400)
+	_contacts_win.max_size = Vector2i(868, 0)
 	_contacts_win.wrap_controls = true
 	_contacts_win.close_requested.connect(func() -> void: _contacts_win.hide())
 	var panel := preload("res://addons/story_editor/ContactsPanel.gd").new()

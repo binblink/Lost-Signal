@@ -370,6 +370,7 @@ func get_state() -> Dictionary:
 		"pending_choices":         pending_choices,
 		"current_music_path":      current_music_path,
 		"scheduled_scenes":        scheduled_scenes,
+		"active_contact_id":       active_contact_id,
 	}
 
 func set_state(data: Dictionary) -> void:

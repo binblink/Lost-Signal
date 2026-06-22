@@ -21,6 +21,8 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 **Documentation en ligne : [lost-signal.pages.dev](https://lost-signal.pages.dev/index_en/)**
 
+**Nouveau sur le moteur ?** Commencez par **`docs/getting_started.md`** — de l'ouverture du projet à votre premier dialogue en jeu, en 8 étapes.
+
 **Consultez `docs/authoring.md`** pour la documentation complète :
 - Structure des fichiers JSON (story.json, dialogues/*.json)
 - Messages, choix, conditions, effets
@@ -44,6 +46,7 @@ projet/
 │   ├── acte1.en.json             ← variante anglaise (optionnel)
 │   └── ...autres fichiers.json
 ├── assets/
+│   ├── avatars/                  ← photos de profil des contacts (PNG, JPG, WEBP)
 │   ├── images/                   ← images pour les bulles (PNG, JPG, WEBP)
 │   ├── sounds/                   ← messages audio (OGG, MP3, WAV)
 │   └── music/                    ← musiques de fond (OGG, MP3, WAV)
