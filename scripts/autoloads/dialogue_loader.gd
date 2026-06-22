@@ -116,6 +116,8 @@ func _normalize_message(m) -> Array:
 		return []
 	if not m.get("text", null) is Array:
 		return [m]
+	if m.has("edit"):
+		push_warning("DialogueLoader: 'edit' on a multi-bubble message (text array) is not supported and will be ignored.")
 	var texts: Array = m["text"]
 	var result: Array = []
 	for i in range(texts.size()):

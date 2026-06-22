@@ -3,12 +3,22 @@ extends Node
 const SAVE_PATH = "user://savegame.json"
 
 func save(state: Dictionary) -> void:
-	var file = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var tmp_path: String = SAVE_PATH + ".tmp"
+	var file: FileAccess = FileAccess.open(tmp_path, FileAccess.WRITE)
 	if file == null:
-		push_error("SaveManager: cannot open save file for writing (code %d)." % FileAccess.get_open_error())
+		push_error("SaveManager: cannot open temp save file for writing (code %d)." % FileAccess.get_open_error())
 		return
 	file.store_string(JSON.stringify(state))
 	file.close()
+	if FileAccess.file_exists(SAVE_PATH):
+		DirAccess.remove_absolute(SAVE_PATH)
+	var dir: DirAccess = DirAccess.open("user://")
+	if dir == null:
+		push_error("SaveManager: cannot access user:// to finalize save.")
+		return
+	var err: Error = dir.rename("savegame.json.tmp", "savegame.json")
+	if err != OK:
+		push_error("SaveManager: failed to finalize save file (code %d)." % err)
 
 func load_save() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_PATH):
