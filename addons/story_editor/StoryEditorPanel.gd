@@ -1596,6 +1596,8 @@ func _add_effect_row(container: VBoxContainer, scene_id: String, eff_idx: int, e
 			_patch_field(scene_id, func(s: Dictionary) -> void:
 				get_effs.call(s)[eff_idx]["value"] = STATUS_VALS[idx]))
 		row.add_child(status_opts)
+	elif op == "rename":
+		_add_rename_value_editor(row, scene_id, eff_idx, eff.get("value", ""), get_effs)
 	else:
 		var value_edit := LineEdit.new()
 		value_edit.text = value_val
@@ -1623,3 +1625,114 @@ func _add_effect_row(container: VBoxContainer, scene_id: String, eff_idx: int, e
 		call_deferred("_populate_detail", scene_id))
 	row.add_child(del_btn)
 	container.add_child(row)
+
+
+func _add_rename_value_editor(row: HBoxContainer, scene_id: String, eff_idx: int, raw_val, get_effs: Callable) -> void:
+	var live_dict: Dictionary = {}
+	if raw_val is Dictionary:
+		live_dict = (raw_val as Dictionary).duplicate()
+	elif str(raw_val) != "" and str(raw_val) != "null":
+		live_dict[""] = str(raw_val)
+	if live_dict.is_empty():
+		live_dict[""] = ""
+
+	var save_val: Callable = func() -> void:
+		var without_default: Dictionary = {}
+		for k in live_dict:
+			if k != "":
+				without_default[str(k)] = str(live_dict[k])
+		if without_default.is_empty():
+			var str_val: String = str(live_dict.get("", ""))
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				get_effs.call(s)[eff_idx]["value"] = str_val)
+		else:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				get_effs.call(s)[eff_idx]["value"] = without_default)
+
+	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 2)
+
+	for lk in live_dict.keys():
+		var e_lang: String = str(lk)
+		var e_name: String = str(live_dict[lk])
+		var entry_row := HBoxContainer.new()
+		entry_row.add_theme_constant_override("separation", 2)
+
+		if e_lang == "":
+			var def_lbl := Label.new()
+			def_lbl.text = "—"
+			def_lbl.custom_minimum_size = Vector2(36, 0)
+			def_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
+			def_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			def_lbl.tooltip_text = _t(
+				"Nom invariant (même dans toutes les langues). Cliquez + Langue pour localiser.",
+				"Invariant name (same in all languages). Click + Language to localize.")
+			entry_row.add_child(def_lbl)
+		else:
+			var lang_edit := LineEdit.new()
+			lang_edit.text = e_lang
+			lang_edit.placeholder_text = "fr"
+			lang_edit.custom_minimum_size = Vector2(36, 0)
+			_apply_rename_lang_color(lang_edit, e_lang)
+			lang_edit.focus_exited.connect(func() -> void:
+				var new_lang: String = lang_edit.text.strip_edges()
+				_apply_rename_lang_color(lang_edit, new_lang)
+				if new_lang == e_lang:
+					return
+				if new_lang.is_empty():
+					lang_edit.text = e_lang
+					return
+				var cur_name: String = str(live_dict.get(e_lang, ""))
+				live_dict.erase(e_lang)
+				live_dict[new_lang] = cur_name
+				save_val.call()
+				call_deferred("_populate_detail", scene_id))
+			entry_row.add_child(lang_edit)
+
+		var name_edit := LineEdit.new()
+		name_edit.text = e_name
+		name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_edit.focus_exited.connect(func() -> void:
+			var first_child := entry_row.get_child(0)
+			var cur_lang: String = (first_child as LineEdit).text.strip_edges() if first_child is LineEdit else ""
+			live_dict[cur_lang] = name_edit.text
+			save_val.call())
+		entry_row.add_child(name_edit)
+
+		var rm_btn := Button.new()
+		rm_btn.text = "×"
+		rm_btn.custom_minimum_size = Vector2(22, 0)
+		rm_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		rm_btn.pressed.connect(func() -> void:
+			live_dict.erase(e_lang)
+			save_val.call()
+			call_deferred("_populate_detail", scene_id))
+		entry_row.add_child(rm_btn)
+		vbox.add_child(entry_row)
+
+	var add_lang_btn := Button.new()
+	add_lang_btn.text = _t("+ Langue", "+ Language")
+	add_lang_btn.tooltip_text = _t(
+		"Si une seule entrée invariante : la convertit en première langue.\nSinon : ajoute une nouvelle entrée localisée.",
+		"If only one invariant entry: converts it to the first language.\nOtherwise: adds a new localized entry.")
+	add_lang_btn.pressed.connect(func() -> void:
+		if live_dict.has("") and live_dict.size() == 1:
+			live_dict.erase("")
+		live_dict["??"] = ""
+		save_val.call()
+		call_deferred("_populate_detail", scene_id))
+	vbox.add_child(add_lang_btn)
+	row.add_child(vbox)
+
+
+func _apply_rename_lang_color(field: LineEdit, code: String) -> void:
+	if code.is_empty() or code.begins_with("??"):
+		field.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2))
+		return
+	var files: PackedStringArray = DirAccess.get_files_at("res://dialogues/")
+	for f: String in files:
+		if f.ends_with("." + code + ".json"):
+			field.remove_theme_color_override("font_color")
+			return
+	field.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2))

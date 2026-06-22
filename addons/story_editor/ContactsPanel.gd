@@ -85,7 +85,7 @@ func _ordered_story(data: Dictionary) -> Dictionary:
 
 
 func _ordered_contact(c: Dictionary) -> Dictionary:
-	const KEYS := ["id", "name", "is_main", "avatar", "status", "pending_scene", "history"]
+	const KEYS := ["id", "name", "names", "is_main", "avatar", "status", "pending_scene", "history"]
 	var result := {}
 	for k in KEYS:
 		if c.has(k):
@@ -258,6 +258,9 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 	row1.add_child(del_btn)
 	inner.add_child(row1)
 
+	# — localized names
+	_names_section(inner, ci, c.get("names", {}))
+
 	# — status / is_main
 	var row2 := HBoxContainer.new()
 	_label(row2, "status", 50)
@@ -364,18 +367,48 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 			_write_story(d))
 		row.add_child(out_cb)
 
-		var time_edit := LineEdit.new()
-		time_edit.text = e_time
-		time_edit.placeholder_text = "HH:MM"
-		time_edit.custom_minimum_size = Vector2(62, 0)
-		time_edit.tooltip_text = _t("Heure affichée sous le message (format HH:MM).", "Time shown under the message (HH:MM format).")
-		time_edit.focus_exited.connect(func() -> void:
-			var val := time_edit.text.strip_edges()
-			if val != e_time:
+		var e_date: String = ""
+		var e_time_only: String = e_time
+		if " " in e_time:
+			var tp := e_time.split(" ", false, 1)
+			e_date = tp[0]
+			e_time_only = tp[1] if tp.size() > 1 else ""
+
+		var date_edit := LineEdit.new()
+		date_edit.text = e_date
+		date_edit.placeholder_text = "YYYY-MM-DD"
+		date_edit.custom_minimum_size = Vector2(88, 0)
+		date_edit.tooltip_text = _t(
+			"Date optionnelle (ex : 2025-06-20).\nVide = affiché comme un message du jour.",
+			"Optional date (e.g. 2025-06-20).\nEmpty = displayed as a same-day message.")
+		row.add_child(date_edit)
+
+		var time_only_edit := LineEdit.new()
+		time_only_edit.text = e_time_only
+		time_only_edit.placeholder_text = "HH:MM"
+		time_only_edit.custom_minimum_size = Vector2(50, 0)
+		time_only_edit.tooltip_text = _t("Heure affichée sous le message.", "Time shown under the message.")
+		row.add_child(time_only_edit)
+
+		var save_time: Callable = func() -> void:
+			var d_val := date_edit.text.strip_edges()
+			var t_val := time_only_edit.text.strip_edges()
+			var combined: String = (d_val + " " + t_val) if d_val != "" else t_val
+			if combined != e_time:
 				var d := _read_story()
-				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["time"] = val
-				_write_story(d))
-		row.add_child(time_edit)
+				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["time"] = combined
+				_write_story(d)
+		date_edit.focus_exited.connect(save_time)
+		time_only_edit.focus_exited.connect(save_time)
+
+		var pick_btn := Button.new()
+		pick_btn.text = "📅"
+		pick_btn.custom_minimum_size = Vector2(28, 28)
+		pick_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		pick_btn.tooltip_text = _t("Ouvrir le sélecteur de date et heure.", "Open the date and time picker.")
+		pick_btn.pressed.connect(func() -> void:
+			_open_datetime_picker(pick_btn, date_edit, time_only_edit, save_time))
+		row.add_child(pick_btn)
 
 		var text_edit := LineEdit.new()
 		text_edit.text = e_text
@@ -477,6 +510,275 @@ func _label(parent: HBoxContainer, text: String, min_width: int) -> void:
 	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 	parent.add_child(lbl)
+
+
+# ---------------------------------------------------------------------------
+# Localized names section
+
+func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> void:
+	var header := HBoxContainer.new()
+	var h_lbl := Label.new()
+	h_lbl.text = _t("Noms localisés", "Localized names")
+	h_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+	h_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(h_lbl)
+	var add_btn := Button.new()
+	add_btn.text = _t("+ Langue", "+ Language")
+	add_btn.tooltip_text = _t(
+		"Ajoute un nom traduit pour ce contact.\nLe code langue doit correspondre au suffixe des fichiers de dialogue (acte1.fr.json → « fr »).",
+		"Adds a translated name for this contact.\nThe language code must match the suffix used in dialogue files (acte1.en.json → \"en\").")
+	add_btn.pressed.connect(func() -> void:
+		var d := _read_story()
+		var contact: Dictionary = (d["contacts"] as Array)[ci]
+		if not contact.has("names"):
+			contact["names"] = {}
+		var nd: Dictionary = contact["names"] as Dictionary
+		var placeholder := "??"
+		var n := 1
+		while nd.has(placeholder):
+			placeholder = "??" + str(n)
+			n += 1
+		nd[placeholder] = ""
+		_write_story(d)
+		call_deferred("refresh"))
+	header.add_child(add_btn)
+	container.add_child(header)
+
+	for lang_code in names:
+		var e_lang: String = str(lang_code)
+		var e_name: String = str(names[lang_code])
+		var row := HBoxContainer.new()
+
+		var lang_edit := LineEdit.new()
+		lang_edit.text = e_lang
+		lang_edit.placeholder_text = "fr"
+		lang_edit.custom_minimum_size = Vector2(45, 0)
+		lang_edit.tooltip_text = _t(
+			"Code langue (ex : fr, en, de).\nDoit correspondre au suffixe des fichiers de dialogue.",
+			"Language code (e.g. fr, en, de).\nMust match the suffix of dialogue files.")
+		_apply_lang_validation(lang_edit, e_lang)
+		row.add_child(lang_edit)
+
+		var name_edit := LineEdit.new()
+		name_edit.text = e_name
+		name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		name_edit.tooltip_text = _t("Nom du contact dans cette langue.", "Contact name in this language.")
+		row.add_child(name_edit)
+
+		var del_btn := Button.new()
+		del_btn.text = "×"
+		del_btn.custom_minimum_size = Vector2(28, 28)
+		del_btn.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		del_btn.tooltip_text = _t("Supprimer ce nom localisé.", "Remove this localized name.")
+		del_btn.pressed.connect(func() -> void:
+			var d := _read_story()
+			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			var nd: Dictionary = contact.get("names", {}) as Dictionary
+			nd.erase(e_lang)
+			if nd.is_empty():
+				contact.erase("names")
+			else:
+				contact["names"] = nd
+			_write_story(d)
+			call_deferred("refresh"))
+		row.add_child(del_btn)
+
+		lang_edit.focus_exited.connect(func() -> void:
+			var new_lang := lang_edit.text.strip_edges()
+			_apply_lang_validation(lang_edit, new_lang)
+			if new_lang == e_lang:
+				return
+			if new_lang.is_empty():
+				lang_edit.text = e_lang
+				return
+			var d := _read_story()
+			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			var nd: Dictionary = contact.get("names", {}) as Dictionary
+			var cur_val: String = str(nd.get(e_lang, ""))
+			nd.erase(e_lang)
+			nd[new_lang] = cur_val
+			contact["names"] = nd
+			_write_story(d)
+			call_deferred("refresh"))
+
+		name_edit.focus_exited.connect(func() -> void:
+			var cur_lang := lang_edit.text.strip_edges()
+			var new_name := name_edit.text
+			if cur_lang.is_empty() or new_name == e_name:
+				return
+			var d := _read_story()
+			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			if not contact.has("names"):
+				contact["names"] = {}
+			(contact["names"] as Dictionary)[cur_lang] = new_name
+			_write_story(d))
+
+		container.add_child(row)
+
+
+func _apply_lang_validation(field: LineEdit, code: String) -> void:
+	if code.is_empty() or code.begins_with("??"):
+		field.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2))
+	elif _validate_lang_code(code):
+		field.remove_theme_color_override("font_color")
+	else:
+		field.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2))
+
+
+func _validate_lang_code(code: String) -> bool:
+	var files := DirAccess.get_files_at("res://dialogues/")
+	for f: String in files:
+		if f.ends_with("." + code + ".json"):
+			return true
+	return false
+
+
+# ---------------------------------------------------------------------------
+# Date/time picker popup
+
+func _open_datetime_picker(anchor: Control, date_edit: LineEdit, time_only_edit: LineEdit, save_time: Callable) -> void:
+	var popup := PopupPanel.new()
+	add_child(popup)
+	popup.close_requested.connect(func() -> void: popup.queue_free())
+
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left",   10)
+	margin.add_theme_constant_override("margin_right",  10)
+	margin.add_theme_constant_override("margin_top",     8)
+	margin.add_theme_constant_override("margin_bottom",  8)
+	popup.add_child(margin)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 8)
+	margin.add_child(vbox)
+
+	var title := Label.new()
+	title.text = _t("Date et heure", "Date and time")
+	title.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(title)
+
+	# Parse existing values
+	var today := Time.get_date_dict_from_system()
+	var init_year:  int = today["year"]
+	var init_month: int = today["month"]
+	var init_day:   int = today["day"]
+	var init_hour:  int = 0
+	var init_min:   int = 0
+	var d_text := date_edit.text.strip_edges()
+	var t_text := time_only_edit.text.strip_edges()
+	if d_text != "":
+		var dp := d_text.split("-")
+		if dp.size() == 3:
+			init_year  = int(dp[0])
+			init_month = int(dp[1])
+			init_day   = int(dp[2])
+	if t_text != "":
+		var tp := t_text.split(":")
+		if tp.size() == 2:
+			init_hour = int(tp[0])
+			init_min  = int(tp[1])
+
+	# Date row
+	var date_row := HBoxContainer.new()
+	date_row.add_theme_constant_override("separation", 4)
+
+	var sb_year := SpinBox.new()
+	sb_year.min_value = 2000
+	sb_year.max_value = 2099
+	sb_year.value = init_year
+	sb_year.custom_minimum_size = Vector2(72, 0)
+	date_row.add_child(sb_year)
+
+	var lbl_d1 := Label.new()
+	lbl_d1.text = "-"
+	lbl_d1.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	date_row.add_child(lbl_d1)
+
+	var sb_month := SpinBox.new()
+	sb_month.min_value = 1
+	sb_month.max_value = 12
+	sb_month.value = init_month
+	sb_month.custom_minimum_size = Vector2(52, 0)
+	date_row.add_child(sb_month)
+
+	var lbl_d2 := Label.new()
+	lbl_d2.text = "-"
+	lbl_d2.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	date_row.add_child(lbl_d2)
+
+	var sb_day := SpinBox.new()
+	sb_day.min_value = 1
+	sb_day.max_value = 31
+	sb_day.value = init_day
+	sb_day.custom_minimum_size = Vector2(52, 0)
+	date_row.add_child(sb_day)
+
+	vbox.add_child(date_row)
+
+	# Time row
+	var time_row := HBoxContainer.new()
+	time_row.add_theme_constant_override("separation", 4)
+
+	var sb_hour := SpinBox.new()
+	sb_hour.min_value = 0
+	sb_hour.max_value = 23
+	sb_hour.value = init_hour
+	sb_hour.custom_minimum_size = Vector2(52, 0)
+	time_row.add_child(sb_hour)
+
+	var lbl_t := Label.new()
+	lbl_t.text = ":"
+	lbl_t.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	time_row.add_child(lbl_t)
+
+	var sb_min := SpinBox.new()
+	sb_min.min_value = 0
+	sb_min.max_value = 59
+	sb_min.value = init_min
+	sb_min.custom_minimum_size = Vector2(52, 0)
+	time_row.add_child(sb_min)
+
+	vbox.add_child(time_row)
+
+	# Buttons
+	var btn_row := HBoxContainer.new()
+	btn_row.add_theme_constant_override("separation", 4)
+
+	var today_btn := Button.new()
+	today_btn.text = _t("Aujourd'hui", "Today")
+	today_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	today_btn.pressed.connect(func() -> void:
+		var t: Dictionary = Time.get_date_dict_from_system()
+		sb_year.value  = t["year"]
+		sb_month.value = t["month"]
+		sb_day.value   = t["day"])
+	btn_row.add_child(today_btn)
+
+	var ok_btn := Button.new()
+	ok_btn.text = "OK"
+	ok_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	ok_btn.pressed.connect(func() -> void:
+		date_edit.text      = "%04d-%02d-%02d" % [int(sb_year.value), int(sb_month.value), int(sb_day.value)]
+		time_only_edit.text = "%02d:%02d" % [int(sb_hour.value), int(sb_min.value)]
+		save_time.call()
+		popup.queue_free())
+	btn_row.add_child(ok_btn)
+
+	var clear_btn := Button.new()
+	clear_btn.text = _t("Effacer date", "Clear date")
+	clear_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	clear_btn.pressed.connect(func() -> void:
+		date_edit.text = ""
+		save_time.call()
+		popup.queue_free())
+	btn_row.add_child(clear_btn)
+
+	vbox.add_child(btn_row)
+
+	popup.reset_size()
+	var anchor_pos := anchor.get_screen_position()
+	popup.position = Vector2i(int(anchor_pos.x), int(anchor_pos.y) + int(anchor.size.y))
+	popup.popup()
 
 
 # ---------------------------------------------------------------------------

@@ -20,9 +20,11 @@ func _ready() -> void:
 
 func reload_for_locale() -> void:
 	_scenes.clear()
+	_contacts.clear()
 	_triggers.clear()
 	validation_errors.clear()
 	validation_warnings.clear()
+	_load_story()
 	_load_dialogues_dir()
 	_validate()
 
@@ -44,7 +46,9 @@ func _load_story() -> void:
 	if data.has("title"):         _title         = data["title"]
 	if data.has("start_scene"):   _start_scene   = data["start_scene"]
 	if data.has("start_contact"): _start_contact = data["start_contact"]
-	if data.has("contacts"):      _contacts      = data["contacts"]
+	if data.has("contacts"):
+		_contacts = data["contacts"]
+		_resolve_contact_names()
 
 func _load_dialogues_dir() -> void:
 	var dir = DirAccess.open(DIALOGUES_DIR)
@@ -85,6 +89,8 @@ func _load_scenes_from(path: String) -> void:
 	var data = _parse_json(path)
 	if data.is_empty() or not data.has("scenes"):
 		return
+	if data.has("start_scene"):
+		_start_scene = data["start_scene"]
 	for scene in data["scenes"]:
 		if not scene.has("contact_id"):
 			scene["contact_id"] = _get_main_contact_id()
@@ -183,6 +189,15 @@ func get_main_contact() -> Dictionary:
 		if c.get("is_main", false):
 			return c
 	return _contacts[0] if _contacts.size() > 0 else {}
+
+func _resolve_contact_names() -> void:
+	var lang: String = SettingsManager.language
+	for contact in _contacts:
+		var names = contact.get("names", null)
+		if names is Dictionary:
+			var localized: String = (names as Dictionary).get(lang, "")
+			if localized != "":
+				contact["name"] = localized
 
 func _get_main_contact_id() -> String:
 	return get_main_contact().get("id", "")

@@ -130,7 +130,7 @@ Chaque effet se compose de trois champs :
 | `set` | Dropdown de variables | Valeur à affecter |
 | `add` | Dropdown de variables | Valeur à ajouter |
 | `sub` | Dropdown de variables | Valeur à soustraire |
-| `rename` | Dropdown de contacts | Nouveau nom |
+| `rename` | Dropdown de contacts | Éditeur de nom inline : une ligne `—` pour un nom invariant (identique dans toutes les langues), ou une ligne par code langue. Cliquez **+ Langue** pour ajouter des entrées localisées — l'entrée invariante est automatiquement convertie en première entrée de langue. Un code langue apparaît en orange si aucun fichier `*.{code}.json` correspondant n'existe dans `dialogues/`. |
 | `set_status` | Dropdown de contacts | `online` / `away` / `offline` / `network_issue` |
 
 ### Saisie libre vs Choix
@@ -213,7 +213,8 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 | `avatar` | Texte libre — chemin vers une image (ex : `res://assets/images/maeve.png`), vide pour aucun avatar |
 | `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
 | `pending_scene` | Dropdown de scènes — scène mise en attente pour ce contact au démarrage ; le joueur voit un choix en suspens dès l'ouverture de la conversation |
-| `history` | Liste de lignes — chaque entrée a une case `→` (envoyé par le joueur), un champ `HH:MM` et un champ texte |
+| `names` | Section « Noms localisés » — liste de paires code langue / nom. Bouton **+ Langue** pour ajouter une entrée (un placeholder `??` apparaît en orange — le remplacer par le code réel). Le code langue est coloré en orange si aucun fichier de dialogue correspondant (`*.{code}.json`) n'est trouvé dans `dialogues/`. Voir la section `names` du guide auteur. |
+| `history` | Liste de lignes — chaque entrée a une case `→` (envoyé par le joueur), un champ date `YYYY-MM-DD` (optionnel), un champ heure `HH:MM`, un bouton 📅 pour ouvrir le sélecteur visuel, et un champ texte. Si la date est vide, le message s'affiche comme un message du jour ; si elle est antérieure à aujourd'hui, l'horodatage affiché est `JJ-MM-AAAA HH:MM` (locale FR) ou `AAAA-MM-JJ HH:MM` (autres locales). |
 
 - **+ Contact** — ajoute une nouvelle carte contact
 - **×** sur une carte — demande une confirmation avant de supprimer le contact de `story.json`

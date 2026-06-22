@@ -340,6 +340,21 @@ func _apply_effects(choice: Dictionary) -> void:
 	_run_effects(choice.get("effects", []))
 
 
+func get_contact_display_name(cid: String) -> String:
+	if not contact_names.has(cid):
+		return DialogueLoader.get_contact(cid).get("name", "")
+	if contact_names[cid] is Dictionary:
+		var names_dict: Dictionary = contact_names[cid] as Dictionary
+		var lang: String = SettingsManager.language
+		var localized: String = names_dict.get(lang, "")
+		if localized != "":
+			return localized
+		for v in names_dict.values():
+			return str(v)
+		return ""
+	return str(contact_names[cid])
+
+
 func get_state() -> Dictionary:
 	return {
 		"current_scene_id":        current_scene.get("id", ""),
@@ -450,10 +465,16 @@ func _run_effects(effects: Array) -> void:
 			"sub":    vars[effect["var"]] = vars.get(effect["var"], 0) - effect["value"]
 			"rename":
 				var cid: String = effect.get("contact", "")
-				var new_name: String = str(effect.get("value", ""))
-				if cid != "" and new_name != "":
-					contact_names[cid] = new_name
-					contact_renamed.emit(cid, new_name)
+				if cid != "" and effect.has("value"):
+					if effect["value"] is Dictionary:
+						contact_names[cid] = effect["value"] as Dictionary
+					else:
+						var name_str: String = str(effect["value"])
+						if name_str != "":
+							contact_names[cid] = name_str
+					var display: String = get_contact_display_name(cid)
+					if display != "":
+						contact_renamed.emit(cid, display)
 			"set_status":
 				var cid: String = effect.get("contact", "")
 				var new_status: String = str(effect.get("value", "online"))

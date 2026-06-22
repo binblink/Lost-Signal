@@ -19,6 +19,22 @@ func _ready() -> void:
 	$MarginContainer/HBoxContainer/TextColumn/PreviewBadgeLine.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	contact_preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+func _format_time_display(raw: String) -> String:
+	if raw.is_empty() or " " not in raw:
+		return raw
+	var parts := raw.split(" ", false, 1)
+	if parts.size() != 2:
+		return raw
+	var date_parts := parts[0].split("-")
+	if date_parts.size() != 3:
+		return raw
+	var today := Time.get_date_dict_from_system()
+	if int(date_parts[0]) == today["year"] and int(date_parts[1]) == today["month"] and int(date_parts[2]) == today["day"]:
+		return parts[1]
+	if TranslationServer.get_locale().begins_with("fr"):
+		return "%s-%s-%s %s" % [date_parts[2], date_parts[1], date_parts[0], parts[1]]
+	return raw
+
 func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 	var contact_label = contact.get("name", "")
 	contact_name.text = contact_label
@@ -29,7 +45,7 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 		contact_time.text = ""
 		contact_preview.text = "Aucun message"
 	else:
-		contact_time.text = last_message.get("time", "")
+		contact_time.text = _format_time_display(last_message.get("time", ""))
 		var prefix = "Vous : " if last_message.get("out", false) else ""
 		var raw = last_message.get("text", null)
 		var media = last_message.get("media", null)

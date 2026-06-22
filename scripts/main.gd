@@ -274,21 +274,21 @@ func load_game() -> void:
 	if data.is_empty():
 		return
 	_narrative.set_state(data)
-	for cid in _narrative.contact_names:
-		_contact_panel.set_contact_name(cid, _narrative.contact_names[cid])
 	_narrative.active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
 	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	message_display.clear_messages()
 	await get_tree().process_frame
 	await message_display.render_history(_narrative.contact_histories.get(_narrative.active_contact_id, []))
 	await message_display.scroll_to_bottom()
-	var scene_id = data.get("current_scene_id", "")
+	for cid in _narrative.contact_histories:
+		_contact_panel.update_history(cid, _narrative.contact_histories.get(cid, []))
+	for cid: String in _narrative.contact_names:
+		_contact_panel.set_contact_name(cid, _narrative.get_contact_display_name(cid))
+	var scene_id: String = data.get("current_scene_id", "")
 	if scene_id == "" or not DialogueLoader.has_scene(scene_id):
 		await _narrative.resume_overdue_scenes()
 		return
 	_narrative.current_scene = DialogueLoader.get_scene(scene_id)
-	for cid in _narrative.contact_histories:
-		_contact_panel.update_history(cid, _narrative.contact_histories.get(cid, []))
 	if _narrative.waiting_for_choice:
 		await _narrative.rebuild_choices()
 	else:

@@ -130,7 +130,7 @@ Each effect has three fields:
 | `set` | Variable dropdown | Value to assign |
 | `add` | Variable dropdown | Value to add |
 | `sub` | Variable dropdown | Value to subtract |
-| `rename` | Contact dropdown | New display name |
+| `rename` | Contact dropdown | Inline name editor: a `—` row for an invariant name (same in all languages), or one row per language code. Click **+ Language** to add localized entries — the invariant entry is automatically converted to the first language entry. A language code is highlighted orange if no matching `*.{code}.json` file exists in `dialogues/`. |
 | `set_status` | Contact dropdown | `online` / `away` / `offline` / `network_issue` |
 
 ### Free input vs Choices
@@ -213,7 +213,8 @@ Each contact is displayed as a card with all its configurable fields:
 | `avatar` | Text field — path to an image file (e.g. `res://assets/images/maeve.png`), or empty for none |
 | `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
 | `pending_scene` | Scene dropdown — scene queued for this contact at startup; the player sees a pending choice as soon as they open this conversation |
-| `history` | Row list — each entry has a `→` checkbox (sent by player), a `HH:MM` time field, and a text field |
+| `names` | "Localized names" section — a list of language code / name pairs. The **+ Language** button adds a new entry (a `??` placeholder appears in orange — replace it with the actual code). A code is highlighted orange if no matching dialogue file (`*.{code}.json`) is found in `dialogues/`. See the `names` section of the authoring guide. |
+| `history` | Row list — each entry has a `→` checkbox (sent by player), a `YYYY-MM-DD` date field (optional), a `HH:MM` time field, a 📅 button to open the visual date/time picker, and a text field. If the date is empty, the message displays as a same-day message; if it is before today, the displayed timestamp is `DD-MM-YYYY HH:MM` (FR locale) or `YYYY-MM-DD HH:MM` (other locales). |
 
 - **+ Contact** — adds a new contact card; fill in its fields right away
 - **×** on a card — prompts for confirmation before removing the contact from `story.json`

@@ -31,12 +31,46 @@ A dialogue file always contains a root object with a `scenes` key.
 - `start_contact`: ID of the contact whose conversation is shown on screen at launch. Defaults to the main contact. Set this to a secondary contact if you want the player to start in someone else's chat — the main contact won't appear in the list at all until they write. Requires the main contact's first scene to use `resume_after_flag` (so it waits for a flag before starting, rather than trying to play while the player is looking at another conversation).
 - `contacts`: array of contacts.
   - `id`: unique identifier for the contact.
-  - `name`: text displayed in the top bar.
+  - `name`: text displayed in the top bar. Used as the fallback if no translation is defined for the active language.
+  - `names`: dictionary of localized names — see below.
   - `is_main`: `true` for the main scriptable contact.
   - `avatar`: icon path or `null`.
   - `status`: `online`, `away`, `offline`, `network_issue`.
   - `history`: pre-existing messages shown at the start of a new game. See below.
   - `pending_scene`: ID of a scene whose choices will be presented to the player as soon as they open the conversation. See below.
+
+### Localized names (`names`)
+
+The `names` field lets you display a different name for a contact depending on the active game language, with no code changes required. It is entirely optional: if absent, `name` is used for all languages.
+
+The most common use case is a contact whose displayed name is a role description or placeholder that needs to be translated — before the story reveals the character's real identity, or because the contact's name is actually a title:
+
+```json
+{
+  "id": "unknown",
+  "name": "Unknown number",
+  "names": {
+    "fr": "Numéro inconnu",
+    "en": "Unknown number",
+    "de": "Unbekannte Nummer"
+  }
+}
+```
+
+A proper first name (`"Maeve"`, `"Alex"`) generally doesn't need to be in `names` — it is the same across languages and `name` alone is sufficient.
+
+**How it works:**
+
+- At startup, the engine reads the active language and looks for the matching key in `names`.
+- If a translation is found, it replaces `name` for the entire session.
+- If the active language has no key in `names` (untranslated language, or `names` absent), `name` is used as the fallback.
+- If the player changes language mid-game, names are updated the next time dialogue files are reloaded.
+
+**The language code must match exactly** the suffix used in your dialogue files. If you have `act1.en.json`, the code is `"en"`. If you have `act1.de.json`, the code is `"de"`. A typo in the code (`"EN"` instead of `"en"`, `"fr-FR"` instead of `"fr"`) will silently fall back to `name` — no error is raised.
+
+> **Note:** `names` only controls the name shown in the top bar and contact list before any narrative rename occurs. If a scene renames the contact via a `rename` effect, the renamed name takes over for the rest of the session. For narrative renames that also need to be translated, the `rename` effect supports a localized dict as its `value` — see [Effects](#7-effects) below.
+
+---
 
 ### How the game opens
 
@@ -91,7 +125,7 @@ An array of pre-written messages — both incoming and outgoing — displayed in
 
 Each entry contains:
 - `text`: message content.
-- `time`: timestamp displayed below the bubble. Format `"HH:MM"`.
+- `time`: timestamp displayed below the bubble. `"HH:MM"` → shown as-is. `"YYYY-MM-DD HH:MM"` → shown as `"DD-MM-YYYY HH:MM"` (FR locale) or `"YYYY-MM-DD HH:MM"` (other locales) if the date is before today.
 - `out`: `true` if the message comes from the player, `false` if it comes from the contact.
 
 #### `pending_scene`
@@ -258,7 +292,7 @@ The engine automatically converts a string into `{ "text": "..." }`.
 - `corrupted`: displays the bubble as a corrupted message — **✗ Corrupted message** in red. `text` is not required.
 - `effects`: effect triggered immediately when the message appears.
 - `media`: image or audio attachment.
-- `time`: optional timestamp displayed below the bubble. Format `"HH:MM"` — e.g. `"14:43"`.
+- `time`: optional timestamp displayed below the bubble. `"HH:MM"` → shown as-is. `"YYYY-MM-DD HH:MM"` → shown as `"Yesterday HH:MM"` if the date is before today.
 
 ### Editing a Message After Sending (`edit`)
 
@@ -438,7 +472,7 @@ Effects are declared in the `effects` field of a **message** or a **choice** and
 - `set`: sets a variable to a fixed value.
 - `add`: adds a value to a variable.
 - `sub`: subtracts a value from a variable.
-- `rename`: changes a contact's display name.
+- `rename`: changes a contact's display name. `value` accepts either a plain string or a language-keyed dict (see below).
 - `set_status`: changes a contact's status. Accepted values: `online`, `away`, `offline`, `network_issue`.
 
 ### Examples
@@ -447,9 +481,21 @@ Effects are declared in the `effects` field of a **message** or a **choice** and
 "effects": [
   { "op": "set", "var": "trust", "value": 1 },
   { "op": "add", "var": "stress", "value": 2 },
-  { "op": "rename", "contact": "maeve", "value": "Maeve" }
+  { "op": "rename", "contact": "unknown", "value": "Maeve" }
 ]
 ```
+
+### Localized rename
+
+When the revealed name must itself be translated (e.g. a title like "The Guardian"), pass a language-keyed dict as `value` instead of a plain string:
+
+```json
+{ "op": "rename", "contact": "unknown", "value": { "fr": "Le Gardien", "en": "The Guardian" } }
+```
+
+The engine resolves the dict against the active language at the moment the effect fires, and again if the player changes language after that. If the active language has no key in the dict, the first value in the dict is used as the fallback.
+
+A plain string (e.g. `"Maeve"`) remains the right choice for proper names that are the same in all languages — it takes precedence over all locale-specific values.
 
 ## 8. Variables and Conditions
 

@@ -64,22 +64,22 @@ func _apply_emoticons(text: String) -> String:
 		.replace("</3", "💔") \
 		.replace("<3",  "❤️")
 
-func receive_message(text: String, _time: String) -> MarginContainer:
+func receive_message(text: String, time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	add_child(bubble)
-	var t = get_current_time()
+	var raw := time if time != "" else get_current_datetime()
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = _apply_emoticons(text)
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
-	bubble.set_meta("msg_data", { "text": text, "time": t, "out": false })
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
+	bubble.set_meta("msg_data", { "text": text, "time": raw, "out": false })
 	await scroll_to_bottom()
 	return bubble
 
-func receive_image_message(path: String, _time: String) -> MarginContainer:
+func receive_image_message(path: String, time: String) -> MarginContainer:
 	var bubble = ImageBubbleIn.instantiate()
 	add_child(bubble)
-	var t = get_current_time()
+	var raw := time if time != "" else get_current_datetime()
 	var thumbnail = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Thumbnail")
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
 	if ResourceLoader.exists(path):
 		thumbnail.texture = load(path)
 		var tex_w := float(thumbnail.texture.get_width())
@@ -91,26 +91,26 @@ func receive_image_message(path: String, _time: String) -> MarginContainer:
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			image_clicked.emit(path)
 	)
-	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "media": { "type": "image", "path": path } })
+	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "media": { "type": "image", "path": path } })
 	await scroll_to_bottom()
 	return bubble
 
-func receive_audio_message(path: String, _time: String) -> MarginContainer:
+func receive_audio_message(path: String, time: String) -> MarginContainer:
 	var bubble = AudioBubbleIn.instantiate()
 	add_child(bubble)
-	var t = get_current_time()
-	bubble.setup(path, t)
-	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "media": { "type": "audio", "path": path } })
+	var raw := time if time != "" else get_current_datetime()
+	bubble.setup(path, _format_time_display(raw))
+	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "media": { "type": "audio", "path": path } })
 	await scroll_to_bottom()
 	return bubble
 
-func send_message(text: String) -> void:
+func send_message(text: String, time: String = "") -> void:
 	var bubble = BubbleOut.instantiate()
 	add_child(bubble)
-	var t = get_current_time()
+	var raw := time if time != "" else get_current_datetime()
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = _apply_emoticons(text)
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
-	bubble.set_meta("msg_data", { "text": text, "time": t, "out": true })
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
+	bubble.set_meta("msg_data", { "text": text, "time": raw, "out": true })
 	if line_edit:
 		line_edit.text = ""
 	await scroll_to_bottom()
@@ -152,12 +152,12 @@ func type_message(text: String) -> void:
 func receive_corrupted_message(time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()
 	add_child(bubble)
-	var t = time if time != "" else get_current_time()
+	var raw := time if time != "" else get_current_datetime()
 	var label = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
 	label.text = "✗ " + tr("MSG_CORRUPTED")
 	label.add_theme_color_override("font_color", Color(0.85, 0.2, 0.2))
-	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = t
-	bubble.set_meta("msg_data", { "text": null, "time": t, "out": false, "corrupted": true })
+	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
+	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "corrupted": true })
 	await scroll_to_bottom()
 	return bubble
 
@@ -168,14 +168,31 @@ func scroll_to_bottom() -> void:
 	if scroll:
 		scroll.scroll_vertical = scroll.get_v_scroll_bar().max_value
 
-func get_current_time() -> String:
-	var time = Time.get_time_dict_from_system()
-	return "%02d:%02d" % [time["hour"], time["minute"]]
+func get_current_datetime() -> String:
+	var d := Time.get_date_dict_from_system()
+	var t := Time.get_time_dict_from_system()
+	return "%04d-%02d-%02d %02d:%02d" % [d["year"], d["month"], d["day"], t["hour"], t["minute"]]
+
+func _format_time_display(raw: String) -> String:
+	if raw.is_empty() or " " not in raw:
+		return raw
+	var parts := raw.split(" ", false, 1)
+	if parts.size() != 2:
+		return raw
+	var date_parts := parts[0].split("-")
+	if date_parts.size() != 3:
+		return raw
+	var today := Time.get_date_dict_from_system()
+	if int(date_parts[0]) == today["year"] and int(date_parts[1]) == today["month"] and int(date_parts[2]) == today["day"]:
+		return parts[1]
+	if TranslationServer.get_locale().begins_with("fr"):
+		return "%s-%s-%s %s" % [date_parts[2], date_parts[1], date_parts[0], parts[1]]
+	return raw
 
 func render_history(history: Array) -> void:
 	for msg in history:
 		if msg.get("out", false):
-			await send_message(msg["text"])
+			await send_message(msg["text"], msg.get("time", ""))
 		elif msg.get("corrupted", false):
 			await receive_corrupted_message(msg.get("time", ""))
 		elif msg.has("media"):

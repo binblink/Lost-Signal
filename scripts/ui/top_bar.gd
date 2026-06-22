@@ -15,8 +15,17 @@ func refresh(contact_id: String, contact_names: Dictionary, contact_statuses: Di
 
 func _get_display_name(contact_id: String, contact_names: Dictionary) -> String:
 	if contact_names.has(contact_id):
-		return contact_names[contact_id]
-	var contact = DialogueLoader.get_contact(contact_id)
+		if contact_names[contact_id] is Dictionary:
+			var names_dict: Dictionary = contact_names[contact_id] as Dictionary
+			var lang: String = SettingsManager.language
+			var localized: String = names_dict.get(lang, "")
+			if localized != "":
+				return localized
+			for v in names_dict.values():
+				return str(v)
+		else:
+			return str(contact_names[contact_id])
+	var contact: Dictionary = DialogueLoader.get_contact(contact_id)
 	if contact.is_empty():
 		contact = DialogueLoader.get_main_contact()
 	return contact.get("name", "")

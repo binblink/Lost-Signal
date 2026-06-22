@@ -31,12 +31,46 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
 - `start_contact` : ID du contact dont la conversation est affichée à l'écran au lancement. Par défaut, le jeu s'ouvre sur le contact principal. Utilisez ce champ si vous voulez que le joueur démarre dans la conversation d'un autre contact — le contact principal n'apparaîtra pas du tout dans la liste avant qu'il écrive. Requiert que la première scène du contact principal utilise `resume_after_flag` (pour qu'elle attende un flag avant de démarrer, plutôt que de s'exécuter pendant que le joueur regarde une autre conversation).
 - `contacts` : tableau de contacts.
   - `id` : identifiant unique du contact.
-  - `name` : texte affiché dans le bandeau.
+  - `name` : texte affiché dans le bandeau. Utilisé comme valeur par défaut si aucune traduction n'est définie pour la langue active.
+  - `names` : dictionnaire de noms localisés — voir ci-dessous.
   - `is_main` : `true` pour le contact principal scriptable.
   - `avatar` : chemin d'icône ou `null`.
   - `status` : `online`, `away`, `offline`, `network_issue`.
   - `history` : messages pré-existants affichés dès le début d'une nouvelle partie. Voir ci-dessous.
   - `pending_scene` : ID d'une scène dont les choix seront proposés au joueur dès qu'il ouvre la conversation. Voir ci-dessous.
+
+### Noms localisés (`names`)
+
+Le champ `names` permet de donner un nom différent à un contact selon la langue active du jeu, sans toucher au code. Il est entièrement optionnel : si absent, le champ `name` est utilisé dans toutes les langues.
+
+Le cas le plus courant est un contact dont le nom affiché est une description de rôle ou un placeholder qui doit être traduit — avant que l'histoire révèle l'identité du personnage, ou parce que le nom du contact est en réalité un titre :
+
+```json
+{
+  "id": "inconnu",
+  "name": "Numéro inconnu",
+  "names": {
+    "fr": "Numéro inconnu",
+    "en": "Unknown number",
+    "de": "Unbekannte Nummer"
+  }
+}
+```
+
+Un prénom propre (`"Maeve"`, `"Alex"`) n'a généralement pas besoin d'être dans `names` — il est identique dans toutes les langues et `name` suffit.
+
+**Comment ça fonctionne :**
+
+- Au démarrage, le moteur lit la langue active et cherche la clé correspondante dans `names`.
+- Si une traduction est trouvée, elle remplace `name` pour toute la session.
+- Si la langue n'a pas de clé dans `names` (langue non traduite, ou `names` absent), le champ `name` est utilisé comme valeur de secours.
+- Si le joueur change de langue en cours de partie, les noms sont mis à jour au rechargement suivant des fichiers de dialogue.
+
+**Le code langue doit correspondre exactement** au suffixe utilisé dans vos fichiers de dialogue. Si vous avez `acte1.en.json`, le code est `"en"`. Si vous avez `acte1.de.json`, le code est `"de"`. Une coquille dans le code (`"EN"` au lieu de `"en"`, `"fr-FR"` au lieu de `"fr"`) fera silencieusement tomber le moteur sur `name` — aucune erreur n'est levée.
+
+> **Nota :** `names` ne gère que le nom affiché avant qu'un renommage narratif ait eu lieu. Si une scène renomme le contact via un effet `rename`, le nouveau nom prend le dessus pour le reste de la session. Pour les renommages narratifs qui doivent eux aussi être traduits, l'effet `rename` accepte un dictionnaire localisé en `value` — voir [Effets](#7-effets) ci-dessous.
+
+---
 
 ### Comment la partie démarre
 
@@ -91,7 +125,7 @@ Tableau de messages pré-écrits — entrants et sortants — affichés dans l'h
 
 Chaque entrée contient :
 - `text` : contenu du message.
-- `time` : horodatage affiché sous la bulle. Format `"HH:MM"`.
+- `time` : horodatage affiché sous la bulle. `"HH:MM"` → affiché tel quel. `"AAAA-MM-JJ HH:MM"` → affiché `"JJ-MM-AAAA HH:MM"` (locale FR) ou `"AAAA-MM-JJ HH:MM"` (autres locales) si la date est antérieure à aujourd'hui.
 - `out` : `true` si le message vient du joueur, `false` si il vient du contact.
 
 #### `pending_scene`
@@ -258,7 +292,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 - `corrupted` : affiche la bulle comme un message corrompu — **✗ Message corrompu** en rouge. `text` n'est pas nécessaire.
 - `effects` : effet déclenché immédiatement.
 - `media` : image ou audio.
-- `time` : horodatage optionnel, affiché sous la bulle. Format `"HH:MM"` — ex : `"14:43"`.
+- `time` : horodatage optionnel, affiché sous la bulle. `"HH:MM"` → affiché tel quel. `"AAAA-MM-JJ HH:MM"` → affiché `"Hier HH:MM"` si la date est antérieure à aujourd'hui.
 
 ### Modification d'un message après envoi (`edit`)
 
@@ -438,7 +472,7 @@ Les effets sont déclarés dans le champ `effects` d'un **message** ou d'un **ch
 - `set` : fixe une variable.
 - `add` : ajoute une valeur.
 - `sub` : soustrait une valeur.
-- `rename` : change le nom d'un contact.
+- `rename` : change le nom d'un contact. `value` accepte une chaîne simple ou un dictionnaire par langue (voir ci-dessous).
 - `set_status` : change le statut d'un contact. Valeurs acceptées : `online`, `away`, `offline`, `network_issue`.
 
 ### Exemples
@@ -447,9 +481,21 @@ Les effets sont déclarés dans le champ `effects` d'un **message** ou d'un **ch
 "effects": [
   { "op": "set", "var": "confiance", "value": 1 },
   { "op": "add", "var": "stress", "value": 2 },
-  { "op": "rename", "contact": "maeve", "value": "Maeve" }
+  { "op": "rename", "contact": "inconnu", "value": "Maeve" }
 ]
 ```
+
+### Renommage localisé
+
+Quand le nom révélé doit lui aussi être traduit (ex. un titre comme « Le Gardien »), passez un dictionnaire par langue comme `value` au lieu d'une chaîne :
+
+```json
+{ "op": "rename", "contact": "inconnu", "value": { "fr": "Le Gardien", "en": "The Guardian" } }
+```
+
+Le moteur résout le dictionnaire selon la langue active au moment où l'effet se déclenche, et recalcule si le joueur change de langue ensuite. Si la langue active n'a pas de clé dans le dictionnaire, la première valeur du dictionnaire est utilisée comme secours.
+
+Une chaîne simple (ex. `"Maeve"`) reste le bon choix pour les prénoms identiques dans toutes les langues — elle prend le dessus sur toute valeur localisée.
 
 ## 8. Variables et conditions
 
