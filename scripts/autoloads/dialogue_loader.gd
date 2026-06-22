@@ -259,7 +259,7 @@ func _validate() -> void:
 		else:
 			var msgs: Array = scene["messages_in"]
 			for i in range(msgs.size()):
-				_check_message(msgs[i], ctx, i, flags_set, errors, warnings)
+				_check_message(msgs[i], ctx, i, flags_set, contact_ids, errors, warnings)
 
 		# trigger_after_scene
 		var trigger = scene.get("trigger_after_scene", null)
@@ -285,7 +285,7 @@ func _validate() -> void:
 		# choices
 		var choices: Array = scene.get("choices", [])
 		for j in range(choices.size()):
-			_check_choice(choices[j], ctx, j, errors, warnings)
+			_check_choice(choices[j], ctx, j, flags_set, contact_ids, errors, warnings)
 
 	_detect_trigger_cycles(errors)
 
@@ -303,7 +303,7 @@ func _validate() -> void:
 		print("Validator: %d error(s), %d warning(s)." % [errors.size(), warnings.size()])
 
 
-func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, errors: Array, warnings: Array) -> void:
+func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, contact_ids: Array, errors: Array, warnings: Array) -> void:
 	var label := "%s msg[%d]" % [ctx, i]
 	var media = msg.get("media", null)
 	var text  = msg.get("text",  null)
@@ -329,7 +329,7 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 
 	var cond = msg.get("condition", null)
 	if cond != null:
-		_check_condition(cond, label, errors)
+		_check_condition(cond, label, flags_set, warnings, errors)
 
 	var pause = msg.get("pause", null)
 	if pause != null and not pause in ["short", "medium", "long"]:
@@ -337,13 +337,16 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, erro
 
 	var efx: Array = msg.get("effects", [])
 	for k in range(efx.size()):
-		_check_effect(efx[k], "%s effect[%d]" % [label, k], errors, warnings)
+		_check_effect(efx[k], "%s effect[%d]" % [label, k], contact_ids, errors, warnings)
 
 
-func _check_choice(choice: Dictionary, ctx: String, j: int, errors: Array, warnings: Array) -> void:
+func _check_choice(choice: Dictionary, ctx: String, j: int, flags_set: Array, contact_ids: Array, errors: Array, warnings: Array) -> void:
 	var label := "%s choice[%d]" % [ctx, j]
 	if not choice.has("text") or choice["text"] == null:
 		errors.append("%s missing 'text'." % label)
+	var req_flag = choice.get("requires_flag", null)
+	if req_flag != null and not req_flag in flags_set:
+		warnings.append("%s requires_flag '%s' is never set by any choice." % [label, req_flag])
 	if not choice.has("next"):
 		warnings.append("%s no 'next' (terminal choice)." % label)
 	else:
@@ -360,19 +363,21 @@ func _check_choice(choice: Dictionary, ctx: String, j: int, errors: Array, warni
 			errors.append("%s 'message' must be a string or array of strings." % label)
 	var efx: Array = choice.get("effects", [])
 	for k in range(efx.size()):
-		_check_effect(efx[k], "%s effect[%d]" % [label, k], errors, warnings)
+		_check_effect(efx[k], "%s effect[%d]" % [label, k], contact_ids, errors, warnings)
 
 
-func _check_condition(cond: Dictionary, label: String, errors: Array) -> void:
+func _check_condition(cond: Dictionary, label: String, flags_set: Array, warnings: Array, errors: Array) -> void:
 	if cond.has("and"):
 		for i in range(cond["and"].size()):
-			_check_condition(cond["and"][i], "%s.and[%d]" % [label, i], errors)
+			_check_condition(cond["and"][i], "%s.and[%d]" % [label, i], flags_set, warnings, errors)
 		return
 	if cond.has("or"):
 		for i in range(cond["or"].size()):
-			_check_condition(cond["or"][i], "%s.or[%d]" % [label, i], errors)
+			_check_condition(cond["or"][i], "%s.or[%d]" % [label, i], flags_set, warnings, errors)
 		return
 	if cond.has("flag"):
+		if not cond["flag"] in flags_set:
+			warnings.append("%s condition flag '%s' is never set by any choice." % [label, cond["flag"]])
 		return
 	if not cond.has("var") or not cond.has("op") or not cond.has("value"):
 		errors.append("%s malformed condition (required fields: var, op, value or flag)." % label)
@@ -403,7 +408,7 @@ func _dfs_trigger(scene_id: String, color: Dictionary, stack: Array, errors: Arr
 	color[scene_id] = 2
 
 
-func _check_effect(effect: Dictionary, label: String, errors: Array, warnings: Array) -> void:
+func _check_effect(effect: Dictionary, label: String, contact_ids: Array, errors: Array, warnings: Array) -> void:
 	var op = effect.get("op", null)
 	if op == null:
 		errors.append("%s effect missing 'op'." % label)
@@ -415,5 +420,7 @@ func _check_effect(effect: Dictionary, label: String, errors: Array, warnings: A
 		"rename", "set_status":
 			if not effect.has("contact") or not effect.has("value"):
 				errors.append("%s effect '%s' requires 'contact' and 'value'." % [label, op])
+			elif not effect["contact"] in contact_ids:
+				errors.append("%s effect '%s': contact '%s' not found in story.json." % [label, op, effect["contact"]])
 		_:
 			warnings.append("%s unknown effect op '%s'." % [label, op])
