@@ -115,7 +115,7 @@ Clicking a node opens the detail panel on the right. All fields are **directly e
 | Field | Interface |
 |---|---|
 | Button text | Multi-line text area + × to delete |
-| `message` (player bubble) | Text field — what appears in the chat when the player picks this option |
+| `message` (player bubble) | **Absent**: **+ msg** button (single bubble) and **+ msgs [...]** button (multiple consecutive bubbles) · **String**: editable text field + × to remove · **Array**: each bubble editable separately + **+ bubble** to add one + × to remove the entire array |
 | `flag` | Text field — flag set when this choice is selected |
 | `requires_flag` | Flag dropdown — hides this choice if the flag is not set |
 | `next` | Scene dropdown — scene played after this choice |

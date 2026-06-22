@@ -185,7 +185,7 @@ Enable it once in Project Settings → Plugins.
 The detail panel is a full scene editor — no JSON file to open.
 
 - **Messages**: edit each bubble's text, set a `requires_flag` condition, choose a pause, add effects
-- **Choices**: edit the button text and the player message, assign a flag, set `requires_flag`, pick the next scene from a dropdown, add effects
+- **Choices**: edit the button text; set the player message as a single bubble or a sequence of consecutive bubbles — dedicated **+ msg** and **+ msgs [...]** creation buttons appear when no message is set, with an inline multi-bubble editor once one exists; assign a flag, set `requires_flag`, pick the next scene from a dropdown, add effects
 - **Effects**: choose the operation (`set` / `add` / `sub` for variables, `rename` / `set_status` for contacts) from a dropdown, pick the target from a pre-populated list, enter the value — or choose `online` / `away` / `offline` / `network_issue` from a status dropdown
 - **Triggers**: set `trigger_after_scene`, `resume_after_flag`, and `resume_after_delay` directly from dropdowns and text fields
 - **Free input**: add a free-text prompt with a single button, set the variable name and placeholder inline — mutually exclusive with choices (the editor enforces this)

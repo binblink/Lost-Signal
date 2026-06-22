@@ -292,7 +292,7 @@ The engine automatically converts a string into `{ "text": "..." }`.
 - `corrupted`: displays the bubble as a corrupted message — **✗ Corrupted message** in red. `text` is not required.
 - `effects`: effect triggered immediately when the message appears.
 - `media`: image or audio attachment.
-- `time`: optional timestamp displayed below the bubble. `"HH:MM"` → shown as-is. `"YYYY-MM-DD HH:MM"` → shown as `"Yesterday HH:MM"` if the date is before today.
+- `time`: optional timestamp displayed below the bubble. `"HH:MM"` → shown as-is (same-day message). `"YYYY-MM-DD HH:MM"` → shown as `"DD-MM-YYYY HH:MM"` (FR locale) or `"YYYY-MM-DD HH:MM"` (other locales) if the date is before today.
 
 ### Editing a Message After Sending (`edit`)
 
@@ -719,6 +719,32 @@ dialogues/
 ```
 
 On startup, the engine automatically selects the file matching the active language. If no variant exists for the current locale, it falls back to the base file (no suffix).
+
+### Per-locale Start Scene
+
+If your story has a different entry point per language (different prologue, entirely distinct scene structure…), you can declare a `start_scene` directly inside the localized dialogue file — it takes priority over the one in `story.json`:
+
+```json
+{
+  "start_scene": "ch1_intro",
+  "scenes": [
+    { "id": "ch1_intro", ... },
+    ...
+  ]
+}
+```
+
+If the file has no `start_scene`, the value defined in `story.json` is used.
+
+### Language Change Mid-Game
+
+When the player changes language from Settings, the game reloads the dialogue files and resumes from the save. What is preserved:
+
+- The history of messages already played
+- Flags, variables, and contact statuses
+- Contact names renamed via `rename` — if the value is a localized dict, the name is displayed in the new language automatically
+
+If a scene from the save does not exist in the target locale (two entirely separate scene sets per language), the engine restores the state without replaying the scene — the player finds their conversations as they left them.
 
 ### Adding a Language
 

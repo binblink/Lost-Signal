@@ -935,6 +935,9 @@ func _populate_message_row(stripe: VBoxContainer, scene_id: String, msg_idx: int
 		var del_btn := Button.new()
 		del_btn.text = "×"
 		del_btn.custom_minimum_size = Vector2(28, 0)
+		del_btn.tooltip_text = _t(
+			"Supprime ce message entier — toutes ses bulles sont retirées de la scène.",
+			"Removes this entire message — all its bubbles are deleted from the scene.")
 		del_btn.pressed.connect(func() -> void:
 			_patch_field(scene_id, func(s: Dictionary) -> void:
 				(s["messages_in"] as Array).remove_at(msg_idx))
@@ -1065,7 +1068,7 @@ func _populate_message_buttons(scene_id: String, scene: Dictionary) -> void:
 		call_deferred("_populate_detail", scene_id))
 	msg_btns.add_child(add_msg_btn)
 	var add_arr_btn := Button.new()
-	add_arr_btn.text = _t("+ Message [...]", "+ Message [...]")
+	add_arr_btn.text = _t("+ Messages [...]", "+ Messages [...]")
 	add_arr_btn.tooltip_text = _t(
 		"Ajoute un message composé de plusieurs bulles successives.\nÀ utiliser quand un personnage envoie plusieurs courts messages à la suite.",
 		"Adds a message made of several consecutive bubbles.\nUse this when a character sends multiple short messages in a row.")
@@ -1191,21 +1194,114 @@ func _populate_choice_row(stripe: VBoxContainer, scene_id: String, choice_idx: i
 			call_deferred("_populate_detail", scene_id)
 			_on_refresh_pressed(),
 		_t("🔘 bouton", "🔘 button"))
-	var choice_msg: String = str(ch.get("message", ""))
-	_add_line_edit_row(stripe,
-		_t("💬 msg", "💬 msg"),
-		choice_msg,
-		_t("(identique au texte du bouton)", "(same as button text)"),
-		func(val: String) -> void:
+	var raw_msg = ch.get("message", null)
+	if raw_msg is Array:
+		var arr_header := HBoxContainer.new()
+		var arr_lbl := Label.new()
+		arr_lbl.text = _t("💬 msgs [...]", "💬 msgs [...]")
+		arr_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		arr_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+		arr_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		arr_header.add_child(arr_lbl)
+		var arr_del := Button.new()
+		arr_del.text = "×"
+		arr_del.custom_minimum_size = Vector2(28, 0)
+		arr_del.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		arr_del.tooltip_text = _t(
+			"Supprime tout le tableau — toutes les bulles de ce choix sont retirées.",
+			"Removes the entire array — all bubbles for this choice are deleted.")
+		arr_del.pressed.connect(func() -> void:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				(s["choices"] as Array)[choice_idx].erase("message"))
+			call_deferred("_populate_detail", scene_id))
+		arr_header.add_child(arr_del)
+		stripe.add_child(arr_header)
+		for j in range((raw_msg as Array).size()):
+			var bubble_idx := j
+			_add_text_edit_row(stripe, str((raw_msg as Array)[j]),
+				func(val: String) -> void:
+					_patch_field(scene_id, func(s: Dictionary) -> void:
+						((s["choices"] as Array)[choice_idx]["message"] as Array)[bubble_idx] = val),
+				func() -> void:
+					_patch_field(scene_id, func(s: Dictionary) -> void:
+						((s["choices"] as Array)[choice_idx]["message"] as Array).remove_at(bubble_idx))
+					call_deferred("_populate_detail", scene_id),
+				_t("💬 bulle", "💬 bubble"))
+		var add_bubble_btn := Button.new()
+		add_bubble_btn.text = _t("+ bulle", "+ bubble")
+		add_bubble_btn.tooltip_text = _t(
+			"Ajoute une bulle supplémentaire au message envoyé quand le joueur clique ce choix.",
+			"Adds another bubble to the message sent when the player picks this choice.")
+		add_bubble_btn.pressed.connect(func() -> void:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				((s["choices"] as Array)[choice_idx]["message"] as Array).append(""))
+			call_deferred("_populate_detail", scene_id))
+		stripe.add_child(add_bubble_btn)
+	elif raw_msg != null:
+		var choice_msg: String = str(raw_msg)
+		var msg_row := HBoxContainer.new()
+		var msg_lbl := Label.new()
+		msg_lbl.text = _t("💬 msg", "💬 msg")
+		msg_lbl.custom_minimum_size = Vector2(56, 0)
+		msg_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+		msg_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		msg_row.add_child(msg_lbl)
+		var msg_edit := LineEdit.new()
+		msg_edit.text = choice_msg
+		msg_edit.placeholder_text = _t("(identique au texte du bouton)", "(same as button text)")
+		msg_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		msg_edit.tooltip_text = _t(
+			"Texte affiché dans la bulle du joueur quand il choisit cette option.\nSi vide, le texte du bouton est utilisé à la place.",
+			"Text shown in the player's chat bubble when they pick this option.\nIf empty, the button text is used instead.")
+		msg_edit.focus_exited.connect(func() -> void:
+			var val := msg_edit.text.strip_edges()
+			if val == choice_msg:
+				return
 			_patch_field(scene_id, func(s: Dictionary) -> void:
 				var cv: Dictionary = (s["choices"] as Array)[choice_idx]
 				if val.is_empty():
 					cv.erase("message")
 				else:
-					cv["message"] = val),
-		_t(
-			"Texte affiché dans la bulle du joueur quand il choisit cette option.\nSi vide, le texte du bouton est utilisé à la place.\n\nMessage simple : \"D'accord\"\nPlusieurs bulles successives, comme dans l'exemple suivant :\n[\"Hmm...\", \"Ouais, d'accord\"]",
-			"Text shown in the player's chat bubble when they pick this option.\nIf empty, the button text is used instead.\n\nSimple message: \"Okay\"\nMultiple successive bubbles, as in the following example:\n[\"Hmm...\", \"Yeah, okay\"]"))
+					cv["message"] = val))
+		msg_row.add_child(msg_edit)
+		var msg_del := Button.new()
+		msg_del.text = "×"
+		msg_del.custom_minimum_size = Vector2(28, 0)
+		msg_del.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		msg_del.tooltip_text = _t(
+			"Supprime le message — le texte du bouton sera utilisé à la place dans la conversation.",
+			"Removes the message — the button text will be used instead in the chat.")
+		msg_del.pressed.connect(func() -> void:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				(s["choices"] as Array)[choice_idx].erase("message"))
+			call_deferred("_populate_detail", scene_id))
+		msg_row.add_child(msg_del)
+		stripe.add_child(msg_row)
+	else:
+		var msg_btns := HBoxContainer.new()
+		var add_msg_btn := Button.new()
+		add_msg_btn.text = _t("+ msg", "+ msg")
+		add_msg_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		add_msg_btn.tooltip_text = _t(
+			"Ajoute une bulle simple affichée dans la conversation quand le joueur clique ce choix.\nSi absent, le texte du bouton est utilisé à la place.",
+			"Adds a single bubble shown in the chat when the player picks this choice.\nIf absent, the button text is used instead.")
+		add_msg_btn.pressed.connect(func() -> void:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				(s["choices"] as Array)[choice_idx]["message"] = "")
+			call_deferred("_populate_detail", scene_id))
+		msg_btns.add_child(add_msg_btn)
+		var add_arr_btn := Button.new()
+		add_arr_btn.text = _t("+ msgs [...]", "+ msgs [...]")
+		add_arr_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		add_arr_btn.tooltip_text = _t(
+			"Ajoute un message composé de plusieurs bulles successives envoyées quand le joueur clique ce choix.",
+			"Adds a message made of several consecutive bubbles sent when the player picks this choice.")
+		add_arr_btn.pressed.connect(func() -> void:
+			_patch_field(scene_id, func(s: Dictionary) -> void:
+				(s["choices"] as Array)[choice_idx]["message"] = [""])
+			call_deferred("_populate_detail", scene_id))
+		msg_btns.add_child(add_arr_btn)
+		stripe.add_child(msg_btns)
 	var flag_val: String = str(ch.get("flag", ""))
 	_add_line_edit_row(stripe, _t("🚩 flag", "🚩 flag"), flag_val,
 		_t("(aucun flag)", "(no flag)"),

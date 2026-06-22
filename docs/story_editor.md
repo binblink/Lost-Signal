@@ -115,7 +115,7 @@ Cliquer sur un nœud ouvre le panneau de détail à droite. Tous les champs sont
 | Champ | Interface |
 |---|---|
 | Texte du bouton | Zone de texte multi-ligne + × pour supprimer |
-| `message` (bulle joueur) | Champ texte — ce qui s'affiche dans la conversation quand le joueur choisit cette option |
+| `message` (bulle joueur) | **Absent** : boutons **+ msg** (une bulle) et **+ msgs [...]** (plusieurs bulles successives) · **Chaîne** : champ texte éditable + × pour supprimer · **Tableau** : chaque bulle éditable séparément + **+ bulle** pour en ajouter + × pour supprimer tout le tableau |
 | `flag` | Champ texte — flag activé à la sélection |
 | `requires_flag` | Dropdown de flags — masque ce choix si le flag n'est pas actif |
 | `next` | Dropdown de scènes — scène jouée après ce choix |

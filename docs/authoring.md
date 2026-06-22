@@ -292,7 +292,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 - `corrupted` : affiche la bulle comme un message corrompu — **✗ Message corrompu** en rouge. `text` n'est pas nécessaire.
 - `effects` : effet déclenché immédiatement.
 - `media` : image ou audio.
-- `time` : horodatage optionnel, affiché sous la bulle. `"HH:MM"` → affiché tel quel. `"AAAA-MM-JJ HH:MM"` → affiché `"Hier HH:MM"` si la date est antérieure à aujourd'hui.
+- `time` : horodatage optionnel, affiché sous la bulle. `"HH:MM"` → affiché tel quel (message du jour). `"AAAA-MM-JJ HH:MM"` → affiché `"JJ-MM-AAAA HH:MM"` (locale FR) ou `"AAAA-MM-JJ HH:MM"` (autres locales) si la date est antérieure à aujourd'hui.
 
 ### Modification d'un message après envoi (`edit`)
 
@@ -719,6 +719,32 @@ dialogues/
 ```
 
 Au lancement, le moteur sélectionne automatiquement le fichier correspondant à la langue active. Si aucune variante n'existe pour la langue courante, il revient sur le fichier de base (sans suffixe).
+
+### Scène de départ par locale
+
+Si votre histoire a un point d'entrée différent selon la langue (prologue, structure de scènes distincte…), vous pouvez déclarer un `start_scene` directement dans le fichier de dialogue localisé — il prend la priorité sur celui de `story.json` :
+
+```json
+{
+  "start_scene": "ch1_intro",
+  "scenes": [
+    { "id": "ch1_intro", ... },
+    ...
+  ]
+}
+```
+
+Si le fichier n'a pas de `start_scene`, la valeur définie dans `story.json` est utilisée.
+
+### Changement de langue en cours de partie
+
+Quand le joueur change de langue depuis les Paramètres, le jeu recharge les fichiers de dialogue et reprend depuis la sauvegarde. Ce qui est préservé :
+
+- L'historique des messages déjà joués
+- Les flags, variables, et statuts des contacts
+- Les noms de contacts renommés via `rename` — si la valeur est un dictionnaire localisé, le nom s'affiche dans la nouvelle langue automatiquement
+
+Si une scène de la sauvegarde n'existe pas dans la locale cible (deux jeux de scènes entièrement distincts par langue), le moteur restaure l'état sans relancer la scène — le joueur retrouve ses conversations telles qu'elles étaient.
 
 ### Ajouter une langue
 
