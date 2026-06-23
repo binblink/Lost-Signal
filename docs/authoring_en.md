@@ -271,6 +271,7 @@ Each file contains:
   - **Absent**: the current music continues uninterrupted.
   - **Path** (`"res://assets/music/tension.ogg"`): plays this track on loop. No effect if the same track is already playing.
   - **`null`**: fades out and stops the current music.
+- `end`: `true` to end the game after this scene. The engine emits the `game_ended` signal instead of looking for a next scene. See [End Screen](#18-end-screen).
 
 Music automatically ducks when the player plays an audio message, then fades back up when playback ends.
 
@@ -880,3 +881,64 @@ To disable the effect, add `"title_glitch": false` in `theme.json`:
 |-------|-----------|
 | `true` (default) | Decode animation on load + random idle glitches |
 | `false` | Static title, displayed immediately |
+
+---
+
+## 18. End Screen
+
+When a scene contains `"end": true`, the engine displays an end screen instead of continuing to the next scene.
+
+### Marking a scene as the end
+
+```json
+{
+  "id": "scene_final",
+  "messages_in": [
+    { "text": "See you soon." }
+  ],
+  "end": true
+}
+```
+
+`"end": true` is compatible with `messages_in` and `choices` — the scene plays normally, then the end screen appears. It is incompatible with `next` and `trigger_after_scene` (both ignored when `end` is present).
+
+### Configuring the screen (`end_screen` in `story.json`)
+
+```json
+{
+  "title": "...",
+  "start_scene": "...",
+  "contacts": [ ... ],
+  "end_screen": {
+    "title": "CONNECTION TERMINATED",
+    "text": "More coming soon.",
+    "link_url": "https://itch.io/your-game",
+    "link_label": "Learn more",
+    "glitch": true,
+    "show_stats": true
+  }
+}
+```
+
+All fields are optional. If `end_screen` is absent from `story.json`, a minimal screen is shown with only the New Game and Quit buttons.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `title` | string | `"CONNECTION TERMINATED"` | Main text shown large, monospace font |
+| `text` | string | *(absent)* | Secondary text below the title — teaser, coming soon announcement, etc. |
+| `link_url` | string | *(absent)* | URL opened on click. If absent, no link is shown |
+| `link_label` | string | *(raw URL)* | Text shown on the link. If absent, the URL is shown directly |
+| `glitch` | bool | `false` | Enables the glitch effect: text scramble on the title + animated scanlines + flicker |
+| `show_stats` | bool | `false` | Shows the number of messages exchanged during the session |
+
+### Glitch effect
+
+When `"glitch": true`, three effects combine:
+
+- **Text scramble** — the title characters are periodically replaced with noise, then restored (same algorithm as the main menu title)
+- **Animated scanlines** — slow-drifting horizontal light bands across the screen
+- **Flicker** — the screen blinks randomly at low intensity
+
+### Editing via the Story Editor
+
+The **Contacts** panel in the Story Editor exposes an **End screen** section with all configurable fields — no JSON file to open.

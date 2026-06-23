@@ -51,6 +51,9 @@ func _ready() -> void:
 	_narrative.secondary_scene_received.connect(_on_secondary_scene_received)
 	_narrative.contact_renamed.connect(_on_contact_renamed)
 	_narrative.contact_status_changed.connect(_on_contact_status_changed)
+	# [END SCREEN] — remove this line to remove the end screen feature.
+	_narrative.game_ended.connect(_on_game_ended)
+	# [/END SCREEN]
 
 	confirm_dialog.visible = false
 	overlay.visible = false
@@ -401,3 +404,20 @@ func _on_exit_to_desktop() -> void:
 	_exit_dialog.visible = false
 	save_game(false)
 	get_tree().quit()
+
+
+# ---------------------------------------------------------------------------
+# [END SCREEN] — remove this entire section to remove the end screen feature.
+# ---------------------------------------------------------------------------
+func _on_game_ended() -> void:
+	var end_data: Dictionary = DialogueLoader.get_end_screen()
+	var total_msgs: int = 0
+	for hist: Array in _narrative.contact_histories.values():
+		total_msgs += hist.size()
+	end_data["_stats_messages"] = total_msgs
+	var end_screen := EndScreen.new()
+	end_screen.new_game_requested.connect(_on_new_game_pressed)
+	end_screen.quit_requested.connect(func() -> void: get_tree().quit())
+	add_child(end_screen)
+	end_screen.setup(end_data)
+# [/END SCREEN]

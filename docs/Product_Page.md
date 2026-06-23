@@ -148,7 +148,7 @@ Un plugin Godot intégré affiche toute votre histoire sous forme de **graphe in
 
 Tous les dropdowns sont remplis depuis votre projet réel. Les changements sauvegardent à la perte de focus. Les fonctionnalités avancées (conditions `and`/`or` structurées, médias, musique) restent JSON uniquement.
 
-**Panneau Contacts** (bouton dans la barre d'outils) : gérez tout dans `story.json` sans ouvrir le fichier — ajout/renommage/suppression de contacts, avatars, historiques, scène de départ. Renommer un ID de contact propage le changement dans tous les fichiers de dialogue automatiquement.
+**Panneau Contacts** (bouton dans la barre d'outils) : gérez tout dans `story.json` sans ouvrir le fichier — ajout/renommage/suppression de contacts, avatars, historiques, scène de départ, configuration de l'écran de fin. Renommer un ID de contact propage le changement dans tous les fichiers de dialogue automatiquement.
 
 **Bouton Reformater** : réécrit tous les fichiers de dialogue avec l'ordre de clés canonique sans toucher au contenu.
 
@@ -231,6 +231,7 @@ Deux messages arrivent. Le joueur choisit une réponse. Une variable se met à j
 - Menu paramètres joueur (langue, volume, résolution, mode d'affichage)
 - Système de localisation (fichiers de dialogue par langue + CSV de traduction de l'interface)
 - Système de thème (`theme.json`) avec titre glitch animé (configurable)
+- Écran de fin configurable (titre, texte, lien, effet glitch, stats de session) — éditable depuis le Story Editor
 - Scénario de démonstration jouable
 - Guide d'écriture bilingue (FR + EN) avec référence syntaxique complète
 

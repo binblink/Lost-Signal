@@ -223,6 +223,21 @@ Each contact is displayed as a card with all its configurable fields:
 
 > **Renaming an `id`** is safe: the panel scans all currently loaded dialogue files and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
 
+### End screen
+
+The **End screen** section at the bottom of the Contacts panel configures what is displayed after a scene marked `"end": true`.
+
+| Field | Interface |
+|---|---|
+| `title` | Text field — main title shown large (e.g. `CONNECTION TERMINATED`) |
+| `text` | Text field — secondary text below the title (teaser, coming soon…) |
+| `link URL` | Text field — URL opened on click (e.g. your itch.io page). Empty = no link shown |
+| `link label` | Text field — text shown on the link. Empty = the raw URL is shown |
+| `glitch` | Checkbox — enables text scramble on the title + animated scanlines + flicker |
+| `show_stats` | Checkbox — shows the number of messages exchanged during the session |
+
+To mark the final scene, add `"end": true` directly in that scene's JSON (see the [authoring guide](authoring_en.md#18-end-screen)).
+
 ---
 
 ## What JSON Allows Beyond the Editor

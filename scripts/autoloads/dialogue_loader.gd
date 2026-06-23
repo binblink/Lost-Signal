@@ -11,6 +11,9 @@ var _title:          String     = ""
 var _triggers:       Dictionary = {}
 var validation_errors:   Array = []
 var validation_warnings: Array = []
+# [END SCREEN] — remove this line to remove the end screen feature.
+var _end_screen: Dictionary = {}
+# [/END SCREEN]
 
 func _ready() -> void:
 	_load_story()
@@ -49,6 +52,9 @@ func _load_story() -> void:
 	if data.has("contacts"):
 		_contacts = data["contacts"]
 		_resolve_contact_names()
+	# [END SCREEN] — remove this line to remove the end screen feature.
+	if data.has("end_screen"):    _end_screen    = data["end_screen"]
+	# [/END SCREEN]
 
 func _load_dialogues_dir() -> void:
 	var dir = DirAccess.open(DIALOGUES_DIR)
@@ -191,6 +197,11 @@ func get_main_contact() -> Dictionary:
 		if c.get("is_main", false):
 			return c
 	return _contacts[0] if _contacts.size() > 0 else {}
+
+# [END SCREEN] — remove this function to remove the end screen feature.
+func get_end_screen() -> Dictionary:
+	return _end_screen.duplicate()
+# [/END SCREEN]
 
 func _resolve_contact_names() -> void:
 	var lang: String = SettingsManager.language

@@ -29,7 +29,7 @@
 			"avatar": "res://assets/avatars/560219.png",
 			"status": "online",
 			"history": [
-				{"text": "C'est maman! Tu as pensé à nourrir le chat? Bises. Maman", "time": "00:00", "out": false},
+				{"text": "C'est Maman! Tu as pensé à nourrir le chat? Bises. Maman", "time": "00:00", "out": false},
 				{"text": "Oui maman", "time": "00:00", "out": true},
 				{"text": "C'est Maman! J'ai fait des patates pour le diner.\\nJe t'en garde? Bises. Maman", "time": "00:00", "out": false},
 				{"text": "Non maman", "time": "00:00", "out": true},

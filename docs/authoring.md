@@ -271,6 +271,7 @@ Chaque fichier contient :
   - **Absent** : la musique en cours continue sans interruption.
   - **Chemin** (`"res://assets/music/tension.ogg"`) : lance cette piste en boucle. Si la même piste joue déjà, aucun effet.
   - **`null`** : coupe la musique en cours avec un fondu.
+- `end` : `true` pour terminer le jeu après cette scène. Le moteur émet le signal `game_ended` au lieu de chercher une scène suivante. Voir [Écran de fin](#18-écran-de-fin).
 
 La musique baisse automatiquement (ducking) quand le joueur lance un message vocal, puis remonte à la fin de la lecture.
 
@@ -880,3 +881,64 @@ Pour désactiver cet effet, ajoutez `"title_glitch": false` dans `theme.json` :
 |--------|-------------|
 | `true` (défaut) | Animation de décodage au chargement + glitches aléatoires en idle |
 | `false` | Titre statique, affiché immédiatement |
+
+---
+
+## 18. Écran de fin
+
+Lorsqu'une scène contient `"end": true`, le moteur affiche un écran de fin au lieu de chercher une scène suivante.
+
+### Marquer une scène comme fin
+
+```json
+{
+  "id": "scene_finale",
+  "messages_in": [
+    { "text": "À bientôt." }
+  ],
+  "end": true
+}
+```
+
+`"end": true` est compatible avec `messages_in` et `choices` — la scène se joue normalement, puis l'écran de fin apparaît. Il est incompatible avec `next` et `trigger_after_scene` (ignorés si `end` est présent).
+
+### Configurer l'écran (`end_screen` dans `story.json`)
+
+```json
+{
+  "title": "...",
+  "start_scene": "...",
+  "contacts": [ ... ],
+  "end_screen": {
+    "title": "CONNECTION TERMINATED",
+    "text": "La suite arrive.",
+    "link_url": "https://itch.io/votre-jeu",
+    "link_label": "En savoir plus",
+    "glitch": true,
+    "show_stats": true
+  }
+}
+```
+
+Tous les champs sont optionnels. Si `end_screen` est absent de `story.json`, un écran minimal s'affiche avec seulement les boutons Nouvelle partie et Quitter.
+
+| Champ | Type | Défaut | Description |
+|---|---|---|---|
+| `title` | string | `"CONNECTION TERMINATED"` | Texte principal affiché en grand, police monospace |
+| `text` | string | *(absent)* | Texte secondaire sous le titre — accroche, annonce de suite, etc. |
+| `link_url` | string | *(absent)* | URL ouverte au clic. Si absent, aucun lien n'est affiché |
+| `link_label` | string | *(l'URL brute)* | Texte affiché sur le lien. Si absent, l'URL s'affiche directement |
+| `glitch` | bool | `false` | Active l'effet glitch : scramble de texte sur le titre + scanlines animées + flicker |
+| `show_stats` | bool | `false` | Affiche le nombre de messages échangés pendant la session |
+
+### Effet glitch
+
+Quand `"glitch": true`, trois effets se combinent :
+
+- **Scramble de texte** — les caractères du titre sont périodiquement remplacés par du bruit, puis se restituent (même algorithme que le titre du menu principal)
+- **Scanlines animées** — des bandes horizontales lumineuses dérivent lentement sur l'écran
+- **Flicker** — l'écran clignote aléatoirement à faible intensité
+
+### Édition via le Story Editor
+
+Le panneau **Contacts** du Story Editor expose une section **Écran de fin** avec tous les champs configurables directement — aucun fichier JSON à ouvrir.

@@ -148,7 +148,7 @@ Enable it once in Project Settings → Plugins.
 
 All dropdowns are populated from your actual project. Changes save on focus loss. Advanced features (structured `and`/`or` conditions, media, music) remain JSON-only.
 
-**Contacts panel** (toolbar button): manage everything in `story.json` without opening the file — add/rename/remove contacts, set avatars, define histories, configure the start scene. Renaming a contact ID propagates across every dialogue file automatically.
+**Contacts panel** (toolbar button): manage everything in `story.json` without opening the file — add/rename/remove contacts, set avatars, define histories, configure the start scene, configure the end screen. Renaming a contact ID propagates across every dialogue file automatically.
 
 **Reformat button**: rewrites all dialogue files with canonical key order without changing content.
 
@@ -231,6 +231,7 @@ Two messages arrive. The player picks a response. A variable updates. The story 
 - Player settings menu (language, volume, resolution, display mode)
 - Localization system (per-language dialogue files + UI translation CSV)
 - Theme system (`theme.json`) with animated glitch title (configurable)
+- Configurable end screen (title, text, link, glitch effect, session stats) — editable from the Story Editor
 - Playable demo scenario
 - Bilingual authoring guide (EN + FR) with full syntax reference
 

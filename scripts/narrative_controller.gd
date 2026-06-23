@@ -24,6 +24,9 @@ signal save_requested(notify_panel: bool)
 signal secondary_scene_received(contact_id: String)
 signal contact_renamed(contact_id: String, new_name: String)
 signal contact_status_changed(contact_id: String, new_status: String)
+# [END SCREEN] — remove this line to remove the end screen feature.
+signal game_ended
+# [/END SCREEN]
 
 var message_display: VBoxContainer = null
 var choices_layer: Control = null
@@ -280,8 +283,13 @@ func _play_secondary_scene(scene: Dictionary) -> void:
 
 
 func _trigger_next_scenes(scene_id: String) -> void:
-	var triggered = DialogueLoader.get_triggered_scenes(scene_id)
-	for triggered_id in triggered:
+	# [END SCREEN] — remove this block (4 lines) to remove the end screen feature.
+	if DialogueLoader.get_scene(scene_id).get("end", false):
+		game_ended.emit()
+		return
+	# [/END SCREEN]
+	var triggered: Array = DialogueLoader.get_triggered_scenes(scene_id)
+	for triggered_id: String in triggered:
 		await play_scene(triggered_id)
 
 

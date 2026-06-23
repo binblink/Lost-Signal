@@ -44,8 +44,22 @@
 			]
 		},
 		{
+			"id": "scene_intro_04",
+			"contact_id": "Maman",
+			"trigger_after_scene": "scene_intro_03",
+			"messages_in": [
+				{"text": "C'est Maman! Tu viens passer quelques jours à la maison la semaine prochaine? Bise. Maman"}
+			],
+			"choices": [
+				{"text": "Oui maman", "message": "Oui maman"},
+				{"text": "Non maman", "message": "Non maman"},
+				{"text": "Pourquoi?", "message": "Pourquoi tu mets toujours 'C'est Maman' au debut de tes messages? Je sais très bien que c'est toi!"}
+			]
+		},
+		{
 			"_notes": "Scène d'ouverture — Maeve cherche du contact",
 			"id": "scene_01",
+			"trigger_after_scene": "scene_intro_04",
 			"messages_in": [
 				{"text": "Allô?"},
 				{"text": "Est-ce que quelqu'un reçoit mes messages?", "pause": "short"}
@@ -127,7 +141,7 @@
 			"id": "scene_07",
 			"messages_in": [
 				{"text": "Merci ! Ça vient d'Irlande, ma mère est de là-bas. Pour revenir à la pièce...", "requires_flag": "like_maeve_name"},
-				{"text": ["C'est une pièce très blanche assez grande", "Ça fait très 'chambre d'hôpital' Y'a pas mal de matériel médical, un fauteuil comme chez le dentiste et des écrans qui affichent des données que je comprends pas.", "Y'a aussi une porte mais impossible de l'ouvrir...", "C'est pas une serrure ordinaire, je pense qu'il faut un badge ou une carte pour pouvoir l'ouvrir."]},
+				{"text": ["C'est une pièce très blanche assez grande", "Ça fait très 'chambre d'hôpital' Y'a pas mal de matériel médical, un fauteuil comme chez le dentiste, des papiers, des blocs notes et des écrans qui affichent des données que je comprends pas.", "Y'a aussi une porte mais impossible de l'ouvrir...", "C'est pas une serrure ordinaire, je pense qu'il faut un badge ou une carte pour pouvoir l'ouvrir."]},
 				{"text": "Attends, je crois que le téléphone que j'ai trouvé peut prendre des photos. Je vais essayer de voir si je peux en prendre une et te l'envoyer.", "pause": "medium"},
 				{"corrupted": true}
 			],
@@ -151,12 +165,69 @@
 			"id": "scene_09",
 			"messages_in": [
 				{"text": [":D", "Pas de soucis, je t'envoie les coordonnées du propriétaire à la minute où je sais qui c'est!", "Je crois que c'est la première fois que je ris de la journée! xD ", "Ça m'aide pas à sortir d'ici mais ça fait du bien"], "requires_flag": "cosy_room"},
-				{"text": ["PTSD en cours de création", {"pause": "medium", "text": "Veuillez ne pas interrompre le processus."}, "Blague à part tu comprends maintenant pourquoi je suis LÉGÈREMENT stressée de me retrouver enfermée là-dedans?"], "effects": [], "requires_flag": "scary_room"}
+				{"text": ["PTSD en cours de création", {"pause": "medium", "text": "Veuillez ne pas interrompre le processus."}, "Blague à part tu comprends maintenant pourquoi je suis LÉGÈREMENT stressée de me retrouver enfermée ici?"], "requires_flag": "scary_room"}
 			],
 			"choices": [
-				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ca fait vraiment plaisir de trouver des gens sur qui compter! :D", "A défaut de t'aider à sortir d'ici, je suis déja content de te faire rire!", "D'ailleurs en parlant de sortir d'ici..."], "requires_flag": "cosy_room"},
-				{"text": "Je connais un psy si tu veux!", "message": ["Je connais un psy si tu veux!", "C'est quoi 10 ans de thérapie ?"], "requires_flag": "scary_room"}
+				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ca fait vraiment plaisir de trouver des gens sur qui compter! :D", "A défaut de t'aider à sortir d'ici, je suis déja content de te faire rire!"], "requires_flag": "cosy_room", "next": "scene_10"},
+				{"text": "Je connais un psy si tu veux!", "message": ["Je connais un psy si tu veux!", "C'est quoi 10 ans de thérapie ?", "Tu vois rien qui puisse aider à sortir autour de toi?", "J'ai pas spécialement d'idées...", "Un marteau? Une feuille avec un code? ... Un tank?"], "requires_flag": "scary_room", "next": "scene_10"}
 			]
+		},
+		{
+			"id": "scene_10",
+			"messages_in": [
+				{"text": ["On est peut être en train d'assister à un début de reconversion professionnelle!", "Maeve, votre Holiday Planner", {"text":"Des biens atypiques pour des vacances bien pourries!", "pause": "short"}, "Bon..."], "requires_flag": "cosy_room"},
+				{"text": ["Figure toi que le tank, c'est le premier truc auquel j'ai pensé mais ... non...", "Ils ont pas jugé utile de laisser ça dans la pièce!"], "requires_flag": "scary_room"},
+				{"text": ["Je commence fouiller un peu partout pour voir si y'a pas un badge ou un passe qui aurait été perdu ou oublié.", "Ca serait un peu miraculeux mais j'ai bien réussi à trouver un téléphone donc on sait jamais..."]}
+			],
+			"choices":[
+				{"text":"Sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilements accessibles?", "flag":"lost_key", "next": "scene_11"},
+				{"text":"Forcer la serrure?", "message": ["Tu crois qu'il est possible de forcer le mécanisme?", "Si il y a des pinces ou des tiges en métal, on peut peut-être essayer..."], "flag":"lockpick", "next": "scene_11"}
+			]
+		},
+		{
+			"id":"scene_11",
+			"messages_in": [
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussieres et des tâches..."],"requires_flag":"lost_key"},
+				{"text": ["Et risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag":"lockpick"}
+			],
+			"choices":[
+				{"text":"Et sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilements accessibles?", "requires_flag":"lockpick", "next": "scene_12"},
+				{"text":"Et Forcer la serrure?", "message": ["Tu crois qu'il est possible de forcer le mécanisme?", "Si il y a des pinces ou des tiges en métal, on peut peut-être essayer..."], "requires_flag": "lost_key", "next": "scene_12"}
+			]
+		},
+		{
+			"id":"scene_12",
+			"messages_in": [
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussieres et des tâches..."], "requires_flag":"lockpick"},
+				{"text": ["Et risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag":"lost_key"},
+				{"text": ["Je pose le télephone le temps de chercher autre chose", "Je t'écris dès que j'ai une piste"]}
+			],
+			"choices":[
+				{"text":"Ok", "message": "Ok, même chose de mon coté, je t'écris si je pense à quelque chose.", "next": "scene_14"}
+			]
+		},
+		{
+			"id":"scene_13",
+			"messages_in": [
+				{}
+			],
+			"choices": [
+
+			],
+			"resume_after_delay": "1m",
+			"next": "scene_14"
+		},
+		{
+			"id": "scene_14",
+			"messages_in": [
+				{"text": ["...", "Je pense que je vais poser le téléphone.", "La batterie tient plus longtemps que moi."], "pause": "medium"},
+				{"text": ["Merci pour tout.", "Vraiment."], "pause": "short"},
+				{"text": "À bientôt j'espère."}
+			],
+			"choices": [
+				{"text": "On se retrouve bientôt.", "message": "On se retrouve bientôt."}
+			],
+			"end": true
 		}
 	]
 }

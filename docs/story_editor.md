@@ -223,6 +223,21 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 
 > **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue chargés et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
 
+### Écran de fin
+
+La section **Écran de fin** en bas du panneau Contacts configure ce qui s'affiche après une scène marquée `"end": true`.
+
+| Champ | Interface |
+|---|---|
+| `title` | Texte libre — titre principal affiché en grand (ex : `CONNECTION TERMINATED`) |
+| `text` | Texte libre — texte secondaire sous le titre (accroche, annonce de suite…) |
+| `lien URL` | Texte libre — URL ouverte au clic (ex : page itch.io). Vide = aucun lien |
+| `lien texte` | Texte libre — libellé affiché sur le lien. Vide = l'URL brute s'affiche |
+| `glitch` | Case à cocher — active le scramble de texte sur le titre + scanlines animées + flicker |
+| `show_stats` | Case à cocher — affiche le nombre de messages échangés pendant la session |
+
+Pour marquer la scène finale, ajoutez `"end": true` directement dans le JSON de la scène (voir [le guide auteur](authoring.md#18-écran-de-fin)).
+
 ---
 
 ## Ce que le JSON permet en plus

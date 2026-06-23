@@ -122,3 +122,4 @@ Le framework utilise quelques concepts simples pour construire des histoires :
 - **Effets** : modifier les variables et contacts lors d'un choix
 - **Triggers** : enchaîner les scènes automatiquement ou les différer
 - **Contacts secondaires** : des scènes peuvent arriver en arrière-plan dans la conversation d'un autre contact — le joueur reçoit une notification, bascule quand il le souhaite, et peut y avoir une vraie conversation avec choix et réponses
+- **Écran de fin** : écran affiché après la scène finale — titre, texte, lien, effet glitch, stats de session ; configurable via `story.json` ou le panneau Contacts du Story Editor

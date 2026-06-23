@@ -42,6 +42,9 @@ func refresh() -> void:
 		child.free()
 	var data := _read_story()
 	_build_global(data)
+	# [END SCREEN] — remove this line to remove the end screen feature.
+	_build_end_screen(data)
+	# [/END SCREEN]
 	_build_contacts(data)
 
 
@@ -158,6 +161,91 @@ func _build_global(data: Dictionary) -> void:
 		_t("Contact affiché à l'écran après la scène de départ.\nSi vide, le contact principal est montré par défaut.",
 			"Contact shown on screen after the start scene.\nIf empty, the main contact is shown by default."))
 
+
+# ---------------------------------------------------------------------------
+# [END SCREEN] — remove this entire section (function + separator) to remove the end screen feature.
+
+func _build_end_screen(data: Dictionary) -> void:
+	var es: Dictionary = data.get("end_screen", {})
+	_section(_content, _t("Écran de fin", "End screen"), Color(0.14, 0.10, 0.20))
+
+	_line_edit(_content,
+		_t("titre", "title"),
+		str(es.get("title", "")),
+		"CONNECTION TERMINATED",
+		func(val: String) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if val.is_empty(): block.erase("title") else: block["title"] = val
+			d["end_screen"] = block
+			_write_story(d),
+		_t("Texte principal affiché en grand (ex : CONNECTION TERMINATED).",
+			"Main text shown large (e.g. CONNECTION TERMINATED)."))
+
+	_line_edit(_content,
+		_t("texte", "text"),
+		str(es.get("text", "")),
+		_t("Message optionnel…", "Optional message…"),
+		func(val: String) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if val.is_empty(): block.erase("text") else: block["text"] = val
+			d["end_screen"] = block
+			_write_story(d),
+		_t("Texte secondaire affiché sous le titre (accroche, suite à venir, etc.).",
+			"Secondary text shown below the title (teaser, coming soon, etc.)."))
+
+	_line_edit(_content,
+		_t("lien URL", "link URL"),
+		str(es.get("link_url", "")),
+		"https://itch.io/…",
+		func(val: String) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if val.is_empty(): block.erase("link_url") else: block["link_url"] = val
+			d["end_screen"] = block
+			_write_story(d),
+		_t("URL ouverte au clic (optionnel). Laisser vide pour ne pas afficher de lien.",
+			"URL opened on click (optional). Leave empty to hide the link."))
+
+	_line_edit(_content,
+		_t("lien texte", "link label"),
+		str(es.get("link_label", "")),
+		_t("En savoir plus…", "Learn more…"),
+		func(val: String) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if val.is_empty(): block.erase("link_label") else: block["link_label"] = val
+			d["end_screen"] = block
+			_write_story(d),
+		_t("Texte affiché sur le lien. Si vide, l'URL brute est affichée.",
+			"Text shown on the link. If empty, the raw URL is shown."))
+
+	_checkbox(_content,
+		"glitch",
+		es.get("glitch", false),
+		func(val: bool) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if not val: block.erase("glitch") else: block["glitch"] = true
+			d["end_screen"] = block
+			_write_story(d),
+		_t("Active l'effet glitch sur le titre (scramble + scanlines + flicker).",
+			"Enables the glitch effect on the title (scramble + scanlines + flicker)."))
+
+	_checkbox(_content,
+		"show_stats",
+		es.get("show_stats", false),
+		func(val: bool) -> void:
+			var d := _read_story()
+			var block: Dictionary = d.get("end_screen", {})
+			if not val: block.erase("show_stats") else: block["show_stats"] = true
+			d["end_screen"] = block
+			_write_story(d),
+		_t("Affiche le nombre de messages échangés pendant la session.",
+			"Shows the number of messages exchanged during the session."))
+
+# [/END SCREEN]
 
 # ---------------------------------------------------------------------------
 # UI — contacts list
@@ -554,6 +642,19 @@ func _label(parent: HBoxContainer, text: String, min_width: int) -> void:
 	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 	parent.add_child(lbl)
+
+
+func _checkbox(container: VBoxContainer, label: String, initial: bool, on_change: Callable, tooltip: String = "") -> void:
+	var row := HBoxContainer.new()
+	_label(row, label, 110)
+	var cb := CheckBox.new()
+	cb.button_pressed = initial
+	cb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	if not tooltip.is_empty():
+		cb.tooltip_text = tooltip
+	cb.toggled.connect(func(pressed: bool) -> void: on_change.call(pressed))
+	row.add_child(cb)
+	container.add_child(row)
 
 
 # ---------------------------------------------------------------------------
