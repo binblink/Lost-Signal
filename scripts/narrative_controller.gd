@@ -208,7 +208,6 @@ func handle_choice(index: int) -> void:
 		return
 	var choice = _visible_choices[index]
 	waiting_for_choice = false
-	current_message_index = 0
 	_apply_effects(choice)
 	choices_layer.hide_choices()
 	input_bar.visible = true
@@ -219,13 +218,18 @@ func handle_choice(index: int) -> void:
 	for msg in messages:
 		await message_display.type_message(_apply_templates(msg))
 	_is_player_typing = false
-	var next_scene_id = choice.get("next", null)
-	if next_scene_id != null and DialogueLoader.has_scene(next_scene_id):
+	var next_scene_id: String = choice.get("next", "")
+	if next_scene_id != "" and DialogueLoader.has_scene(next_scene_id):
+		current_message_index = 0
 		current_scene = DialogueLoader.get_scene(next_scene_id)
 		current_scene["contact_id"] = active_contact_id
+	else:
+		# No next scene — clear current_scene so a save here records scene_id = ""
+		# and reload won't replay the finished scene from scratch.
+		current_scene = {}
 	save_requested.emit(true)
 	choice_made.emit()
-	if next_scene_id != null:
+	if next_scene_id != "":
 		await play_scene(next_scene_id)
 	var resumes = _pending_resumes.duplicate()
 	_pending_resumes.clear()

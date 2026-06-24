@@ -78,6 +78,8 @@ func receive_image_message(path: String, time: String) -> MarginContainer:
 	var bubble = ImageBubbleIn.instantiate()
 	add_child(bubble)
 	var raw := time if time != "" else get_current_datetime()
+	var bubble_panel := bubble.get_node("HBoxContainer/Bubble") as PanelContainer
+	bubble_panel.custom_minimum_size.x = 0
 	var thumbnail = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Thumbnail")
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
 	if ResourceLoader.exists(path):
@@ -87,6 +89,7 @@ func receive_image_message(path: String, time: String) -> MarginContainer:
 		if tex_w > 0 and tex_h > 0:
 			var img_scale := minf(240.0 / tex_w, 180.0 / tex_h)
 			thumbnail.custom_minimum_size = Vector2(tex_w * img_scale, tex_h * img_scale)
+			bubble_panel.custom_minimum_size.x = tex_w * img_scale + 24
 	thumbnail.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			image_clicked.emit(path)

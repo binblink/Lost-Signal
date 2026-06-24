@@ -41,7 +41,6 @@ func _ready() -> void:
 	_narrative.active_contact_id = DialogueLoader.get_main_contact().get("id", "maeve")
 
 	choices_layer.message_display  = message_display
-	choices_layer.scroll_container = $RootHBox/VBoxContainer/Messages
 	choices_layer.input_bar        = input_bar
 	choices_layer.choice_selected.connect(_narrative.handle_choice)
 
@@ -415,6 +414,7 @@ func _on_game_ended() -> void:
 	for hist: Array in _narrative.contact_histories.values():
 		total_msgs += hist.size()
 	end_data["_stats_messages"] = total_msgs
+	await get_tree().create_timer(3.0).timeout
 	var end_screen := EndScreen.new()
 	end_screen.new_game_requested.connect(_on_new_game_pressed)
 	end_screen.quit_requested.connect(func() -> void: get_tree().quit())

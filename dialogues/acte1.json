@@ -203,31 +203,95 @@
 				{"text": ["Je pose le télephone le temps de chercher autre chose", "Je t'écris dès que j'ai une piste"]}
 			],
 			"choices":[
-				{"text":"Ok", "message": "Ok, même chose de mon coté, je t'écris si je pense à quelque chose.", "next": "scene_14"}
+				{"text":"Ok", "message": "Ok, même chose de mon coté, je t'écris si je pense à quelque chose.", "next": "scene_13"}
 			]
 		},
 		{
 			"id":"scene_13",
+			"resume_after_delay": "1m",
 			"messages_in": [
-				{}
+				{"text": "OH PUTAIN!"}
 			],
 			"choices": [
-
-			],
-			"resume_after_delay": "1m",
-			"next": "scene_14"
+				{"text":"Maeve?", "message":["Maeve?", "Tout va bien?"], "next": "scene_14"},
+				{"text":"Qu'est qu'il se passe?", "message":"Qu'est qu'il se passe?", "next": "scene_14"}
+			]
 		},
 		{
-			"id": "scene_14",
+			"id":"scene_14",
 			"messages_in": [
-				{"text": ["...", "Je pense que je vais poser le téléphone.", "La batterie tient plus longtemps que moi."], "pause": "medium"},
-				{"text": ["Merci pour tout.", "Vraiment."], "pause": "short"},
-				{"text": "À bientôt j'espère."}
+				{"text": ["La lumière!", "Y'a plus de lumiere!"]}
 			],
 			"choices": [
-				{"text": "On se retrouve bientôt.", "message": "On se retrouve bientôt."}
+				{"text":"Qu'est ce que t'as fait?", "message":["Qu'est ce que t'as fait?"], "flag":"your_fault?", "next": "scene_15"},
+				{"text":"Reste calme.", "message":["Pas de panique", "C'est surement qu'une coupure de courant passagère.", "Il faut qu tu restes calme."], "flag":"keep_calm", "next": "scene_15"}
+			]
+			
+		},
+		{
+			"id":"scene_15",
+			"messages_in": [
+				{"text":["Je suis dans le noir complet.", "J'ai le coeur qui bat à 10 000...", "La j'ai juste envie de me mettre en boule et pleurer..."], "requires_flag":"keep_calm"},
+				{"text":["J'ai rien fait du tout!", "J'étais en train de regarder un papier et d'un coup plus rien...", "Noir complet...", "Je crois que je suis au bord de la crise cardiaque."], "requires_flag":"your_fault?"}
 			],
-			"end": true
+			"choices": [
+				{"text":"Du calme", "message":["Faut pas se laisser abattre Maeve.", "C'est flippant mais c'est qu'un peu de lumière.", "On va trouver un truc!"], "flag":"keep_going", "next":"scene_16"},
+				{"text":"Telephone?", "message":["Il faut essayer quelque chose.", "Le telephone que t'as trouvé...", "Il fait pas lampe-torche?"], "flag":"torch", "next":"scene_16"}
+			]
+		},
+		{
+			"id":"scene_16",
+			"messages_in": [
+				{"text":["T'as raison, il faut que je me reprenne.", "La priorité c'est de sortir."]},
+				{"text":["Je crois que le téléphone que j'ai fait lampe torche.", "Je vais essayer de l'allumer."], "pause":"medium", "requires_flag":"keep_going"},
+				{"text":["Je crois que t'as raison pour le téléphone.", "Attends, j'essaye..."], "pause":"medium", "requires_flag":"torch"}
+			],
+			"choices":[
+				{"text": "Ok", "message":"Ok, je continue de refléchir pendant ce temps.", "next":"scene_17"}
+			]
+		},
+		{
+			"id":"scene_17",
+			"messages_in":[
+				{"text": ["Bon, la lumière c'est fait!", "C'est pas très puissant mais au moins j'y vois à peu près.", "On est pas plus avancé sur la question de la sortie par contre..."]}
+			],
+			"choices":[
+				{"text":"Fouiller plus", "message":["Ca va pas être facile avec ces problèmes de lumière mais il faut continuer à chercher."], "flag":"keep_trying", "next": "scene_18b"},
+				{"text":"Serrure magnétique?", "message":["Je pense à un truc à propos de la porte. La serrure est magnétique mais si y'a plus d'électricité...", "Le magnétisme devrait se désactiver non?"], "flag":"magnetic", "next": "scene_18a"}
+			]
+		},
+		{
+			"id":"scene_18a",
+			"messages_in":[
+				{"text":["Ohh!", "Bien vu!", "Si ça marche je vais être obligé de te considérer comme génie!", "Attends, j'essaye..."], "pause":"medium"},
+				{"text":"OH PUTAIN!!!"}
+			],
+			"choices":[
+				{"text":"Ca va?",  "message":"Tout va bien???", "next":"scene_19"}
+			]
+		},
+		{
+			"id":"scene_18b",
+			"messages_in":[
+				{"text":["T'as raison", "Il faut que je continue à chercher."], "pause": "medium"},
+				{"text":["Je viens de me rappeler d'un truc!", "Quand y a eu la coupure, j'ai entendu un grand bruit et un deuxième au niveau de la porte.", "Tu crois que c'est possible que la coupure ait désactivé le mecanisme de la serrure?", "Attends, je vais voir..."], "pause":"medium"}
+			],
+			"choices":[
+				{"text":"Regarde et dis moi!", "message":["Ca serait fou!", "Je te laisse regarder et me dire!"], "next":"scene_19"}
+			]
+		},
+		{
+			"id": "scene_19",
+			"messages_in": [
+				{"text": "{player_name}!!!", "pause": "short"},
+				{"text": "T'avais raison!!!", "requires_flag": "magnetic"},
+				{"text": ["La porte est ouverte!!", "je vais enfin pouvoir sortir de la pièce!"]}
+			],
+			"choices": [
+				{"text": "Génial!", "message": ["Génial!", "Je suis super content pour toi Maeve!!", "Mais c'est que le début!", "Prochain objectif : sortir du batiment", "On va y arriver!"]}
+			],
+			"end": true,
+			"glitch":true
 		}
 	]
 }

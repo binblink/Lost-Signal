@@ -297,8 +297,9 @@ func _validate() -> void:
 
 		# choices
 		var choices: Array = scene.get("choices", [])
+		var is_end_scene: bool = scene.get("end", false)
 		for j in range(choices.size()):
-			_check_choice(choices[j], ctx, j, flags_set, contact_ids, errors, warnings)
+			_check_choice(choices[j], ctx, j, flags_set, contact_ids, errors, warnings, is_end_scene)
 
 	_detect_trigger_cycles(errors)
 
@@ -353,14 +354,14 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, cont
 		_check_effect(efx[k], "%s effect[%d]" % [label, k], contact_ids, errors, warnings)
 
 
-func _check_choice(choice: Dictionary, ctx: String, j: int, flags_set: Array, contact_ids: Array, errors: Array, warnings: Array) -> void:
+func _check_choice(choice: Dictionary, ctx: String, j: int, flags_set: Array, contact_ids: Array, errors: Array, warnings: Array, is_end_scene: bool = false) -> void:
 	var label := "%s choice[%d]" % [ctx, j]
 	if not choice.has("text") or choice["text"] == null:
 		errors.append("%s missing 'text'." % label)
 	var req_flag = choice.get("requires_flag", null)
 	if req_flag != null and not req_flag in flags_set:
 		warnings.append("%s requires_flag '%s' is never set by any choice." % [label, req_flag])
-	if not choice.has("next"):
+	if not choice.has("next") and not is_end_scene:
 		warnings.append("%s no 'next' (terminal choice)." % label)
 	else:
 		var next_id = choice.get("next", null)

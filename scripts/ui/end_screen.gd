@@ -140,7 +140,7 @@ func setup(data: Dictionary) -> void:
 
 	# ── Entrance fade-in ─────────────────────────────────────────────────────
 	var tween := create_tween()
-	tween.tween_property(_canvas, "modulate:a", 1.0, 2.5)
+	tween.tween_property(_canvas, "modulate:a", 1.0, 5.0)
 
 	# ── Start glitch loops ───────────────────────────────────────────────────
 	if _do_glitch:

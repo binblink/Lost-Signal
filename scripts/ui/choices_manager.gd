@@ -2,11 +2,8 @@ extends Control
 
 signal choice_selected(index: int)
 
-const SCROLL_STEP := 60
-
 # References injected by main.gd before _ready
 var message_display: VBoxContainer = null
-var scroll_container: ScrollContainer = null
 var input_bar: Control = null
 
 @onready var _buttons_container = %ButtonsContainer
@@ -15,13 +12,15 @@ var _choice_buttons: Array = []
 var _spacer: Control = null
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_buttons_container.get_parent().mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_buttons_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	visible = false
 	for i in range(_buttons_container.get_child_count()):
 		var btn = _buttons_container.get_child(i)
 		_choice_buttons.append(btn)
 		btn.pressed.connect(_on_button_pressed.bind(i))
 		ThemeManager.restyle_choice_button(btn)
-	gui_input.connect(_on_gui_input)
 
 func show_choices(options: Array) -> void:
 	for i in range(_choice_buttons.size()):
@@ -51,11 +50,3 @@ func hide_choices() -> void:
 
 func _on_button_pressed(index: int) -> void:
 	choice_selected.emit(index)
-
-func _on_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if scroll_container:
-			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				scroll_container.scroll_vertical -= SCROLL_STEP
-			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				scroll_container.scroll_vertical += SCROLL_STEP
