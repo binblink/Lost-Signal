@@ -318,7 +318,7 @@ func _validate() -> void:
 		# resume_after_flag
 		var resume_flag = scene.get("resume_after_flag", null)
 		if resume_flag != null and not resume_flag in flags_set:
-			warnings.append("%s resume_after_flag '%s' is never set by any choice." % [ctx, resume_flag])
+			errors.append("%s resume_after_flag '%s' is never set by any choice — scene will deadlock." % [ctx, resume_flag])
 
 		# free_input
 		var free_input = scene.get("free_input", null)
