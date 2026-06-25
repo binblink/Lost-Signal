@@ -201,6 +201,17 @@ Cliquer sur le bouton **Contacts** dans la toolbar ouvre une fenêtre flottante 
 | `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
 | `start_contact` | Dropdown de contacts — contact affiché à l'écran après la scène de départ ; si vide, le contact principal est utilisé |
 
+### Langues
+
+La section **Langues** liste les langues actives du projet (détectées depuis les fichiers `.translation` générés par Godot dans `translations/`) et permet d'en ajouter de nouvelles.
+
+| Élément | Rôle |
+|---|---|
+| Chip par langue + **×** | Chaque langue active est affichée avec un bouton **×**. Cliquer dessus supprime la colonne de `ui.csv` (irréversible — toutes les traductions de cette langue sont perdues). Le **×** est grisé s'il ne reste qu'une seule langue. |
+| Champ + **+ Ajouter** | Saisir un code ISO 639-1 (ex : `de`) et cliquer pour ajouter une colonne vide dans `ui.csv`. Godot régénère automatiquement le fichier `.translation` correspondant. |
+
+> Ajouter ou supprimer une langue ici ne modifie que `ui.csv` (chaînes d'interface). Pour une nouvelle langue, il faut également créer le fichier de dialogue localisé (ex : `acte1.de.json`) et remplir les champs `history` de chaque contact dans l'éditeur.
+
 ### Liste des contacts
 
 Chaque contact est affiché sous forme de carte avec tous ses champs éditables :
@@ -214,7 +225,7 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 | `status` | Dropdown — `online`, `away`, `offline`, `network_issue` |
 | `pending_scene` | Dropdown de scènes — scène mise en attente pour ce contact au démarrage ; le joueur voit un choix en suspens dès l'ouverture de la conversation |
 | `names` | Section « Noms localisés » — liste de paires code langue / nom. Bouton **+ Langue** pour ajouter une entrée (un placeholder `??` apparaît en orange — le remplacer par le code réel). Le code langue est coloré en orange si aucun fichier de dialogue correspondant (`*.{code}.json`) n'est trouvé dans `dialogues/`. Voir la section `names` du guide auteur. |
-| `history` | Liste de lignes — chaque entrée a une case `→` (envoyé par le joueur), un champ date `YYYY-MM-DD` (optionnel), un champ heure `HH:MM`, un bouton 📅 pour ouvrir le sélecteur visuel, et un champ texte. Si la date est vide, le message s'affiche comme un message du jour ; si elle est antérieure à aujourd'hui, l'horodatage affiché est `JJ-MM-AAAA HH:MM` (locale FR) ou `AAAA-MM-JJ HH:MM` (autres locales). |
+| `history` | Liste de lignes — chaque entrée a une case `→` (envoyé par le joueur), un champ date `YYYY-MM-DD` (optionnel), un champ heure `HH:MM`, un bouton 📅 pour ouvrir le sélecteur visuel, et **un champ texte par langue active**. Si le projet a plusieurs langues (ex : `fr` et `en`), chaque ligne affiche autant de champs que de langues — préfixés par leur code. Si la date est vide, le message s'affiche comme un message du jour ; si elle est antérieure à aujourd'hui, l'horodatage affiché est `JJ-MM-AAAA HH:MM` (locale FR) ou `AAAA-MM-JJ HH:MM` (autres locales). |
 
 - **+ Contact** — ajoute une nouvelle carte contact
 - **×** sur une carte — demande une confirmation avant de supprimer le contact de `story.json`
@@ -229,8 +240,8 @@ La section **Écran de fin** en bas du panneau Contacts configure ce qui s'affic
 
 | Champ | Interface |
 |---|---|
-| `title` | Texte libre — titre principal affiché en grand (ex : `CONNECTION TERMINATED`) |
-| `text` | Texte libre — texte secondaire sous le titre (accroche, annonce de suite…) |
+| `title` | Un champ par langue active — titre principal affiché en grand. Sauvegardé comme dict localisé si plusieurs langues, comme string si une seule. |
+| `text` | Un champ par langue active — texte secondaire sous le titre (accroche, annonce de suite…). Même format que `title`. |
 | `lien URL` | Texte libre — URL ouverte au clic (ex : page itch.io). Vide = aucun lien |
 | `lien texte` | Texte libre — libellé affiché sur le lien. Vide = l'URL brute s'affiche |
 | `glitch` | Case à cocher — active le scramble de texte sur le titre + scanlines animées + flicker |

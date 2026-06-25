@@ -1,106 +1,307 @@
 {
-  "start_scene": "ch1_intro",
-  "scenes": [
-	{
-	  "_notes": "Opening scene — Maeve looking for contact",
-	  "id": "ch1_intro",
-	  "messages_in": [
-		"Hello?",
-		{ "text": "Is anyone receiving my messages?", "pause": "short" }
-	  ],
-	  "choices": [
-		{ "text": "Yes, who are you?",     "message": "Yes, I got your message. Who are you?",                    "next": "ch1_explication", "flag": "rep_a" },
-		{ "text": "What's this about?",    "message": "What's this about?",                                        "next": "ch1_explication", "flag": "rep_b" },
-		{ "text": "Is this a joke?",       "message": "Is this a joke? You're texting random numbers?",           "next": "ch1_explication", "flag": "rep_c" }
-	  ]
-	},
-
-	{
-	  "_notes": "Maeve responds based on choice 1 (requires_flag), then explains her situation",
-	  "id": "ch1_explication",
-	  "messages_in": [
-		{ "text": "Thank you for answering",                                                                                          "requires_flag": "rep_a" },
-		{ "text": "Sorry",                                                                                                            "requires_flag": "rep_b" },
-		{ "text": "Kind of, yes… Sorry",                                                                                             "requires_flag": "rep_c" },
-		{ "text": "I know this is strange but I need help and I have no one else to turn to",                         "pause": "short" },
-		{ "text": "I just woke up in a room that looks like a hospital room, but it's not a hospital.",               "pause": "short" },
-		{ "text": "There was this phone on the floor with nothing but this messaging app and no contacts.",            "pause": "short" },
-		{ "text": "I've tried dozens of numbers but no messages go through except to this one apparently…",           "pause": "short" },
-		{ "text": "I know it sounds unbelievable but I really need help",                                             "pause": "short" }
-	  ],
-	  "choices": [
-		{ "text": "This isn't funny.",   "message": "If this is a joke it's really not funny.",  "next": "ch1_reaction", "flag": "react_r" },
-		{ "text": "I'll help you.",      "message": "I'll help you",                             "next": "ch1_reaction", "flag": "react_t" },
-		{ "text": "Ok, calm down.",      "message": "Ok, calm down",                             "next": "ch1_reaction", "flag": "react_u" }
-	  ]
-	},
-
-	{
-	  "_notes": "Maeve's reaction based on player attitude — 3 conditional branches, then commitment choice",
-	  "id": "ch1_reaction",
-	  "messages_in": [
-		{ "text": "I promise it's not!",                                                                                              "pause": "short", "requires_flag": "react_r" },
-		{ "text": "Please, stay with me! I really need help!",                                                                        "pause": "short", "requires_flag": "react_r" },
-		{ "text": "Really?",                                                                                                          "requires_flag": "react_t" },
-		{ "text": "Finally something good in this awful day!",                                                                        "pause": "short", "requires_flag": "react_t" },
-		{ "text": "Thank you thank you thank you",                                                                                    "pause": "short", "requires_flag": "react_t" },
-		{ "text": "Yes, sorry… You're right…",                                                                                       "requires_flag": "react_u" },
-		{ "text": "It's not easy but I need to keep a clear head if I want to get out of here",                       "pause": "short", "requires_flag": "react_u" },
-		{ "text": "Thank you! Having someone to share this with should help.",                                         "pause": "short", "requires_flag": "react_u" }
-	  ],
-	  "choices": [
-		{ "text": "Hmm… curious though.",  "message": ["Hmm, I'm still not really convinced…", "but I'm curious to see where this is going"],  "next": "ch1_presentation", "flag": "commit_r" },
-		{ "text": "I'll stay.",            "message": ["Ok ok I don't know what to think but I'll stay…", "For now"],                          "next": "ch1_presentation", "flag": "commit_s" },
-		{ "text": "Ok. I'm with you.",     "message": "Ok. I'm staying with you. Tell me what you need.",                                      "next": "ch1_presentation", "flag": "commit_t" }
-	  ]
-	},
-
-	{
-	  "_notes": "Maeve introduces herself — rename triggered on message, then exploration choice",
-	  "id": "ch1_presentation",
-	  "messages_in": [
-		{ "text": "That's honest. I'll do the same.",                                                                  "requires_flag": "commit_r" },
-		{ "text": "For now that's already a lot. Thank you.",                                                          "requires_flag": "commit_s" },
-		{ "text": "You can't know how good it feels to hear that.",                                                    "requires_flag": "commit_t" },
-		{ "text": "My name is Maeve.", "pause": "short", "effects": [{ "op": "rename", "contact": "maeve", "value": "Maeve" }] },
-		{ "text": "Well… I think so. My name is the only thing I'm really sure of right now.", "pause": "short" },
-        "And you?"
-	  ],
-	  "free_input": "nom_joueur",
-	  "next": "ch1_exploration"
-	},
-
-	{
-	  "_notes": "Maeve acknowledges the name via {nom_joueur} template, then exploration choice",
-	  "id": "ch1_exploration",
-	  "messages_in": [
-		{ "text": "{nom_joueur}…", "pause": "short" },
-		{ "text": "Ok {nom_joueur}. Right. We need to try to figure out what's going on.", "pause": "short" }
-	  ],
-	  "choices": [
-		{ "text": "You don't remember anything else?", "message": "You don't remember anything other than your name?",  "next": "ch1_connaissance", "flag": "demande_memoire" },
-		{ "text": "Describe the room to me.",          "message": "Describe what you see around you.",                  "next": "ch1_connaissance", "flag": "demande_lieu" },
-		{ "text": "Are you in pain anywhere?",         "message": "Physically — are you in pain anywhere?",            "next": "ch1_connaissance", "flag": "demande_etat" }
-	  ]
-	},
-
-	{
-	  "_notes": "First exploration — 3 conditional branches (memory / location / state), converging on battery constraint",
-	  "id": "ch1_connaissance",
-	  "messages_in": [
-		{ "text": "No. Not really.",                                                                                                  "requires_flag": "demande_memoire" },
-		{ "text": "I'm trying but it's blurry. Images, sounds. Nothing concrete.",                                    "pause": "short", "requires_flag": "demande_memoire" },
-		{ "text": "You know that feeling of something on the tip of your tongue? Except it's your entire life.",       "pause": "short", "requires_flag": "demande_memoire" },
-		{ "text": "White. Very white. Too white.",                                                                                    "requires_flag": "demande_lieu" },
-		{ "text": "A bed, medical equipment but everything is off, unplugged. And this phone.",                        "pause": "short", "requires_flag": "demande_lieu" },
-		{ "text": "No window. And… I've been looking for a door this whole time.",                                     "pause": "short", "requires_flag": "demande_lieu" },
-		{ "text": "Physically I'm more or less okay. My head is spinning a little.",                                                  "requires_flag": "demande_etat" },
-		{ "text": "What hurts the most is not understanding what brought me here.",                                    "pause": "short", "requires_flag": "demande_etat" },
-		{ "text": "Like I slept too long. Or not enough. I can't tell anymore.",                                       "pause": "short", "requires_flag": "demande_etat" },
-		{ "text": "I don't know how long this phone will last.",                                      "pause": "medium" },
-		{ "text": "The battery is at 34%. And I don't know if it charges.",                           "pause": "short" },
-		{ "text": "We need to figure out what's going on before I lose signal.",                      "pause": "short" }
-	  ]
-	}
-  ]
+	"scenes": [
+		{
+			"id": "scene_intro_01",
+			"contact_id": "salesman",
+			"messages_in": [],
+			"choices": [
+				{"text": "STOP", "message": "STOP", "next": "scene_intro_02a"},
+				{"text": "Annoying", "message": "You're annoying. I'm blocking this number.", "next": "scene_intro_02b"}
+			]
+		},
+		{
+			"id": "scene_intro_02a",
+			"contact_id": "salesman",
+			"messages_in": [
+				{"text": ["STOP? WHAT DO YOU MEAN, STOP???", "I'VE BEEN WRITING TO YOU FOR OVER A YEAR!!!", "NEVER A HELLO, NEVER A THANK YOU, NOTHING!!!!", "AND I HAVE TO MAKE DO WITH A LOUSY STOP???", "DO YOU HAVE ANY IDEA HOW HARD THIS JOB IS???"]}
+			],
+			"choices": [
+				{"text": "Uh? Is that normal?", "message": ["Uh? Is that normal?", "Aren't I supposed to get a message saying my request has been received and will be processed within a ridiculously long time?"], "flag": "stop_requested", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur bizarre", "en": "Weird Salesman"}}]},
+				{"text": "I didn't ask for anything!", "message": ["I didn't ask for anything!", "I'm a renter, on top of that!", "I couldn't care less about your windows and your solar panels!", "Leave me alone"], "flag": "dont_care", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur de merde", "en": "Shitty Salesman"}}]}
+			]
+		},
+		{
+			"id": "scene_intro_02b",
+			"contact_id": "salesman",
+			"messages_in": [
+				{"text": ["Noooooo!!! Wait!!!", "I beg you! You have to stay!", "I can't take it anymore", "I'm going to lose my job if this keeps up!"]}
+			],
+			"choices": [
+				{"text": "What are you hoping for?", "message": ["What are you hoping for?", "That I'll buy something when I'm broke?", "That I'll just let you keep spamming me?"], "flag": "pathetic_salesman", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Commercial pathétique", "en": "Pathetic Salesman"}}]},
+				{"text": "Wow... you're not okay...", "message": ["Wow... you're not okay...", "Maybe you should see a therapist or a doctor."], "flag": "pathetic_salesman2", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Commercial Pathétique", "en": "Pathetic Salesman"}}]}
+			]
+		},
+		{
+			"id": "scene_intro_03",
+			"contact_id": "salesman",
+			"messages_in": [
+				{"text": "You're right, I think there's nothing left to hope for...", "requires_flag": "pathetic_salesman"},
+				{"text": "WHAT? Are you calling me crazy?", "requires_flag": "pathetic_salesman2"},
+				{"text": "YOU WANT A CONFIRMATION MESSAGE?? NO PROBLEM, ALLOW ME TO CONFIRM...", "requires_flag": "stop_requested"},
+				{"text": "I BUST MY BACK FINDING YOU THE BEST PRICES AND THE BEST DEALS ON THINGS THAT ACTUALLY MATTER FOR YOUR LIFE AND ALL I GET IS CONTEMPT!!!\nYOU DON'T DESERVE ME!!\nYOU DESERVE NOTHING!!!", "requires_flag": "dont_care"},
+				{"text": "YOU ARE PATHETIC!!!", "pause": "short"},
+				{"text": "PATHETIC!!!"}
+			]
+		},
+		{
+			"id": "scene_intro_04",
+			"contact_id": "Maman",
+			"trigger_after_scene": "scene_intro_03",
+			"messages_in": [
+				{"text": "It's mom! Are you coming to stay for a few days next week? Hugs. Mom"}
+			],
+			"choices": [
+				{"text": "Yes mom", "message": "Yes mom"},
+				{"text": "No mom", "message": "No mom"},
+				{"text": "Why?", "message": "Why do you always put 'It's Mom' at the start of your messages? I know perfectly well it's you!", "flag": "question_mom"}
+			]
+		},
+		{
+			"id":"scene_intro_05",
+			"contact_id":"Maman",
+			"trigger_after_scene": "scene_intro_03",
+			"messages_in":[
+				{"text":"It's mom! I want to make sure you know it's me. I wouldn't want you to get confused."}
+			],
+			"choices":[
+				{"text":"No chance", "message":"Don't worry at all. There's no way I'd ever mix you up with anyone else!"}
+			]
+		},
+		{
+			"_notes": "Opening scene — Maeve tries to make contact",
+			"id": "scene_01",
+			"trigger_after_scene": "scene_intro_04",
+			"messages_in": [
+				{"text": "Hello?"},
+				{"text": "Is anyone receiving my messages?", "pause": "short"}
+			],
+			"choices": [
+				{"text": "More spam???", "message": "Nice spam, well played.", "flag": "rep_a", "next": "scene_02"},
+				{"text": "Yes, I hear you.", "message": "Yes, I can hear you.", "flag": "rep_b", "next": "scene_02"},
+				{"text": "What number is this?", "message": "What number is this?", "flag": "rep_c", "next": "scene_02"}
+			]
+		},
+		{
+			"id": "scene_02",
+			"messages_in": [
+				{"text": ["...", "It's not spam!", "I know it looks like it", "But I'm a real person."], "requires_flag": "rep_a"},
+				{"text": ["Oh!", "Thank God...", "Do you know where I am?"], "requires_flag": "rep_b"},
+				{"text": ["I don't know", "I woke up in this room...", "There was this phone on the floor", "I've tried other numbers but nobody answers"], "requires_flag": "rep_c"}
+			],
+			"choices": [
+				{"text": "Proof?", "message": "Prove it!", "flag": "rep_a1", "requires_flag": "rep_a", "next": "scene_03"},
+				{"text": "Classic spammer!", "message": "That's exactly what a spammer would say!", "flag": "rep_a1", "requires_flag": "rep_a", "next": "scene_03"},
+				{"text": "No", "message": "Well, no...", "flag": "rep_b1", "requires_flag": "rep_b", "next": "scene_03"},
+				{"text": "How would I know?", "message": "I have no idea how I could know where you are.", "flag": "rep_b1", "requires_flag": "rep_b", "next": "scene_03"},
+				{"text": "Where are you?", "message": "Where exactly are you?", "flag": "rep_c1", "requires_flag": "rep_c", "next": "scene_03"},
+				{"text": "How long?", "message": "How long have you been there?", "flag": "rep_c1", "requires_flag": "rep_c", "next": "scene_03"}
+			]
+		},
+		{
+			"id": "scene_03",
+			"messages_in": [
+				{"text": ["I don't have time to try to convince you", "I need help", "I don't know where I am", "I woke up in a room that looks like a laboratory", "I have no idea why I'm here!"], "requires_flag": "rep_a1"},
+				{"text": ["Yes, it's true.", "I'm sorry...", "I think this situation is driving me crazy.", "I have no idea where I am or why I'm here...", "I woke up in a room that looks like a laboratory", "There was this phone on the floor."], "requires_flag": "rep_b1"},
+				{"text": ["I woke up here a few hours ago.", "A room that looks like a laboratory.", "I have absolutely no idea where I am or why I'm here!", "I'm going insane..."], "requires_flag": "rep_c1"}
+			],
+			"choices": [
+				{"text": "Try to help", "message": ["Wow...", "This sounds like a bad horror movie...", "I'm not sure how I can help","But I'm willing to try.", "I'll stay online if that helps."], "flag": "agree_to_help", "condition": {"or": [{"flag": "rep_b1"}, {"flag": "rep_c1"}]}, "next": "scene_04"},
+				{"text": "Curious", "message": ["Ok... Either today is the day of the most reactive and persistent spammers I've ever seen", "Or something weird is going on", "Either way, I'm starting to want to see where this goes."], "flag": "spam_curious", "requires_flag": "rep_a1", "next": "scene_04"}
+			]
+		},
+		{
+			"id": "scene_04",
+			"messages_in": [
+				{"text": ["Thank you...", "Really.", "It's a bit reassuring to know there's someone on the other side."], "requires_flag": "agree_to_help"},
+				{"text": "Oh come on, enough with the spam talk!", "requires_flag": "spam_curious"},
+				{"text": "Shi...", "edit": [{"corrected_text": "Shit...", "delay": 2.0, "type": "correct"}, {"delay": 3.0, "type": "delete"}], "requires_flag": "spam_curious"},
+				{"text": "Well, I'm really glad that the fact I might be in mortal danger is entertaining to you...", "pause": "medium", "requires_flag": "spam_curious"}
+			],
+			"choices": [
+				{"text": "Someone's touchy...", "message": ["Don't take it like that!", "I just have trouble believing a situation like this could actually happen.", "Nothing personal.", "I'm willing to give you a chance but...", "At the slightest attempt to sell me windows or solar panels, I'm out."], "flag": "spam_cautious", "requires_flag": "spam_curious", "next": "scene_05"},
+				{"text": "This is surreal", "message": ["I get a message explaining something completely surreal and I'm supposed to just believe it right away?", "If it's true it's serious but I find it hard to believe...", "I'll stay online and we'll see."], "flag": "surreal1", "requires_flag": "spam_curious", "next": "scene_05"},
+				{"text": "Lost for words", "message": ["Honestly, I don't know what to think about any of this.", "I want to help but I'm not really sure how right now.", "You don't get messages like this every day (and thank god for that!)."], "flag": "ok_doubt", "requires_flag": "agree_to_help", "next": "scene_05"},
+				{"text": "We'll figure it out", "message": ["There has to be an explanation for this.", "Which is why it's important to stay calm and rational", "We'll figure it out"], "flag": "rationnal1", "requires_flag": "agree_to_help", "next": "scene_05"}
+			]
+		},
+		{
+			"id": "scene_05",
+			"messages_in": [
+				{"text": ["You're right...", "There has to be an explanation!", "I'm already grateful you're here."], "requires_flag": "rationnal1"},
+				{"text": ["I understand it seems surreal to you...", "But I assure you it's the truth.", "I'm a real person and I need help."], "requires_flag": "surreal1"},
+				{"text": ["Just being here already helps!", "I won't lie, I don't really understand what's going on either.", "And I don't message random people for help every day."], "requires_flag": "ok_doubt"},
+				{"text": ["I know it's hard to believe but I don't really have another choice right now", "Do you really think I'd message a stranger if I wasn't desperate?", "I'm just asking for a chance to prove I'm telling the truth", "No windows or solar panels. I promise."], "requires_flag": "spam_cautious"},
+				{"text": "Since we're going to be in touch for a while, we might as well know who we're talking to, right?"},
+				{"text": "I'm Maeve, and you?", "effects": [{"op": "rename", "value": "Maeve", "contact": "maeve"}]}
+			],
+			"free_input": "player_name",
+			"free_input_placeholder": "Enter your first name…",
+			"next": "scene_06"
+		},
+		{
+			"id": "scene_06",
+			"messages_in": [
+				{"text": ["Hmm... {player_name}...", "I like that name."], "effects": [{"contact": "maeve", "op": "set_status", "value": "network_issue"}]}
+			],
+			"choices": [
+				{"text": "I like Maeve too.", "message": ["Thanks", "Maeve is a really nice name too. It's unusual!", "Now that we've introduced ourselves, can you tell me what the room looks like?"], "flag": "like_maeve_name", "next": "scene_07"},
+				{"text": "OK. So, the room?", "message": ["Ok", "So what does the room look like?"], "next": "scene_07"}
+			]
+		},
+		{
+			"id": "scene_07",
+			"messages_in": [
+				{"text": "Thanks! It comes from Ireland, my mother is from there. But back to the room...", "requires_flag": "like_maeve_name"},
+				{"text": ["It's a pretty big, very white room", "Very 'hospital room' vibes. There's quite a bit of medical equipment, a chair like at the dentist, papers, notepads and screens displaying data I don't understand.", "There's also a door but I can't open it...", "It's not a regular lock, I think you need a badge or a card to open it."]},
+				{"text": "Wait, I think the phone I found can take photos. I'll try to take one and send it to you.", "pause": "medium"},
+				{"corrupted": true}
+			],
+			"choices": [
+				{"text": "Problem with the photo", "message": ["I think there's a problem with the photo.", "I'm not sure the signal is great where you are."], "next": "scene_08"}
+			]
+		},
+		{
+			"id": "scene_08",
+			"messages_in": [
+				{"text": ["I saw yeah... ", "Hold on...", "I'm moving around the room to see if I can find a spot with a better signal."], "pause": "medium"},
+				{"text": ["I think it's better here."], "effects": [{"contact": "maeve", "op": "set_status", "value": "online"}], "pause": "medium"},
+				{"text": null, "media": {"path": "res://assets/images/maeve_pic_1.jpg", "type": "image"}, "pause": "short"}
+			],
+			"choices": [
+				{"text": "Cozy", "message": ["Look at that lighting.", "Looks cozy.", "Send me the Airbnb link for my next vacation!"], "flag": "cosy_room", "next": "scene_09"},
+				{"text": "Unsettling", "message": ["Yeah...", "The perfect place to create or reawaken a trauma!", "That's unsettling..."], "flag": "scary_room", "next": "scene_09"}
+			]
+		},
+		{
+			"id": "scene_09",
+			"messages_in": [
+				{"text": [":D", "No problem, I'll send you the owner's details the minute I find out who it is!", "I think that's the first time I've laughed all day! xD ", "It doesn't help me get out of here but it feels good"], "requires_flag": "cosy_room"},
+				{"text": ["PTSD loading", {"pause": "medium", "text": "Please do not interrupt the process."}, "Jokes aside, you understand now why I'm SLIGHTLY stressed about being locked in here?"], "requires_flag": "scary_room"}
+			],
+			"choices": [
+				{"text": "Perfect, it's a deal!", "message": ["Perfect, it's a deal!", "It really feels good to find someone I can count on! :D", "If I can't help you get out of there, at least making you laugh is a start!"], "requires_flag": "cosy_room", "next": "scene_10"},
+				{"text": "I know a therapist!", "message": ["I know a therapist if you need one!", "What's 10 years of therapy anyway?", "Do you see anything around you that could help you get out?", "I don't really have any ideas...", "A hammer? A sheet with a code? ... A tank?"], "requires_flag": "scary_room", "next": "scene_10"}
+			]
+		},
+		{
+			"id": "scene_10",
+			"messages_in": [
+				{"text": ["Maybe we're witnessing the start of a career change!", "Maeve, your Holiday Planner", {"text":"Unusual properties for truly awful vacations!", "pause": "short"}, "Alright..."], "requires_flag": "cosy_room"},
+				{"text": ["Would you believe a tank was the first thing I thought of but... no...", "They didn't think to leave one in the room!"], "requires_flag": "scary_room"},
+				{"text": ["I'm starting to search everywhere to see if there's a badge or pass that's been lost or left behind.", "It would be a bit of a miracle but I did manage to find a phone so you never know..."]}
+			],
+			"choices":[
+				{"text":"Under the furniture?", "message": "Have you checked under the furniture or in hard-to-reach spots?", "flag":"lost_key", "next": "scene_11"},
+				{"text":"Force the lock?", "message": ["Do you think it's possible to force the mechanism?", "If there are pliers or metal rods, maybe we could try..."], "flag":"lockpick", "next": "scene_11"}
+			]
+		},
+		{
+			"id":"scene_11",
+			"messages_in": [
+				{"text": ["That was the first thing I checked.", "I didn't find anything except some dust balls and stains..."],"requires_flag":"lost_key"},
+				{"text": ["And risk breaking the lock and getting stuck here even longer?", "Thanks but no thanks..."], "requires_flag":"lockpick"}
+			],
+			"choices":[
+				{"text":"What about under the furniture?", "message": "Have you checked under the furniture or in hard-to-reach spots?", "requires_flag":"lockpick", "next": "scene_12"},
+				{"text":"What about forcing the lock?", "message": ["Do you think it's possible to force the mechanism?", "If there are pliers or metal rods, maybe we could try..."], "requires_flag": "lost_key", "next": "scene_12"}
+			]
+		},
+		{
+			"id":"scene_12",
+			"messages_in": [
+				{"text": ["That was the first thing I checked.", "I didn't find anything except some dust balls and stains..."], "requires_flag":"lockpick"},
+				{"text": ["Did you think I was going to risk breaking the lock and getting stuck here?", "Thanks but no thanks..."], "requires_flag":"lost_key"},
+				{"text": ["I'm putting the phone down while I look for something else", "I'll message you as soon as I find anything"], "pause": "medium"}
+			],
+			"choices":[
+				{"text":"Ok", "message": "Ok, same here, I'll message you if I think of anything.", "next": "scene_13"}
+			]
+		},
+		{
+			"id":"scene_13",
+			"resume_after_delay": "1m",
+			"messages_in": [
+				{"text": "OH SHIT!"}
+			],
+			"choices": [
+				{"text":"Maeve?", "message":["Maeve?", "You okay?"], "next": "scene_14"},
+				{"text":"What's happening?", "message":"What's going on?", "next": "scene_14"}
+			]
+		},
+		{
+			"id":"scene_14",
+			"messages_in": [
+				{"text": ["The lights!", "The power's out!"]}
+			],
+			"choices": [
+				{"text":"What did you do?", "message":["What did you do?"], "flag":"your_fault?", "next": "scene_15"},
+				{"text":"Stay calm.", "message":["Don't panic", "It's probably just a temporary power cut.", "You need to stay calm."], "flag":"keep_calm", "next": "scene_15"}
+			]
+		},
+		{
+			"id":"scene_15",
+			"messages_in": [
+				{"text":["I'm in complete darkness.", "My heart is pounding...", "Right now I just want to curl up and cry..."], "requires_flag":"keep_calm", "pause": "short"},
+				{"text":["I didn't do anything!", "I was looking at a piece of paper and then suddenly nothing...", "Complete darkness...", "I think I'm on the verge of a heart attack."], "requires_flag":"your_fault?", "pause": "short"}
+			],
+			"choices": [
+				{"text":"Stay calm", "message":["Stay calm Maeve.", "I know it's scary but it's going to be okay.", "We'll figure something out!"], "flag":"keep_going", "next":"scene_16"},
+				{"text":"Flashlight?", "message":["We need to try something.", "The phone you found...", "Can't it work as a flashlight?"], "flag":"torch", "next":"scene_16"}
+			]
+		},
+		{
+			"id":"scene_16",
+			"messages_in": [
+				{"text":["You're right, I need to pull myself together.", "The priority is getting out."], "pause": "short"},
+				{"text":["I think this phone has a flashlight.", "I'll try to turn it on."], "pause":"medium", "requires_flag":"keep_going"},
+				{"text":["I think you're right about the phone.", "Hold on, let me try..."], "pause":"medium", "requires_flag":"torch"}
+			],
+			"choices":[
+				{"text": "Ok", "message":"Ok, I'll keep thinking on my end.", "next":"scene_17"}
+			]
+		},
+		{
+			"id":"scene_17",
+			"messages_in":[
+				{"text": ["Ok, got some light!", "It's not very bright but at least I can see.", "We're no closer to getting out though..."]}
+			],
+			"choices":[
+				{"text":"Keep searching", "message":["It won't be easy with the lighting situation but we have to keep looking."], "flag":"keep_trying", "next": "scene_18b"},
+				{"text":"Magnetic lock?", "message":["I'm thinking about something with the door. The lock is magnetic but if there's no electricity...", "The magnet should deactivate, right?"], "flag":"magnetic", "next": "scene_18a"}
+			]
+		},
+		{
+			"id":"scene_18a",
+			"messages_in":[
+				{"text":["Ohh!", "Good call!", "If that works I'm officially calling you a genius!", "Hold on, let me try..."], "pause":"medium"},
+				{"text":"OH MY GOD!!!"}
+			],
+			"choices":[
+				{"text":"You okay?", "message":"Are you okay?", "next":"scene_19"}
+			]
+		},
+		{
+			"id":"scene_18b",
+			"messages_in":[
+				{"text":["You're right", "I need to keep looking."], "pause": "medium"},
+				{"text":["I just remembered something!", "When the power went out, I heard a loud noise and then a second one, more muffled, near the door.", "Do you think the power cut could have deactivated the lock mechanism?", "Hold on, let me check..."], "pause":"medium"}
+			],
+			"choices":[
+				{"text":"Go check and tell me!", "message":["That would be insane!", "Go look and let me know!"], "next":"scene_19"}
+			]
+		},
+		{
+			"id": "scene_19",
+			"messages_in": [
+				{"text": "{player_name}!!!", "pause": "short"},
+				{"text": "You were right!!!", "requires_flag": "magnetic", "pause": "short"},
+				{"text": ["The door is open!!", "I can finally get out of this room!"]}
+			],
+			"choices": [
+				{"text": "Amazing!", "message": ["Amazing!", "I'm so happy for you Maeve!!", "But this is just the beginning!", "Next goal: get out of the building", "We'll make it!"]}
+			],
+			"end": true,
+			"glitch":true
+		}
+	]
 }

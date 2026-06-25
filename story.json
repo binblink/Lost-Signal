@@ -17,10 +17,10 @@
 			"avatar": "res://assets/avatars/3135715.png",
 			"status": "online",
 			"history": [
-				{"text": "IMPORTANT\n\nAprès analyse de votre consommation d'eau, votre foyer fait partie des bénéficiaires potentiels du dispositif national ROBINETS ÉCONOMIQUES HAUTE PERFORMANCE.\nInstallation offerte pour les personnes réactives.\nAppelez sans attendre le 09 83 67 12 55 et communiquez le code AQUA-777.\nCette offre est réservée aux logements présentant un fort potentiel hydrique.\n\nPour ne plus recevoir d'offre, répondez STOP.", "time": "00:00", "out": false},
-				{"text": "GÉNIAL !!!\n\nVous avez été identifié comme conducteur exemplaire et bénéficiez d'un accès privilégié à notre opération VÉLO ÉLECTRIQUE GRATUIT.\nVotre profil correspond parfaitement aux critères du programme mobilité verte citoyenne.\nAppelez le 09 76 31 88 44 avec le code VELO-300 pour réserver votre modèle.\n\nCouleur attribuée selon disponibilité et mérite écologique.", "time": "2025-09-21 13:24", "out": false},
-				{"text": "EXCELLENTE NOUVELLE !!!\n\nVotre toiture a été présélectionnée parmi les habitations éligibles au programme national de PANNEAUX SOLAIRES OFFERTS.\nSuite à une étude aérienne, votre exposition au soleil a été jugée remarquable.\n\nConfirmez votre participation avant minuit au 09 74 85 63 12 en indiquant le code SOLEIL-500.\nLes places sont limitées afin de préserver l'équilibre énergétique de votre région.", "time": "2026-01-17 04:32", "out": false},
-				{"text": "FÉLICITATIONS !!!\n\nAprès tirage au sort national des habitations françaises, votre logement fait partie des 7 heureux gagnants de votre département sélectionnés pour bénéficier de l'INSTALLATION GRATUITE DE FENÊTRES PREMIUM grâce aux nouvelles aides de l'État.\nDossier validé automatiquement si vous confirmez votre inscription avant minuit.\nAppelez immédiatement le 09 87 54 21 63 en indiquant le code FEN-777.\nNe laissez pas passer cette opportunité exceptionnelle réservée aux propriétaires de bon goût.\n\nPour ne plus recevoir d'offre, répondez STOP.", "time": "10:11", "out": false}
+				{"text": {"fr": "IMPORTANT\n\nAprès analyse de votre consommation d'eau, votre foyer fait partie des bénéficiaires potentiels du dispositif national ROBINETS ÉCONOMIQUES HAUTE PERFORMANCE.\nInstallation offerte pour les personnes réactives.\nAppelez sans attendre le 09 83 67 12 55 et communiquez le code AQUA-777.\nCette offre est réservée aux logements présentant un fort potentiel hydrique.\n\nPour ne plus recevoir d'offre, répondez STOP.", "en": "IMPORTANT\n\nFollowing an analysis of your water consumption, your household has been identified as a potential beneficiary of the national HIGH-PERFORMANCE ECO FAUCETS program.\nFree installation for prompt respondents.\nCall 09 83 67 12 55 now and quote code AQUA-777.\nThis offer is reserved for homes with high water potential.\n\nTo stop receiving offers, reply STOP."}, "time": "00:00", "out": false},
+				{"text": {"fr": "GÉNIAL !!!\n\nVous avez été identifié comme conducteur exemplaire et bénéficiez d'un accès privilégié à notre opération VÉLO ÉLECTRIQUE GRATUIT.\nVotre profil correspond parfaitement aux critères du programme mobilité verte citoyenne.\nAppelez le 09 76 31 88 44 avec le code VELO-300 pour réserver votre modèle.\n\nCouleur attribuée selon disponibilité et mérite écologique.", "en": "GREAT NEWS!!!\n\nYou have been identified as an exemplary driver and have exclusive access to our FREE ELECTRIC BIKE program.\nYour profile perfectly matches the criteria of the green citizen mobility scheme.\nCall 09 76 31 88 44 with code VELO-300 to reserve your model.\n\nColour assigned based on availability and ecological merit."}, "time": "2025-09-21 13:24", "out": false},
+				{"text": {"fr": "EXCELLENTE NOUVELLE !!!\n\nVotre toiture a été présélectionnée parmi les habitations éligibles au programme national de PANNEAUX SOLAIRES OFFERTS.\nSuite à une étude aérienne, votre exposition au soleil a été jugée remarquable.\n\nConfirmez votre participation avant minuit au 09 74 85 63 12 en indiquant le code SOLEIL-500.\nLes places sont limitées afin de préserver l'équilibre énergétique de votre région.", "en": "EXCELLENT NEWS!!!\n\nYour roof has been pre-selected among homes eligible for the national FREE SOLAR PANELS program.\nFollowing an aerial survey, your sun exposure has been rated as outstanding.\n\nConfirm your participation before midnight at 09 74 85 63 12 using code SOLEIL-500.\nSpots are limited to preserve the energy balance of your region."}, "time": "2026-01-17 04:32", "out": false},
+				{"text": {"fr": "FÉLICITATIONS !!!\n\nAprès tirage au sort national des habitations françaises, votre logement fait partie des 7 heureux gagnants de votre département sélectionnés pour bénéficier de l'INSTALLATION GRATUITE DE FENÊTRES PREMIUM grâce aux nouvelles aides de l'État.\nDossier validé automatiquement si vous confirmez votre inscription avant minuit.\nAppelez immédiatement le 09 87 54 21 63 en indiquant le code FEN-777.\nNe laissez pas passer cette opportunité exceptionnelle réservée aux propriétaires de bon goût.\n\nPour ne plus recevoir d'offre, répondez STOP.", "en": "CONGRATULATIONS!!!\n\nFollowing a national draw of French homes, your property is one of 7 lucky winners in your area selected to receive FREE PREMIUM WINDOW INSTALLATION under new government grants.\nApplication automatically validated if you confirm before midnight.\nCall 09 87 54 21 63 immediately with code FEN-777.\nDon't miss this exceptional opportunity reserved for homeowners of refined taste.\n\nTo stop receiving offers, reply STOP."}, "time": "10:11", "out": false}
 			]
 		},
 		{
@@ -29,13 +29,24 @@
 			"avatar": "res://assets/avatars/560219.png",
 			"status": "online",
 			"history": [
-				{"text": "C'est Maman! Tu as pensé à nourrir le chat? Bises. Maman", "time": "00:00", "out": false},
-				{"text": "Oui maman", "time": "00:00", "out": true},
-				{"text": "C'est Maman! J'ai fait des patates pour le diner.\\nJe t'en garde? Bises. Maman", "time": "00:00", "out": false},
-				{"text": "Non maman", "time": "00:00", "out": true},
-				{"text": "C'est Maman! Tu as appelé mamie pour lui souhaiter sa fête? Bises. Maman", "time": "00:00", "out": false},
-				{"text": "Oui maman", "time": "00:00", "out": true}
+				{"text": {"fr": "C'est Maman! Tu as pensé à nourrir le chat? Bises. Maman", "en": "It's Mum! Did you remember to feed the cat? Love, Mum"}, "time": "00:00", "out": false},
+				{"text": {"fr": "Oui maman", "en": "Yes mum"}, "time": "00:00", "out": true},
+				{"text": {"fr": "C'est Maman! J'ai fait des patates pour le diner.\nJe t'en garde? Bises. Maman", "en": "It's Mum! I made potatoes for dinner.\nShall I save you some? Love, Mum"}, "time": "00:00", "out": false},
+				{"text": {"fr": "Non maman", "en": "No mum"}, "time": "00:00", "out": true},
+				{"text": {"fr": "C'est Maman! Tu as appelé mamie pour lui souhaiter sa fête? Bises. Maman", "en": "It's Mum! Did you call grandma to wish her a happy name day? Love, Mum"}, "time": "00:00", "out": false},
+				{"text": {"fr": "Oui maman", "en": "Yes mum"}, "time": "00:00", "out": true}
 			]
 		}
-	]
+	],
+	"end_screen": {
+		"title": {
+			"fr": "// FIN DE LA DÉMO //",
+			"en": "// END OF DEMO //"
+		},
+		"glitch": true,
+		"text": {
+			"en": "Thank you for playing!\n\nMaeve just stepped through that door... but her story is only beginning.\n\nIn the full game, you'll continue following her adventures and discover what really happened to her. You'll also witness the return of a particularly insufferable character.\n\nMaeve // Lost Signal — coming in 2026.",
+			"fr": "Merci d'avoir joué !\n\nMaeve vient de franchir cette porte... mais son histoire ne fait que commencer.\n\nDans le jeu complet, vous continuerez à suivre ses aventures et à découvrir ce qui lui est vraiment arrivé. Vous assisterez aussi au retour d'un personnage particulièrement pénible.\n\nMaeve // Lost Signal sort courant 2026."
+		}
+	}
 }

@@ -41,4 +41,6 @@ EXIT_TITLE,Exit?,Quitter ?
 EXIT_MAIN_MENU,Main menu,Menu principal
 EXIT_DESKTOP,Quit to desktop,Bureau
 BTN_QUIT,Quit,Quitter
+CONFIRM_LANGCHANGE_TITLE,Language change,Changement de langue
+CONFIRM_LANGCHANGE_BODY,Changing the language will reset your progress.,Changer la langue va réinitialiser ta progression.
 END_SCREEN_MSGS,Messages exchanged: %d,Messages échangés : %d

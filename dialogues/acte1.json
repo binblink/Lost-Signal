@@ -13,11 +13,11 @@
 			"id": "scene_intro_02a",
 			"contact_id": "salesman",
 			"messages_in": [
-				{"text": ["STOP? COMMENT CA, STOP???", "CA FAIT PLUS D'UN AN QUE JE VOUS ECRIT!!!", "JAMAIS UN BONJOUR, JAMAIS UN MERCI, RIEN!!!!", "ET JE DOIS ME CONTENTER D'UN VULGAIRE STOP???", "VOUS SAVEZ A QUEL POINT C'EST COMPLIQUE CE JOB???"]}
+				{"text": ["STOP? COMMENT CA, STOP???", "CA FAIT PLUS D'UN AN QUE JE VOUS ECRIS!!!", "JAMAIS UN BONJOUR, JAMAIS UN MERCI, RIEN!!!!", "ET JE DOIS ME CONTENTER D'UN VULGAIRE STOP???", "VOUS SAVEZ A QUEL POINT C'EST COMPLIQUE CE JOB???"]}
 			],
 			"choices": [
-				{"text": "Euh? C'est normal ça ?", "message": ["Euh? C'est normal ça ?", "Je suis pas sensé recevoir un message qui dit que ma demande à bien été reçue et qu'elle sera traitée sous un délai ridiculement long?"], "flag": "stop_requested", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur bizarre", "en": "Weird Salesman"}}]},
-				{"text": "J'ai rien demandé moi!", "message": ["J'ai rien demandé moi!", "Je suis locataire en plus!", "Je m'en tamponne de vos fenêtres et de vos panneaux solaires!", "Foutez moi la paix"], "flag": "dont_care", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur de merde", "en": "Shitty Salesman"}}]}
+				{"text": "Euh? C'est normal ça ?", "message": ["Euh? C'est normal ça ?", "Je suis pas sensé recevoir un message qui dit que ma demande a bien été reçue et qu'elle sera traitée sous un délai ridiculement long?"], "flag": "stop_requested", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur bizarre", "en": "Weird Salesman"}}]},
+				{"text": "J'ai rien demandé moi!", "message": ["J'ai rien demandé moi!", "Je suis locataire en plus!", "Je m'en tamponne de vos fenêtres et de vos panneaux solaires!", "Foutez-moi la paix"], "flag": "dont_care", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur de merde", "en": "Shitty Salesman"}}]}
 			]
 		},
 		{
@@ -28,7 +28,7 @@
 			],
 			"choices": [
 				{"text": "Vous espérez quoi?", "message": ["Vous espérez quoi?", "Que j'achète un truc alors que j'ai pas un rond?", "Que je vous dise que je vais vous laisser m'envahir de messages publicitaires?"], "flag": "pathetic_salesman", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Commercial pathétique", "en": "Pathetic Salesman"}}]},
-				{"text": "Oula... Ca va pas fort...", "message": ["Oula... Ca va pas fort...", "Vous devriez peut-être consulter un psy ou un médecin."], "flag": "pathetic_salesman2", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Commercial Pathétique", "en": "Pathetic Salesman"}}]}
+				{"text": "Oula... Ça va pas fort...", "message": ["Oula... Ça va pas fort...", "Vous devriez peut-être consulter un psy ou un médecin."], "flag": "pathetic_salesman2", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Commercial Pathétique", "en": "Pathetic Salesman"}}]}
 			]
 		},
 		{
@@ -38,8 +38,8 @@
 				{"text": "Vous avez raison, je crois qu'il y a rien à espérer...", "requires_flag": "pathetic_salesman"},
 				{"text": "QUOI? Vous êtes en train de me prendre pour un fou c'est ça?", "requires_flag": "pathetic_salesman2"},
 				{"text": "VOUS VOULEZ UN MESSAGE DE CONFIRMATION ?? PAS DE PROBLEME, JE VOUS LE CONFIRME...", "requires_flag": "stop_requested"},
-				{"text": "JE ME DECARCASSE POUR VOUS TROUVER LES MEILLEURS PRIX ET LES MEILLEURS BON PLANS SUR DE VRAIES CHOSES UTILES A VOTRE VIE ET J'AI DROIT A QUOI DU MEPRIS!!!\nVOUS NE ME MERITEZ PAS!! VOUS NE MERITEZ RIEN!!!", "requires_flag": "dont_care"},
-				{"text": "VOUS ETES PATHETIQUE!!!"},
+				{"text": "JE ME DECARCASSE POUR VOUS TROUVER LES MEILLEURS PRIX ET LES MEILLEURS BON PLANS SUR DE VRAIES CHOSES UTILES A VOTRE VIE ET J'AI DROIT A QUOI DU MEPRIS!!!\nVOUS NE ME MERITEZ PAS!! \nVOUS NE MERITEZ RIEN!!!", "requires_flag": "dont_care"},
+				{"text": "VOUS ETES PATHETIQUE!!!", "pause": "short"},
 				{"text": "PATHETIQUE!!!"}
 			]
 		},
@@ -48,12 +48,23 @@
 			"contact_id": "Maman",
 			"trigger_after_scene": "scene_intro_03",
 			"messages_in": [
-				{"text": "C'est Maman! Tu viens passer quelques jours à la maison la semaine prochaine? Bise. Maman"}
+				{"text": "C'est maman! Tu viens passer quelques jours à la maison la semaine prochaine? Bise. Maman"}
 			],
 			"choices": [
 				{"text": "Oui maman", "message": "Oui maman"},
 				{"text": "Non maman", "message": "Non maman"},
-				{"text": "Pourquoi?", "message": "Pourquoi tu mets toujours 'C'est Maman' au debut de tes messages? Je sais très bien que c'est toi!"}
+				{"text": "Pourquoi?", "message": "Pourquoi tu mets toujours 'C'est Maman' au debut de tes messages? Je sais très bien que c'est toi!", "flag": "question_mom"}
+			]
+		},
+		{
+			"id":"scene_intro_05",
+			"contact_id":"Maman",
+			"trigger_after_scene": "scene_intro_03",
+			"messages_in":[
+				{"text":"C'est maman! Je veux être sûr que tu saches que c'est moi. Je voudrais pas que tu confondes."}
+			],
+			"choices":[
+				{"text":"Aucun risque", "message":"Ne t'inquiète surtout pas. Il y a aucun risque que je te confonde avec une autre!"}
 			]
 		},
 		{
@@ -65,7 +76,7 @@
 				{"text": "Est-ce que quelqu'un reçoit mes messages?", "pause": "short"}
 			],
 			"choices": [
-				{"text": "Encore du spam...", "message": "Oh joli spam, bien tenté.", "flag": "rep_a", "next": "scene_02"},
+				{"text": "Encore du spam???", "message": "Oh joli spam, bien tenté.", "flag": "rep_a", "next": "scene_02"},
 				{"text": "Oui, je vous reçois.", "message": "Oui, je vous reçois.", "flag": "rep_b", "next": "scene_02"},
 				{"text": "C'est quoi ce numéro?", "message": "C'est quoi ce numéro?", "flag": "rep_c", "next": "scene_02"}
 			]
@@ -79,7 +90,7 @@
 			],
 			"choices": [
 				{"text": "Une preuve?", "message": "Prouvez-le !", "flag": "rep_a1", "requires_flag": "rep_a", "next": "scene_03"},
-				{"text": "Paroles de bot!", "message": "C'est exactement ce qu'un bot dirait!", "flag": "rep_a1", "requires_flag": "rep_a", "next": "scene_03"},
+				{"text": "Paroles de spammeur!", "message": "C'est exactement ce qu'un spammeur dirait!", "flag": "rep_a1", "requires_flag": "rep_a", "next": "scene_03"},
 				{"text": "Non", "message": "Bah non...", "flag": "rep_b1", "requires_flag": "rep_b", "next": "scene_03"},
 				{"text": "Comment je pourrais savoir ?", "message": "Je vois pas comment je pourrais savoir où vous êtes?", "flag": "rep_b1", "requires_flag": "rep_b", "next": "scene_03"},
 				{"text": "Vous êtes où ?", "message": "Vous êtes où exactement ?", "flag": "rep_c1", "requires_flag": "rep_c", "next": "scene_03"},
@@ -94,8 +105,8 @@
 				{"text": ["Je me suis réveillée ici y'a quelques heures.", "Une pièce qui ressemble à un laboratoire.", "J'ai pas la moindre idée d'où je suis ni de pourquoi je suis là!", "Je deviens folle..."], "requires_flag": "rep_c1"}
 			],
 			"choices": [
-				{"text": "Je vais vous aider.", "message": ["Ah ouais... Bon...", "Franchement, vu la situation, c'est normal de pas cogiter normalement", "À deux on aura nettement plus de chances de comprendre ce qu'il se passe", "Je reste en ligne, vous pouvez compter sur moi."], "flag": "agree_to_help", "condition": {"or": [{"flag": "rep_b1"}, {"flag": "rep_c1"}]}, "next": "scene_04"},
-				{"text": "Bizarre mais je suis curieux...", "message": ["Bon... Soit c'est le spam le plus réactif et le plus persévérant que j'ai jamais vu", "Soit il se passe quelque chose de bizarre", "Dans tous les cas, je commence à avoir envie de voir où va aller cette histoire."], "flag": "spam_curious", "requires_flag": "rep_a1", "next": "scene_04"}
+				{"text": "Essayer d'aider", "message": ["Wow...", "On dirait un scénario de mauvais film d'horreur...", "Je sais pas trop comment je peux vous aider","Mais je veux bien essayer.", "Je vais rester en ligne si ça peut vous aider."], "flag": "agree_to_help", "condition": {"or": [{"flag": "rep_b1"}, {"flag": "rep_c1"}]}, "next": "scene_04"},
+				{"text": "Curieux", "message": ["Bon... Soit c'est la journée des spammeurs les plus réactif et les plus persévérants que j'ai jamais vu", "Soit il se passe quelque chose de bizarre", "Dans tous les cas, je commence à avoir envie de voir où va aller cette histoire."], "flag": "spam_curious", "requires_flag": "rep_a1", "next": "scene_04"}
 			]
 		},
 		{
@@ -104,10 +115,10 @@
 				{"text": ["Merci...", "Vraiment.", "Ça me rassure un peu de savoir qu'il y a quelqu'un de l'autre côté."], "requires_flag": "agree_to_help"},
 				{"text": "Rohh mais ça suffit avec vos histoires de spam!", "requires_flag": "spam_curious"},
 				{"text": "Putzn...", "edit": [{"corrected_text": "Putain...", "delay": 2.0, "type": "correct"}, {"delay": 3.0, "type": "delete"}], "requires_flag": "spam_curious"},
-				{"text": "En tout cas, je suis vraiment ravie que ma situation vous serve de divertissement...", "pause": "medium", "requires_flag": "spam_curious"}
+				{"text": "En tout cas, je suis vraiment ravie que le fait que je sois potentiellement en danger de mort vous divertisse...", "pause": "medium", "requires_flag": "spam_curious"}
 			],
 			"choices": [
-				{"text": "Qu'elle est susceptible...", "message": ["Faut pas le prendre comme ça!", "J'ai du mal à croire qu'un truc comme ça puisse arriver pour de vrai.", "Rien de personnel.", "Je veux bien vous donner une chance mais...", "À la moindre tentative de vente de fenêtre ou de panneaux solaires, je quitte immédiatement la conversation."], "flag": "spam_cautious", "requires_flag": "spam_curious", "next": "scene_05"},
+				{"text": "Qu'elle est susceptible...", "message": ["Faut pas le prendre comme ça!", "J'ai du mal à croire qu'une situation pareille puisse se produire pour de vrai.", "Rien de personnel.", "Je veux bien vous donner une chance mais...", "À la moindre tentative de vente de fenêtre ou de panneaux solaires, je quitte immédiatement la conversation."], "flag": "spam_cautious", "requires_flag": "spam_curious", "next": "scene_05"},
 				{"text": "C'est surréaliste", "message": ["Je reçois un message qui m'explique un truc surréaliste et je suis censé y croire instantanément?", "Si c'est vrai c'est grave mais j'ai du mal à y croire...", "Je vais rester en ligne et on verra bien."], "flag": "surreal1", "requires_flag": "spam_curious", "next": "scene_05"},
 				{"text": "Désemparé", "message": ["Pour être honnête, je sais pas quoi penser de tout ça.", "Je veux bien vous aider mais je sais pas vraiment comment pour le moment.", "On reçoit pas tous les jours ce genre de messages (et heureusement!)."], "flag": "ok_doubt", "requires_flag": "agree_to_help", "next": "scene_05"},
 				{"text": "On va y arriver", "message": ["Y'a forcément une explication à cette situation.", "D'où l'importance de rester calme et rationnel", "On va y arriver"], "flag": "rationnal1", "requires_flag": "agree_to_help", "next": "scene_05"}
@@ -116,7 +127,7 @@
 		{
 			"id": "scene_05",
 			"messages_in": [
-				{"text": ["Vous avez raison...", "La vie c'est pas un film", "Y'a forcément une explication!", "Je suis déjà reconnaissante que vous soyez là."], "requires_flag": "rationnal1"},
+				{"text": ["Vous avez raison...", "Y'a forcément une explication!", "Je suis déjà reconnaissante que vous soyez là."], "requires_flag": "rationnal1"},
 				{"text": ["Je comprends que ça vous paraisse surréaliste...", "Mais je vous assure que c'est la vérité.", "Je suis une vraie personne et j'ai besoin d'aide."], "requires_flag": "surreal1"},
 				{"text": ["Juste être là m'aide déjà!", "Je vais pas vous mentir, moi aussi je comprends pas grand chose à la situation.", "Et j'envoie pas des messages au hasard pour demander de l'aide tous les jours."], "requires_flag": "ok_doubt"},
 				{"text": ["Je sais que c'est difficile à croire mais là j'ai pas vraiment d'autre choix", "Vous croyez vraiment que j'écrirai à un inconnu si j'étais pas désespérée?", "Je vous demande juste une chance de vous prouver que je dis la vérité", "Y'aura pas d'histoires de fenêtres ou de panneaux solaires."], "requires_flag": "spam_cautious"},
@@ -141,7 +152,7 @@
 			"id": "scene_07",
 			"messages_in": [
 				{"text": "Merci ! Ça vient d'Irlande, ma mère est de là-bas. Pour revenir à la pièce...", "requires_flag": "like_maeve_name"},
-				{"text": ["C'est une pièce très blanche assez grande", "Ça fait très 'chambre d'hôpital' Y'a pas mal de matériel médical, un fauteuil comme chez le dentiste, des papiers, des blocs notes et des écrans qui affichent des données que je comprends pas.", "Y'a aussi une porte mais impossible de l'ouvrir...", "C'est pas une serrure ordinaire, je pense qu'il faut un badge ou une carte pour pouvoir l'ouvrir."]},
+				{"text": ["C'est une pièce très blanche assez grande", "Ça fait très 'chambre d'hôpital'. Y'a pas mal de matériel médical, un fauteuil comme chez le dentiste, des papiers, des blocs-notes et des écrans qui affichent des données que je comprends pas.", "Y'a aussi une porte mais impossible de l'ouvrir...", "C'est pas une serrure ordinaire, je pense qu'il faut un badge ou une carte pour pouvoir l'ouvrir."]},
 				{"text": "Attends, je crois que le téléphone que j'ai trouvé peut prendre des photos. Je vais essayer de voir si je peux en prendre une et te l'envoyer.", "pause": "medium"},
 				{"corrupted": true}
 			],
@@ -164,46 +175,46 @@
 		{
 			"id": "scene_09",
 			"messages_in": [
-				{"text": [":D", "Pas de soucis, je t'envoie les coordonnées du propriétaire à la minute où je sais qui c'est!", "Je crois que c'est la première fois que je ris de la journée! xD ", "Ça m'aide pas à sortir d'ici mais ça fait du bien"], "requires_flag": "cosy_room"},
+				{"text": [":D", "Pas de souci, je t'envoie les coordonnées du propriétaire à la minute où je sais qui c'est!", "Je crois que c'est la première fois que je ris de la journée! xD ", "Ça m'aide pas à sortir d'ici mais ça fait du bien"], "requires_flag": "cosy_room"},
 				{"text": ["PTSD en cours de création", {"pause": "medium", "text": "Veuillez ne pas interrompre le processus."}, "Blague à part tu comprends maintenant pourquoi je suis LÉGÈREMENT stressée de me retrouver enfermée ici?"], "requires_flag": "scary_room"}
 			],
 			"choices": [
-				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ca fait vraiment plaisir de trouver des gens sur qui compter! :D", "A défaut de t'aider à sortir d'ici, je suis déja content de te faire rire!"], "requires_flag": "cosy_room", "next": "scene_10"},
+				{"text": "Nickel, on fait ça!", "message": ["Nickel, on fait ça!", "Ça fait vraiment plaisir de trouver des gens sur qui compter! :D", "À défaut de t'aider à sortir d'ici, je suis déjà content de te faire rire!"], "requires_flag": "cosy_room", "next": "scene_10"},
 				{"text": "Je connais un psy si tu veux!", "message": ["Je connais un psy si tu veux!", "C'est quoi 10 ans de thérapie ?", "Tu vois rien qui puisse aider à sortir autour de toi?", "J'ai pas spécialement d'idées...", "Un marteau? Une feuille avec un code? ... Un tank?"], "requires_flag": "scary_room", "next": "scene_10"}
 			]
 		},
 		{
 			"id": "scene_10",
 			"messages_in": [
-				{"text": ["On est peut être en train d'assister à un début de reconversion professionnelle!", "Maeve, votre Holiday Planner", {"text":"Des biens atypiques pour des vacances bien pourries!", "pause": "short"}, "Bon..."], "requires_flag": "cosy_room"},
+				{"text": ["On est peut-être en train d'assister à un début de reconversion professionnelle!", "Maeve, votre Holiday Planner", {"text":"Des biens atypiques pour des vacances bien pourries!", "pause": "short"}, "Bon..."], "requires_flag": "cosy_room"},
 				{"text": ["Figure toi que le tank, c'est le premier truc auquel j'ai pensé mais ... non...", "Ils ont pas jugé utile de laisser ça dans la pièce!"], "requires_flag": "scary_room"},
-				{"text": ["Je commence fouiller un peu partout pour voir si y'a pas un badge ou un passe qui aurait été perdu ou oublié.", "Ca serait un peu miraculeux mais j'ai bien réussi à trouver un téléphone donc on sait jamais..."]}
+				{"text": ["Je commence à fouiller un peu partout pour voir si y'a pas un badge ou un passe qui aurait été perdu ou oublié.", "Ça serait un peu miraculeux mais j'ai bien réussi à trouver un téléphone donc on sait jamais..."]}
 			],
 			"choices":[
-				{"text":"Sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilements accessibles?", "flag":"lost_key", "next": "scene_11"},
+				{"text":"Sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilement accessibles?", "flag":"lost_key", "next": "scene_11"},
 				{"text":"Forcer la serrure?", "message": ["Tu crois qu'il est possible de forcer le mécanisme?", "Si il y a des pinces ou des tiges en métal, on peut peut-être essayer..."], "flag":"lockpick", "next": "scene_11"}
 			]
 		},
 		{
 			"id":"scene_11",
 			"messages_in": [
-				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussieres et des tâches..."],"requires_flag":"lost_key"},
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des tâches..."],"requires_flag":"lost_key"},
 				{"text": ["Et risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag":"lockpick"}
 			],
 			"choices":[
-				{"text":"Et sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilements accessibles?", "requires_flag":"lockpick", "next": "scene_12"},
+				{"text":"Et sous les meubles?", "message": "T'as vérifié sous les meubles ou dans des coins difficilement accessibles?", "requires_flag":"lockpick", "next": "scene_12"},
 				{"text":"Et Forcer la serrure?", "message": ["Tu crois qu'il est possible de forcer le mécanisme?", "Si il y a des pinces ou des tiges en métal, on peut peut-être essayer..."], "requires_flag": "lost_key", "next": "scene_12"}
 			]
 		},
 		{
 			"id":"scene_12",
 			"messages_in": [
-				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussieres et des tâches..."], "requires_flag":"lockpick"},
-				{"text": ["Et risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag":"lost_key"},
-				{"text": ["Je pose le télephone le temps de chercher autre chose", "Je t'écris dès que j'ai une piste"]}
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des tâches..."], "requires_flag":"lockpick"},
+				{"text": ["T'as cru que j'allais risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag":"lost_key"},
+				{"text": ["Je pose le téléphone le temps de chercher autre chose", "Je t'écris dès que j'ai une piste"], "pause": "medium"}
 			],
 			"choices":[
-				{"text":"Ok", "message": "Ok, même chose de mon coté, je t'écris si je pense à quelque chose.", "next": "scene_13"}
+				{"text":"Ok", "message": "Ok, même chose de mon côté, je t'écris si je pense à quelque chose.", "next": "scene_13"}
 			]
 		},
 		{
@@ -214,40 +225,40 @@
 			],
 			"choices": [
 				{"text":"Maeve?", "message":["Maeve?", "Tout va bien?"], "next": "scene_14"},
-				{"text":"Qu'est qu'il se passe?", "message":"Qu'est qu'il se passe?", "next": "scene_14"}
+				{"text":"Qu'est-ce qu'il se passe ?", "message":"Qu'est-ce qu'il se passe ?", "next": "scene_14"}
 			]
 		},
 		{
 			"id":"scene_14",
 			"messages_in": [
-				{"text": ["La lumière!", "Y'a plus de lumiere!"]}
+				{"text": ["La lumière!", "Y'a plus de lumière !"]}
 			],
 			"choices": [
-				{"text":"Qu'est ce que t'as fait?", "message":["Qu'est ce que t'as fait?"], "flag":"your_fault?", "next": "scene_15"},
-				{"text":"Reste calme.", "message":["Pas de panique", "C'est surement qu'une coupure de courant passagère.", "Il faut qu tu restes calme."], "flag":"keep_calm", "next": "scene_15"}
+				{"text":"Qu'est-ce que t'as fait ?", "message":["Qu'est-ce que t'as fait ?"], "flag":"your_fault?", "next": "scene_15"},
+				{"text":"Reste calme.", "message":["Pas de panique", "C'est sûrement qu'une coupure de courant passagère.", "Il faut que tu restes calme."], "flag":"keep_calm", "next": "scene_15"}
 			]
 			
 		},
 		{
 			"id":"scene_15",
 			"messages_in": [
-				{"text":["Je suis dans le noir complet.", "J'ai le coeur qui bat à 10 000...", "La j'ai juste envie de me mettre en boule et pleurer..."], "requires_flag":"keep_calm"},
-				{"text":["J'ai rien fait du tout!", "J'étais en train de regarder un papier et d'un coup plus rien...", "Noir complet...", "Je crois que je suis au bord de la crise cardiaque."], "requires_flag":"your_fault?"}
+				{"text":["Je suis dans le noir complet.", "J'ai le coeur qui bat à 10 000...", "Là j'ai juste envie de me mettre en boule et pleurer..."], "requires_flag":"keep_calm", "pause": "short"},
+				{"text":["J'ai rien fait du tout!", "J'étais en train de regarder un papier et d'un coup plus rien...", "Noir complet...", "Je crois que je suis au bord de la crise cardiaque."], "requires_flag":"your_fault?", "pause": "short"}
 			],
 			"choices": [
-				{"text":"Du calme", "message":["Faut pas se laisser abattre Maeve.", "C'est flippant mais c'est qu'un peu de lumière.", "On va trouver un truc!"], "flag":"keep_going", "next":"scene_16"},
-				{"text":"Telephone?", "message":["Il faut essayer quelque chose.", "Le telephone que t'as trouvé...", "Il fait pas lampe-torche?"], "flag":"torch", "next":"scene_16"}
+				{"text":"Reste calme", "message":["Reste calme Maeve.", "Je comprends que ça te fasse peur mais c'est rien.", "On va trouver un truc!"], "flag":"keep_going", "next":"scene_16"},
+				{"text":"Telephone?", "message":["Il faut essayer quelque chose.", "Le téléphone que t'as trouvé...", "Il fait pas lampe-torche ?"], "flag":"torch", "next":"scene_16"}
 			]
 		},
 		{
 			"id":"scene_16",
 			"messages_in": [
-				{"text":["T'as raison, il faut que je me reprenne.", "La priorité c'est de sortir."]},
-				{"text":["Je crois que le téléphone que j'ai fait lampe torche.", "Je vais essayer de l'allumer."], "pause":"medium", "requires_flag":"keep_going"},
+				{"text":["T'as raison, il faut que je me reprenne.", "La priorité c'est de sortir."], "pause": "short"},
+				{"text":["Je crois que le téléphone fait lampe-torche.", "Je vais essayer de l'allumer."], "pause":"medium", "requires_flag":"keep_going"},
 				{"text":["Je crois que t'as raison pour le téléphone.", "Attends, j'essaye..."], "pause":"medium", "requires_flag":"torch"}
 			],
 			"choices":[
-				{"text": "Ok", "message":"Ok, je continue de refléchir pendant ce temps.", "next":"scene_17"}
+				{"text": "Ok", "message":"Ok, je continue de réfléchir pendant ce temps.", "next":"scene_17"}
 			]
 		},
 		{
@@ -256,25 +267,25 @@
 				{"text": ["Bon, la lumière c'est fait!", "C'est pas très puissant mais au moins j'y vois à peu près.", "On est pas plus avancé sur la question de la sortie par contre..."]}
 			],
 			"choices":[
-				{"text":"Fouiller plus", "message":["Ca va pas être facile avec ces problèmes de lumière mais il faut continuer à chercher."], "flag":"keep_trying", "next": "scene_18b"},
+				{"text":"Fouiller plus", "message":["Ça va pas être facile avec ces problèmes de lumière mais il faut continuer à chercher."], "flag":"keep_trying", "next": "scene_18b"},
 				{"text":"Serrure magnétique?", "message":["Je pense à un truc à propos de la porte. La serrure est magnétique mais si y'a plus d'électricité...", "Le magnétisme devrait se désactiver non?"], "flag":"magnetic", "next": "scene_18a"}
 			]
 		},
 		{
 			"id":"scene_18a",
 			"messages_in":[
-				{"text":["Ohh!", "Bien vu!", "Si ça marche je vais être obligé de te considérer comme génie!", "Attends, j'essaye..."], "pause":"medium"},
+				{"text":["Ohh!", "Bien vu!", "Si ça marche je vais être obligé de te considérer comme un génie !", "Attends, j'essaye..."], "pause":"medium"},
 				{"text":"OH PUTAIN!!!"}
 			],
 			"choices":[
-				{"text":"Ca va?",  "message":"Tout va bien???", "next":"scene_19"}
+				{"text":"Ca va?",  "message":"Ça va ?", "next":"scene_19"}
 			]
 		},
 		{
 			"id":"scene_18b",
 			"messages_in":[
 				{"text":["T'as raison", "Il faut que je continue à chercher."], "pause": "medium"},
-				{"text":["Je viens de me rappeler d'un truc!", "Quand y a eu la coupure, j'ai entendu un grand bruit et un deuxième au niveau de la porte.", "Tu crois que c'est possible que la coupure ait désactivé le mecanisme de la serrure?", "Attends, je vais voir..."], "pause":"medium"}
+				{"text":["Je viens de me rappeler d'un truc!", "Quand y a eu la coupure, j'ai entendu un grand bruit et un deuxième, plus sourd, au niveau de la porte.", "Tu crois que c'est possible que la coupure ait désactivé le mécanisme de la serrure?", "Attends, je vais voir..."], "pause":"medium"}
 			],
 			"choices":[
 				{"text":"Regarde et dis moi!", "message":["Ca serait fou!", "Je te laisse regarder et me dire!"], "next":"scene_19"}
@@ -284,11 +295,11 @@
 			"id": "scene_19",
 			"messages_in": [
 				{"text": "{player_name}!!!", "pause": "short"},
-				{"text": "T'avais raison!!!", "requires_flag": "magnetic"},
-				{"text": ["La porte est ouverte!!", "je vais enfin pouvoir sortir de la pièce!"]}
+				{"text": "T'avais raison!!!", "requires_flag": "magnetic", "pause": "short"},
+				{"text": ["La porte est ouverte!!", "Je vais enfin pouvoir sortir de la pièce !"]}
 			],
 			"choices": [
-				{"text": "Génial!", "message": ["Génial!", "Je suis super content pour toi Maeve!!", "Mais c'est que le début!", "Prochain objectif : sortir du batiment", "On va y arriver!"]}
+				{"text": "Génial!", "message": ["Génial!", "Je suis super content pour toi Maeve!!", "Mais c'est que le début!", "Prochain objectif : sortir du bâtiment", "On va y arriver!"]}
 			],
 			"end": true,
 			"glitch":true

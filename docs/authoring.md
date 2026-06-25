@@ -122,7 +122,7 @@ Trois éléments doivent fonctionner ensemble :
 
 ### Conversations pré-existantes (`history` et `pending_scene`)
 
-Ces deux champs permettent de donner l'impression que le joueur a déjà utilisé la messagerie avant que la partie commence. Dès le lancement d'une nouvelle partie, les contacts concernés affichent un badge de messages non lus.
+Ces deux champs permettent de donner l'impression que le joueur a déjà utilisé la messagerie avant que la partie commence. Dès le lancement d'une nouvelle partie, les contacts concernés affichent un badge de messages non lus — sauf si le dernier message de `history` vient du joueur (`"out": true`), auquel cas il n'y a rien à lire.
 
 #### `history`
 
@@ -142,9 +142,22 @@ Tableau de messages pré-écrits — entrants et sortants — affichés dans l'h
 ```
 
 Chaque entrée contient :
-- `text` : contenu du message.
+- `text` : contenu du message. Peut être une chaîne simple ou un dictionnaire localisé `{"fr": "...", "en": "..."}` — voir ci-dessous.
 - `time` : horodatage affiché sous la bulle. `"HH:MM"` → affiché tel quel. `"AAAA-MM-JJ HH:MM"` → affiché `"JJ-MM-AAAA HH:MM"` (locale FR) ou `"AAAA-MM-JJ HH:MM"` (autres locales) si la date est antérieure à aujourd'hui.
 - `out` : `true` si le message vient du joueur, `false` si il vient du contact.
+
+#### Textes localisés dans `history`
+
+Si votre jeu est traduit en plusieurs langues, `text` peut être un dictionnaire plutôt qu'une chaîne :
+
+```json
+"history": [
+  { "text": {"fr": "T'as vu les infos ce matin ?", "en": "Did you see the news this morning?"}, "time": "09:14", "out": false },
+  { "text": {"fr": "Bah non.",                     "en": "No, not yet."},                       "time": "09:15", "out": true }
+]
+```
+
+Le moteur sélectionne la valeur correspondant à la langue active. Si la langue active n'a pas de clé dans le dictionnaire, il se replie sur `"fr"`. Le format fonctionne de la même façon que `names` pour les contacts.
 
 #### `pending_scene`
 
@@ -924,8 +937,8 @@ Tous les champs sont optionnels. Si `end_screen` est absent de `story.json`, un 
 
 | Champ | Type | Défaut | Description |
 |---|---|---|---|
-| `title` | string | `"CONNECTION TERMINATED"` | Texte principal affiché en grand, police monospace |
-| `text` | string | *(absent)* | Texte secondaire sous le titre — accroche, annonce de suite, etc. |
+| `title` | string ou dict localisé | `"CONNECTION TERMINATED"` | Texte principal affiché en grand, police monospace. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
+| `text` | string ou dict localisé | *(absent)* | Texte secondaire sous le titre — accroche, annonce de suite, etc. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
 | `link_url` | string | *(absent)* | URL ouverte au clic. Si absent, aucun lien n'est affiché |
 | `link_label` | string | *(l'URL brute)* | Texte affiché sur le lien. Si absent, l'URL s'affiche directement |
 | `glitch` | bool | `false` | Active l'effet glitch : scramble de texte sur le titre + scanlines animées + flicker |

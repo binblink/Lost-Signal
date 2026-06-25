@@ -52,8 +52,11 @@ func _load_story() -> void:
 	if data.has("contacts"):
 		_contacts = data["contacts"]
 		_resolve_contact_names()
-	# [END SCREEN] — remove this line to remove the end screen feature.
-	if data.has("end_screen"):    _end_screen    = data["end_screen"]
+		_resolve_history_texts()
+	# [END SCREEN] — remove this block to remove the end screen feature.
+	if data.has("end_screen"):
+		_end_screen = data["end_screen"]
+		_resolve_end_screen_texts()
 	# [/END SCREEN]
 
 func _load_dialogues_dir() -> void:
@@ -211,6 +214,35 @@ func _resolve_contact_names() -> void:
 			var localized: String = (names as Dictionary).get(lang, "")
 			if localized != "":
 				contact["name"] = localized
+
+# [END SCREEN]
+func _resolve_end_screen_texts() -> void:
+	var lang: String = SettingsManager.language
+	for key: String in ["title", "text"]:
+		var val = _end_screen.get(key, null)
+		if val is Dictionary:
+			var localized: String = (val as Dictionary).get(lang, "")
+			if localized.is_empty():
+				for v in (val as Dictionary).values():
+					if v is String and not (v as String).is_empty():
+						localized = v
+						break
+			_end_screen[key] = localized
+# [/END SCREEN]
+
+func _resolve_history_texts() -> void:
+	var lang: String = SettingsManager.language
+	for contact in _contacts:
+		for entry in contact.get("history", []):
+			var text = entry.get("text", "")
+			if text is Dictionary:
+				var localized: String = (text as Dictionary).get(lang, "")
+				if localized.is_empty():
+					for v in (text as Dictionary).values():
+						if v is String and not (v as String).is_empty():
+							localized = v
+							break
+				entry["text"] = localized
 
 func _get_main_contact_id() -> String:
 	return get_main_contact().get("id", "")

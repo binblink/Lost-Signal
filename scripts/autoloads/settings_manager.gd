@@ -27,28 +27,14 @@ func _ready() -> void:
 	_apply()
 
 func _load_translations() -> void:
-	var file := FileAccess.open(UI_CSV_PATH, FileAccess.READ)
-	if file == null:
-		push_error("SettingsManager: cannot open translations CSV.")
-		return
-	var header := file.get_csv_line()   # ["keys", "en", "fr", ...]
-	var locales := header.slice(1)
-	var translations: Dictionary = {}
-	for loc in locales:
-		var t := Translation.new()
-		t.locale = loc
-		translations[loc] = t
-	while not file.eof_reached():
-		var row := file.get_csv_line()
-		if row.size() < 2 or row[0].strip_edges().is_empty():
-			continue
-		var key: String = row[0]
-		for i in range(locales.size()):
-			if i + 1 < row.size():
-				translations[locales[i]].add_message(key, row[i + 1])
-	file.close()
-	for t in translations.values():
-		TranslationServer.add_translation(t)
+	for locale: String in SUPPORTED_LANGUAGES:
+		var path := "res://translations/ui.%s.translation" % locale
+		if ResourceLoader.exists(path):
+			var t := load(path) as Translation
+			if t != null:
+				TranslationServer.add_translation(t)
+		else:
+			push_warning("SettingsManager: translation file not found — " + path)
 
 func apply_and_save() -> void:
 	_apply()

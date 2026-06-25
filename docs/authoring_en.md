@@ -122,7 +122,7 @@ This requires three things working together:
 
 ### Pre-existing conversations (`history` and `pending_scene`)
 
-These two fields give the impression that the player has already been using the messaging app before the story begins. At the start of a new game, affected contacts immediately show an unread badge.
+These two fields give the impression that the player has already been using the messaging app before the story begins. At the start of a new game, affected contacts show an unread badge — unless the last message in `history` comes from the player (`"out": true`), in which case there is nothing to read.
 
 #### `history`
 
@@ -142,9 +142,22 @@ An array of pre-written messages — both incoming and outgoing — displayed in
 ```
 
 Each entry contains:
-- `text`: message content.
+- `text`: message content. Can be a plain string or a localized dictionary `{"fr": "...", "en": "..."}` — see below.
 - `time`: timestamp displayed below the bubble. `"HH:MM"` → shown as-is. `"YYYY-MM-DD HH:MM"` → shown as `"DD-MM-YYYY HH:MM"` (FR locale) or `"YYYY-MM-DD HH:MM"` (other locales) if the date is before today.
 - `out`: `true` if the message comes from the player, `false` if it comes from the contact.
+
+#### Localized text in `history`
+
+If your game is translated into multiple languages, `text` can be a dictionary instead of a string:
+
+```json
+"history": [
+  { "text": {"fr": "T'as vu les infos ce matin ?", "en": "Did you see the news this morning?"}, "time": "09:14", "out": false },
+  { "text": {"fr": "Bah non.",                     "en": "No, not yet."},                       "time": "09:15", "out": true }
+]
+```
+
+The engine picks the value matching the active language. If the active language has no key in the dictionary, it falls back to `"fr"`. The format works the same way as `names` for contacts.
 
 #### `pending_scene`
 
@@ -924,8 +937,8 @@ All fields are optional. If `end_screen` is absent from `story.json`, a minimal 
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `title` | string | `"CONNECTION TERMINATED"` | Main text shown large, monospace font |
-| `text` | string | *(absent)* | Secondary text below the title — teaser, coming soon announcement, etc. |
+| `title` | string or localized dict | `"CONNECTION TERMINATED"` | Main text shown large, monospace font. Accepts `{"fr": "...", "en": "..."}` for localized text. |
+| `text` | string or localized dict | *(absent)* | Secondary text below the title — teaser, coming soon announcement, etc. Accepts `{"fr": "...", "en": "..."}` for localized text. |
 | `link_url` | string | *(absent)* | URL opened on click. If absent, no link is shown |
 | `link_label` | string | *(raw URL)* | Text shown on the link. If absent, the URL is shown directly |
 | `glitch` | bool | `false` | Enables the glitch effect: text scramble on the title + animated scanlines + flicker |

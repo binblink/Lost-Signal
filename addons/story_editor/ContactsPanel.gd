@@ -12,6 +12,7 @@ const STRIPE_A    := Color(0.18, 0.18, 0.22)
 const STRIPE_B    := Color(0.11, 0.11, 0.13)
 const STATUS_VALS := ["online", "away", "offline", "network_issue"]
 const STORY_PATH  := "res://story.json"
+const CSV_PATH    := "res://translations/ui.csv"
 
 var _content: VBoxContainer
 
@@ -42,6 +43,7 @@ func refresh() -> void:
 		child.free()
 	var data := _read_story()
 	_build_global(data)
+	_build_languages()
 	# [END SCREEN] — remove this line to remove the end screen feature.
 	_build_end_screen(data)
 	# [/END SCREEN]
@@ -163,35 +165,189 @@ func _build_global(data: Dictionary) -> void:
 
 
 # ---------------------------------------------------------------------------
+# UI — language management
+
+func _build_languages() -> void:
+	_section(_content, _t("Langues", "Languages"), Color(0.10, 0.18, 0.14))
+
+	var locales := _get_supported_locales()
+
+	# One chip per active locale
+	var chips_row := HBoxContainer.new()
+	chips_row.add_theme_constant_override("separation", 6)
+	for locale: String in locales:
+		var chip := HBoxContainer.new()
+		chip.add_theme_constant_override("separation", 2)
+		var lbl := Label.new()
+		lbl.text = locale
+		lbl.add_theme_color_override("font_color", Color(0.75, 0.85, 0.75))
+		chip.add_child(lbl)
+		var rm := Button.new()
+		rm.text = "×"
+		rm.flat = true
+		rm.disabled = locales.size() <= 1
+		rm.tooltip_text = _t(
+			"Supprimer cette langue de ui.csv (irréversible).\nImpossible de supprimer la dernière langue.",
+			"Remove this language from ui.csv (irreversible).\nCannot remove the last language.")
+		var captured: String = locale
+		rm.pressed.connect(func() -> void:
+			_remove_language_from_csv(captured)
+			call_deferred("refresh"))
+		chip.add_child(rm)
+		chips_row.add_child(chip)
+	_content.add_child(chips_row)
+
+	# Add new language row
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	var locale_edit := LineEdit.new()
+	locale_edit.placeholder_text = _t("Code (ex : de, ja…)", "Code (e.g. de, ja…)")
+	locale_edit.custom_minimum_size = Vector2(160, 0)
+	locale_edit.tooltip_text = _t(
+		"Code ISO 639-1 de la nouvelle langue.\nDoit correspondre au suffixe de votre fichier de dialogue (ex : acte1.de.json).",
+		"ISO 639-1 code for the new language.\nMust match the suffix of your dialogue file (e.g. act1.de.json).")
+	row.add_child(locale_edit)
+
+	var add_btn := Button.new()
+	add_btn.text = _t("+ Ajouter", "+ Add")
+	add_btn.tooltip_text = _t(
+		"Ajoute une colonne vide pour cette langue dans ui.csv.\nGodot régénère automatiquement le fichier .translation.",
+		"Adds an empty column for this language in ui.csv.\nGodot automatically regenerates the .translation file.")
+	add_btn.pressed.connect(func() -> void:
+		var code := locale_edit.text.strip_edges().to_lower()
+		if code.is_empty() or code in locales:
+			return
+		_add_language_to_csv(code)
+		locale_edit.text = ""
+		call_deferred("refresh"))
+	row.add_child(add_btn)
+	_content.add_child(row)
+
+
+func _add_language_to_csv(locale: String) -> void:
+	if not FileAccess.file_exists(CSV_PATH):
+		push_error("ContactsPanel: CSV not found — " + CSV_PATH)
+		return
+	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var rows: Array[PackedStringArray] = []
+	while not file.eof_reached():
+		var row := file.get_csv_line()
+		if row.size() == 1 and row[0].is_empty():
+			continue
+		rows.append(row)
+	file.close()
+	if rows.is_empty() or locale in rows[0]:
+		return
+	var out := FileAccess.open(CSV_PATH, FileAccess.WRITE)
+	if out == null:
+		return
+	for row: PackedStringArray in rows:
+		var extended := PackedStringArray(row)
+		extended.append("")
+		out.store_csv_line(extended)
+	out.close()
+	EditorInterface.get_resource_filesystem().reimport_files(
+		PackedStringArray(["res://translations/ui.csv"]))
+
+
+func _remove_language_from_csv(locale: String) -> void:
+	if not FileAccess.file_exists(CSV_PATH):
+		return
+	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var rows: Array[PackedStringArray] = []
+	while not file.eof_reached():
+		var row := file.get_csv_line()
+		if row.size() == 1 and row[0].is_empty():
+			continue
+		rows.append(row)
+	file.close()
+	if rows.is_empty():
+		return
+	var col_index: int = -1
+	for i: int in range(rows[0].size()):
+		if rows[0][i] == locale:
+			col_index = i
+			break
+	if col_index < 0:
+		return
+	var out := FileAccess.open(CSV_PATH, FileAccess.WRITE)
+	if out == null:
+		return
+	for row: PackedStringArray in rows:
+		var trimmed := PackedStringArray()
+		for i: int in range(row.size()):
+			if i != col_index:
+				trimmed.append(row[i])
+		out.store_csv_line(trimmed)
+	out.close()
+	EditorInterface.get_resource_filesystem().reimport_files(
+		PackedStringArray(["res://translations/ui.csv"]))
+
+
+func _es_localized_field(
+		key: String, raw_val: Variant,
+		label: String, placeholder: String, tooltip: String) -> void:
+	var locales := _get_supported_locales()
+	var lbl := Label.new()
+	lbl.text = label
+	lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
+	_content.add_child(lbl)
+	var lang_edits: Dictionary = {}
+	for locale: String in locales:
+		var row := HBoxContainer.new()
+		var code_lbl := Label.new()
+		code_lbl.text = locale
+		code_lbl.custom_minimum_size = Vector2(24, 0)
+		code_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55))
+		row.add_child(code_lbl)
+		var edit := LineEdit.new()
+		if raw_val is Dictionary:
+			edit.text = (raw_val as Dictionary).get(locale, "")
+		else:
+			edit.text = raw_val as String if locale == locales[0] else ""
+		edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		edit.placeholder_text = placeholder
+		edit.tooltip_text = tooltip
+		row.add_child(edit)
+		_content.add_child(row)
+		lang_edits[locale] = edit
+	var save_fn: Callable = func() -> void:
+		var result: Dictionary = {}
+		for loc: String in lang_edits:
+			result[loc] = (lang_edits[loc] as LineEdit).text
+		var new_val: Variant = result if result.size() > 1 else result.values()[0]
+		var d := _read_story()
+		var block: Dictionary = d.get("end_screen", {})
+		var all_empty: bool = (new_val is String and (new_val as String).is_empty()) \
+			or (new_val is Dictionary and (new_val as Dictionary).values().all(
+				func(v: Variant) -> bool: return (v as String).is_empty()))
+		if all_empty: block.erase(key) else: block[key] = new_val
+		d["end_screen"] = block
+		_write_story(d)
+	for loc: String in lang_edits:
+		(lang_edits[loc] as LineEdit).focus_exited.connect(save_fn)
+
+
+# ---------------------------------------------------------------------------
 # [END SCREEN] — remove this entire section (function + separator) to remove the end screen feature.
 
 func _build_end_screen(data: Dictionary) -> void:
 	var es: Dictionary = data.get("end_screen", {})
 	_section(_content, _t("Écran de fin", "End screen"), Color(0.14, 0.10, 0.20))
 
-	_line_edit(_content,
+	_es_localized_field("title", es.get("title", ""),
 		_t("titre", "title"),
-		str(es.get("title", "")),
 		"CONNECTION TERMINATED",
-		func(val: String) -> void:
-			var d := _read_story()
-			var block: Dictionary = d.get("end_screen", {})
-			if val.is_empty(): block.erase("title") else: block["title"] = val
-			d["end_screen"] = block
-			_write_story(d),
 		_t("Texte principal affiché en grand (ex : CONNECTION TERMINATED).",
 			"Main text shown large (e.g. CONNECTION TERMINATED)."))
 
-	_line_edit(_content,
+	_es_localized_field("text", es.get("text", ""),
 		_t("texte", "text"),
-		str(es.get("text", "")),
 		_t("Message optionnel…", "Optional message…"),
-		func(val: String) -> void:
-			var d := _read_story()
-			var block: Dictionary = d.get("end_screen", {})
-			if val.is_empty(): block.erase("text") else: block["text"] = val
-			d["end_screen"] = block
-			_write_story(d),
 		_t("Texte secondaire affiché sous le titre (accroche, suite à venir, etc.).",
 			"Secondary text shown below the title (teaser, coming soon, etc.)."))
 
@@ -477,7 +633,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 
 	for hi in range(history.size()):
 		var entry: Dictionary = history[hi]
-		var e_text: String = str(entry.get("text",  ""))
+		var raw_text: Variant = entry.get("text", "")
 		var e_time: String = str(entry.get("time",  "00:00"))
 		var e_out:  bool   =     entry.get("out",   false)
 		var entry_vbox := VBoxContainer.new()
@@ -554,18 +710,37 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 
 		entry_vbox.add_child(meta_row)
 
-		var text_edit := LineEdit.new()
-		text_edit.text = e_text
-		text_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		text_edit.placeholder_text = _t("Texte du message…", "Message text…")
-		text_edit.tooltip_text = _t("Texte du message. Utilisez \\n pour aller à la ligne.", "Message text. Use \\n for a line break.")
-		text_edit.focus_exited.connect(func() -> void:
-			var val := text_edit.text
-			if val != e_text:
+		var locales: Array[String] = _get_supported_locales()
+		var lang_edits: Dictionary = {}
+		for locale: String in locales:
+			var loc_row := HBoxContainer.new()
+			var loc_lbl := Label.new()
+			loc_lbl.text = locale
+			loc_lbl.custom_minimum_size = Vector2(24, 0)
+			loc_lbl.add_theme_color_override("font_color", Color(0.55, 0.55, 0.55))
+			loc_row.add_child(loc_lbl)
+			var loc_edit := LineEdit.new()
+			if raw_text is Dictionary:
+				loc_edit.text = (raw_text as Dictionary).get(locale, "")
+			else:
+				loc_edit.text = raw_text as String if locale == locales[0] else ""
+			loc_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			loc_edit.placeholder_text = locale + "…  (\\n = newline)"
+			loc_row.add_child(loc_edit)
+			entry_vbox.add_child(loc_row)
+			lang_edits[locale] = loc_edit
+
+		var save_text: Callable = func() -> void:
+			var result: Dictionary = {}
+			for loc: String in lang_edits:
+				result[loc] = (lang_edits[loc] as LineEdit).text
+			var new_val: Variant = result if result.size() > 1 else result.values()[0]
+			if new_val != raw_text:
 				var d := _read_story()
-				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["text"] = val
-				_write_story(d))
-		entry_vbox.add_child(text_edit)
+				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["text"] = new_val
+				_write_story(d)
+		for loc: String in lang_edits:
+			(lang_edits[loc] as LineEdit).focus_exited.connect(save_text)
 
 		container.add_child(entry_vbox)
 
@@ -928,6 +1103,23 @@ func _open_datetime_picker(anchor: Control, date_edit: LineEdit, time_only_edit:
 
 # ---------------------------------------------------------------------------
 # Utilities — pure functions mirroring StoryEditorPanel (no shared state needed)
+
+func _get_supported_locales() -> Array[String]:
+	var result: Array[String] = []
+	var dir := DirAccess.open("res://translations/")
+	if dir != null:
+		dir.list_dir_begin()
+		var f := dir.get_next()
+		while f != "":
+			if f.ends_with(".translation"):
+				var parts := f.get_basename().split(".")
+				if parts.size() == 2 and not parts[1].is_empty():
+					result.append(parts[1])
+			f = dir.get_next()
+		dir.list_dir_end()
+	result.sort()
+	return result if not result.is_empty() else ["fr", "en"]
+
 
 func _t(fr: String, en: String) -> String:
 	return fr if OS.get_locale_language() == "fr" else en

@@ -19,6 +19,8 @@ extends Control
 @onready var _contact_panel     = %ContactPanel
 @onready var btn_cancel  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
 @onready var btn_restart = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
+@onready var _confirm_title: Label = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label")
+@onready var _confirm_body:  Label = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label2")
 @onready var _exit_button = %ExitButton
 @onready var _clock_label = %ClockLabel
 
@@ -29,6 +31,7 @@ var _free_input_indicator: Panel = null
 var _narrative: Node = null
 var _validation_dialog: Control = null
 var _exit_dialog: Control = null
+var _confirming_lang_change: bool = false
 
 
 func _ready() -> void:
@@ -137,8 +140,11 @@ func _ready() -> void:
 			if pending_scene != "" and DialogueLoader.has_scene(pending_scene):
 				_narrative.pending_choices[cid] = pending_scene
 			if has_content:
-				_contact_panel.mark_unread(cid)
-				_total_unread += 1
+				var last_msg: Dictionary = history.back() if history.size() > 0 else {}
+				var last_is_outgoing: bool = last_msg.get("out", false)
+				if pending_scene != "" or not last_is_outgoing:
+					_contact_panel.mark_unread(cid)
+					_total_unread += 1
 		_update_panel_button()
 		await _narrative.play_scene(DialogueLoader.get_start_scene())
 		var start_cid: String = DialogueLoader.get_start_contact()
@@ -204,9 +210,15 @@ func _on_settings_pressed() -> void:
 func _on_settings_accepted(language_changed: bool) -> void:
 	overlay.visible = false
 	if language_changed:
-		save_game(false)
-		DialogueLoader.reload_for_locale()
-		get_tree().reload_current_scene()
+		if SaveManager.has_save():
+			_confirming_lang_change = true
+			_confirm_title.text = "CONFIRM_LANGCHANGE_TITLE"
+			_confirm_body.text  = "CONFIRM_LANGCHANGE_BODY"
+			overlay.visible = true
+			confirm_dialog.visible = true
+		else:
+			DialogueLoader.reload_for_locale()
+			get_tree().reload_current_scene()
 
 func _on_contacts_button_pressed() -> void:
 	_contact_panel.toggle_panel()
@@ -364,17 +376,34 @@ func _update_clock() -> void:
 
 
 func _on_new_game_pressed() -> void:
+	_confirming_lang_change = false
+	_confirm_title.text = "CONFIRM_NEWGAME_TITLE"
+	_confirm_body.text  = "CONFIRM_NEWGAME_BODY"
 	confirm_dialog.visible = true
 	overlay.visible = true
 
 func _on_cancel_pressed() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
+	if _confirming_lang_change:
+		_confirming_lang_change = false
+		_confirm_title.text = "CONFIRM_NEWGAME_TITLE"
+		_confirm_body.text  = "CONFIRM_NEWGAME_BODY"
 
 func _on_startover_pressed() -> void:
-	SaveManager.delete_save()
-	await get_tree().process_frame
-	get_tree().reload_current_scene()
+	confirm_dialog.visible = false
+	overlay.visible = false
+	if _confirming_lang_change:
+		_confirming_lang_change = false
+		_confirm_title.text = "CONFIRM_NEWGAME_TITLE"
+		_confirm_body.text  = "CONFIRM_NEWGAME_BODY"
+		SaveManager.delete_save()
+		DialogueLoader.reload_for_locale()
+		get_tree().reload_current_scene()
+	else:
+		SaveManager.delete_save()
+		await get_tree().process_frame
+		get_tree().reload_current_scene()
 
 
 # ---------------------------------------------------------------------------
