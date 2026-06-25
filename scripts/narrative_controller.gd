@@ -97,14 +97,14 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 			save_requested.emit(false)
 		return
 
-	if scene_contact != active_contact_id:
-		_play_secondary_scene(current_scene)
-		_trigger_next_scenes(scene_id)
-		return
-
 	var resume_flag = current_scene.get("resume_after_flag", null)
 	if resume_flag != null and not flags.get(resume_flag, false):
 		deferred_scenes[resume_flag] = scene_id
+		return
+
+	if scene_contact != active_contact_id:
+		_play_secondary_scene(current_scene)
+		_trigger_next_scenes(scene_id)
 		return
 
 	_handle_music(current_scene)
@@ -249,18 +249,23 @@ func restore_pending_choice_for(contact_id: String) -> void:
 	if pending_choices.has(contact_id):
 		var pending_scene: Dictionary = DialogueLoader.get_scene(pending_choices[contact_id])
 		if pending_scene.has("choices"):
-			waiting_for_choice = true
-			current_scene = pending_scene
-			current_message_index = 0
 			_visible_choices = pending_scene["choices"].filter(func(c): return _eval_condition(c))
-			await choices_layer.show_choices(
-				_visible_choices.map(func(c): return c["text"])
-			)
+			if _visible_choices.is_empty():
+				pending_choices.erase(contact_id)
+				choices_layer.visible = false
+			else:
+				waiting_for_choice = true
+				current_scene = pending_scene
+				current_message_index = 0
+				await choices_layer.show_choices(
+					_visible_choices.map(func(c): return c["text"])
+				)
 		else:
 			push_warning("[NarrativeController] pending_choices[%s] points to missing or invalid scene '%s' — clearing." % [contact_id, pending_choices[contact_id]])
 			pending_choices.erase(contact_id)
 			choices_layer.visible = false
 	else:
+		waiting_for_choice = false
 		choices_layer.visible = false
 
 
@@ -355,6 +360,16 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 
 func set_flag(flag_name: String) -> void:
 	_set_flag(flag_name)
+
+
+func notify_contact_opened(contact_id: String) -> void:
+	var flag_name := "opened_" + contact_id
+	if deferred_scenes.has(flag_name):
+		var scene_id: String = deferred_scenes[flag_name]
+		deferred_scenes.erase(flag_name)
+		flags[flag_name] = true
+		await play_scene(scene_id)
+		flags.erase(flag_name)
 
 
 func _set_flag(flag_name: String) -> void:

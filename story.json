@@ -25,7 +25,7 @@
 		},
 		{
 			"id": "mom",
-			"name": "Maman",
+			"names": {"fr": "Maman", "en": "Mom"},
 			"avatar": "res://assets/avatars/560219.png",
 			"status": "online",
 			"history": [
@@ -46,7 +46,7 @@
 		"glitch": true,
 		"text": {
 			"en": "Thank you for playing!\n\nMaeve just stepped through that door... but her story is only beginning.\n\nIn the full game, you'll continue following her adventures and discover what really happened to her. You'll also witness the return of a particularly insufferable character.\n\nMaeve // Lost Signal — coming in 2026.",
-			"fr": "Merci d'avoir joué !\n\nMaeve vient de franchir cette porte... mais son histoire ne fait que commencer.\n\nDans le jeu complet, vous continuerez à suivre ses aventures et à découvrir ce qui lui est vraiment arrivé. Vous assisterez aussi au retour d'un personnage particulièrement pénible.\n\nMaeve // Lost Signal sort courant 2026."
+			"fr": "Merci d'avoir joué !\n\nMaeve vient de franchir cette porte... mais son histoire ne fait que commencer.\n\nDans le jeu complet, vous continuerez à suivre ses aventures et à découvrir ce qui lui est vraiment arrivé. Vous assisterez aussi au retour d'un personnage particulièrement pénible.\n\nMaeve // Lost Signal sortira courant 2026."
 		}
 	}
 }

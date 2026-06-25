@@ -17,7 +17,7 @@
 			],
 			"choices": [
 				{"text": "Euh? C'est normal ça ?", "message": ["Euh? C'est normal ça ?", "Je suis pas sensé recevoir un message qui dit que ma demande a bien été reçue et qu'elle sera traitée sous un délai ridiculement long?"], "flag": "stop_requested", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur bizarre", "en": "Weird Salesman"}}]},
-				{"text": "J'ai rien demandé moi!", "message": ["J'ai rien demandé moi!", "Je suis locataire en plus!", "Je m'en tamponne de vos fenêtres et de vos panneaux solaires!", "Foutez-moi la paix"], "flag": "dont_care", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur de merde", "en": "Shitty Salesman"}}]}
+				{"text": "J'ai rien demandé moi!", "message": ["J'ai rien demandé moi!", "Je suis locataire en plus!", "Je m'en tamponne de vos fenêtres et de vos panneaux solaires!", "Foutez-moi la paix!"], "flag": "dont_care", "next": "scene_intro_03", "effects": [{"op": "rename", "contact": "salesman", "value": {"fr": "Vendeur de merde", "en": "Shitty Salesman"}}]}
 			]
 		},
 		{

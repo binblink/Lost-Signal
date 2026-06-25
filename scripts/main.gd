@@ -242,7 +242,7 @@ func _update_panel_button() -> void:
 # Snapshots the live UI back into contact_histories before switching — this is the only place that happens.
 # Without it, messages typed or received in the current conversation would be lost on switch.
 func _on_contact_selected(contact_id: String, unread_count: int) -> void:
-	if _narrative.is_busy:
+	if _narrative.is_busy or _narrative.is_waiting_for_free_input:
 		return
 	if unread_count > 0:
 		_total_unread = max(0, _total_unread - unread_count)
@@ -250,6 +250,11 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	if contact_id == _narrative.active_contact_id:
 		return
 	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
+	if _narrative.waiting_for_choice:
+		var pending_id: String = _narrative.current_scene.get("id", "")
+		if pending_id != "":
+			_narrative.pending_choices[_narrative.active_contact_id] = pending_id
+		_narrative.abort_current()
 	_narrative.active_contact_id = contact_id
 	_top_bar.refresh(contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	var contact_data: Dictionary = DialogueLoader.get_contact(contact_id)
@@ -261,8 +266,8 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	await message_display.render_history(_narrative.contact_histories.get(contact_id, []))
 	await message_display.scroll_to_bottom()
 	input_bar.visible = true
-	_narrative.set_flag("opened_" + contact_id)
 	await _narrative.restore_pending_choice_for(contact_id)
+	await _narrative.notify_contact_opened(contact_id)
 
 
 # ---------------------------------------------------------------------------

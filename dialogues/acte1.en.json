@@ -46,7 +46,7 @@
 		{
 			"_notes": "No next on choices — the follow-up comes via scene_intro_05 (trigger_after_scene: scene_12). Mom takes time to reply.",
 			"id": "scene_intro_04",
-			"contact_id": "Maman",
+			"contact_id": "mom",
 			"trigger_after_scene": "scene_intro_03",
 			"messages_in": [
 				{"text": "It's mom! Are you coming to stay for a few days next week? Hugs. Mom"}
@@ -59,7 +59,7 @@
 		},
 		{
 			"id":"scene_intro_05",
-			"contact_id":"Maman",
+			"contact_id":"mom",
 			"trigger_after_scene": "scene_12",
 			"messages_in":[
 				{"text":"It's mom! I want to make sure you know it's me. I wouldn't want you to get confused. Hugs. Mom", "requires_flag":"question_mom"},
