@@ -6,7 +6,12 @@ signal rename_contact_requested(old_id: String, new_id: String)
 signal error_occurred(msg: String)
 
 ## Callable → Array of scene IDs; injected by StoryEditorPanel so we stay decoupled.
-var get_scene_ids: Callable = func() -> Array: return []
+var get_scene_ids: Callable  = func() -> Array: return []
+
+## Undo/redo callables — injected by StoryEditorPanel. No-op defaults so panel works standalone.
+var begin_mutation: Callable = func(_label: String) -> void: pass
+var end_mutation:   Callable = func() -> void: pass
+var snapshot_file:  Callable = func(_path: String) -> void: pass
 
 const STRIPE_A    := Color(0.18, 0.18, 0.22)
 const STRIPE_B    := Color(0.11, 0.11, 0.13)
@@ -62,11 +67,14 @@ func _read_story() -> Dictionary:
 	return parsed if parsed is Dictionary else {}
 
 
-func _write_story(data: Dictionary) -> void:
+func _write_story(data: Dictionary, label: String = "") -> void:
+	begin_mutation.call(label if label != "" else _t("Modifier story.json", "Edit story.json"))
+	snapshot_file.call(STORY_PATH)
 	var tmp_path: String = STORY_PATH + ".tmp"
 	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if f == null:
 		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+		end_mutation.call()
 		return
 	f.store_string(_json_expand(_ordered_story(data), "") + "\n")
 	f.close()
@@ -75,11 +83,14 @@ func _write_story(data: Dictionary) -> void:
 	var dir := DirAccess.open("res://")
 	if dir == null:
 		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+		end_mutation.call()
 		return
 	var err := dir.rename("story.json.tmp", "story.json")
 	if err != OK:
 		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+		end_mutation.call()
 		return
+	end_mutation.call()
 	story_modified.emit()
 
 

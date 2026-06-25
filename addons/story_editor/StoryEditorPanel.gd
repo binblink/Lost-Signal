@@ -26,7 +26,70 @@ var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
 var _contacts_win: Window = null
 
+var undo_redo_manager: EditorUndoRedoManager = null
+var _in_mutation:       bool       = false
+var _current_snapshot:  Dictionary = {}
+var _current_label:     String     = ""
 
+
+# ---------------------------------------------------------------------------
+# Undo / Redo
+# ---------------------------------------------------------------------------
+
+func _begin_mutation(label: String) -> void:
+	_current_snapshot = {}
+	_current_label    = label
+	_in_mutation      = true
+
+
+func _end_mutation() -> void:
+	_in_mutation = false
+	if _current_snapshot.is_empty() or undo_redo_manager == null:
+		_current_snapshot = {}
+		_current_label    = ""
+		return
+	var before: Dictionary = _current_snapshot.duplicate()
+	var after:  Dictionary = {}
+	for path: String in before:
+		var rf := FileAccess.open(path, FileAccess.READ)
+		if rf != null:
+			after[path] = rf.get_as_text()
+			rf.close()
+		else:
+			after[path] = ""
+	undo_redo_manager.create_action(_current_label, UndoRedo.MERGE_DISABLE)
+	undo_redo_manager.add_do_method(self, "_restore_snapshot", after)
+	undo_redo_manager.add_undo_method(self, "_restore_snapshot", before)
+	undo_redo_manager.commit_action(false)
+	_current_snapshot = {}
+	_current_label    = ""
+
+
+func _snapshot_file(path: String) -> void:
+	if _in_mutation and not _current_snapshot.has(path):
+		var rf := FileAccess.open(path, FileAccess.READ)
+		if rf != null:
+			_current_snapshot[path] = rf.get_as_text()
+			rf.close()
+		else:
+			_current_snapshot[path] = ""
+
+
+func _restore_snapshot(files: Dictionary) -> void:
+	for path: String in files:
+		var content: String = files[path]
+		if content.is_empty():
+			continue
+		var f := FileAccess.open(path, FileAccess.WRITE)
+		if f != null:
+			f.store_string(content)
+			f.close()
+	_on_refresh_pressed()
+	if _contacts_win != null and is_instance_valid(_contacts_win):
+		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
+
+
+# ---------------------------------------------------------------------------
 # Returns the inner VBoxContainer so callers add children directly without knowing about the PanelContainer wrapper.
 func _make_stripe(index: int) -> VBoxContainer:
 	var stripe := PanelContainer.new()
@@ -74,7 +137,10 @@ func _on_contacts_pressed() -> void:
 	var panel := preload("res://addons/story_editor/ContactsPanel.gd").new()
 	panel.name = "ContactsPanel"
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.get_scene_ids = func() -> Array: return _scenes.keys()
+	panel.get_scene_ids   = func() -> Array: return _scenes.keys()
+	panel.begin_mutation  = func(label: String) -> void: _begin_mutation(label)
+	panel.end_mutation    = func() -> void: _end_mutation()
+	panel.snapshot_file   = func(path: String) -> void: _snapshot_file(path)
 	panel.story_modified.connect(_on_refresh_pressed)
 	panel.rename_contact_requested.connect(_rename_contact_in_dialogues)
 	panel.error_occurred.connect(func(msg: String) -> void: _status_label.text = msg)
@@ -84,6 +150,7 @@ func _on_contacts_pressed() -> void:
 
 
 func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
+	_begin_mutation(_t("Renommer contact %s → %s" % [old_id, new_id], "Rename contact %s → %s" % [old_id, new_id]))
 	for fname in _parser.chosen_files.values():
 		var path := "res://dialogues/" + str(fname)
 		var f := FileAccess.open(path, FileAccess.READ)
@@ -100,6 +167,7 @@ func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
 				modified = true
 		if modified:
 			_write_json(path, data)
+	_end_mutation()
 
 
 func _on_detach_pressed() -> void:
@@ -119,6 +187,7 @@ func _on_reformat_pressed() -> void:
 	if _parser.chosen_files.is_empty():
 		_status_label.text = _t("Cliquez d'abord sur Refresh", "Click Refresh first")
 		return
+	_begin_mutation(_t("Reformater", "Reformat"))
 	for fname in _parser.chosen_files.values():
 		var path: String = "res://dialogues/" + str(fname)
 		var f := FileAccess.open(path, FileAccess.READ)
@@ -129,6 +198,7 @@ func _on_reformat_pressed() -> void:
 		if data is Dictionary and data.has("scenes"):
 			_write_json(path, data)
 	await _on_refresh_pressed()
+	_end_mutation()
 
 
 func _on_refresh_pressed() -> void:
@@ -416,6 +486,7 @@ func _on_delete_nodes_request(nodes: Array[StringName]) -> void:
 
 
 func _write_connection_to_file(from_id: String, from_port: int, to_id: String) -> void:
+	_begin_mutation(_t("Connecter %s → %s" % [from_id, to_id], "Connect %s → %s" % [from_id, to_id]))
 	_mutate_connection(from_id, from_port, func(scene: Dictionary, update_type: String, choice_index: int) -> void:
 		if update_type == "next":
 			scene["next"] = to_id
@@ -423,9 +494,11 @@ func _write_connection_to_file(from_id: String, from_port: int, to_id: String) -
 			var choices: Array = scene.get("choices", [])
 			if choice_index < choices.size():
 				choices[choice_index]["next"] = to_id)
+	_end_mutation()
 
 
 func _write_disconnection_to_file(from_id: String, from_port: int) -> void:
+	_begin_mutation(_t("Déconnecter %s" % from_id, "Disconnect %s" % from_id))
 	_mutate_connection(from_id, from_port, func(scene: Dictionary, update_type: String, choice_index: int) -> void:
 		if update_type == "next":
 			scene.erase("next")
@@ -433,6 +506,7 @@ func _write_disconnection_to_file(from_id: String, from_port: int) -> void:
 			var choices: Array = scene.get("choices", [])
 			if choice_index < choices.size():
 				choices[choice_index].erase("next"))
+	_end_mutation()
 
 
 # Shared read-parse-mutate-write cycle for both connecting and disconnecting ports.
@@ -448,7 +522,9 @@ func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> v
 	var conns: Array = _outgoing.get(from_id, [])
 	var update_type := ""
 	var choice_index := -1
-	if conns.is_empty():
+	var has_real_next: bool    = from_scene.has("next")
+	var has_real_choices: bool = not (from_scene.get("choices", []) as Array).is_empty()
+	if not has_real_next and not has_real_choices:
 		update_type = "next"
 	elif from_port < conns.size():
 		var conn = conns[from_port]
@@ -486,6 +562,7 @@ func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> v
 
 
 func _delete_scenes(ids: Array[String]) -> void:
+	_begin_mutation(_t("Supprimer scène(s) : %s" % ", ".join(ids), "Delete scene(s): %s" % ", ".join(ids)))
 	var id_set := {}
 	for id in ids:
 		id_set[id] = true
@@ -526,8 +603,10 @@ func _delete_scenes(ids: Array[String]) -> void:
 			data["scenes"] = new_scenes
 			if not _write_json("res://dialogues/" + file_name, data):
 				_status_label.text = _t("Erreur écriture : " + file_name, "Write error: " + file_name)
+				_end_mutation()
 				return
 
+	_end_mutation()
 	_on_refresh_pressed()
 
 
@@ -609,11 +688,13 @@ func _show_create_scene_dialog() -> void:
 
 
 func _write_scene_to_file(scene_id: String, contact_id: String, file_name: String) -> void:
+	_begin_mutation(_t("Créer scène : %s" % scene_id, "Create scene: %s" % scene_id))
 	var path := "res://dialogues/" + file_name
 
 	var read_file := FileAccess.open(path, FileAccess.READ)
 	if read_file == null:
 		_status_label.text = _t("Erreur lecture : " + file_name, "Read error: " + file_name)
+		_end_mutation()
 		return
 	var content := read_file.get_as_text()
 	read_file.close()
@@ -621,6 +702,7 @@ func _write_scene_to_file(scene_id: String, contact_id: String, file_name: Strin
 	var data = JSON.parse_string(content)
 	if not data is Dictionary or not data.has("scenes"):
 		_status_label.text = _t("JSON invalide dans " + file_name, "Invalid JSON in " + file_name)
+		_end_mutation()
 		return
 
 	var main_contact_id := ""
@@ -636,12 +718,15 @@ func _write_scene_to_file(scene_id: String, contact_id: String, file_name: Strin
 
 	if not _write_json(path, data):
 		_status_label.text = _t("Erreur écriture : " + file_name, "Write error: " + file_name)
+		_end_mutation()
 		return
+	_end_mutation()
 	_on_refresh_pressed()
 
 
 # Always re-orders scenes before writing so git diffs stay readable regardless of edit order.
 func _write_json(path: String, data: Dictionary) -> bool:
+	_snapshot_file(path)
 	var ordered_scenes: Array = []
 	for s in (data["scenes"] as Array):
 		ordered_scenes.append(_ordered_scene(s))
@@ -1510,7 +1595,7 @@ func _add_text_edit_row(container: VBoxContainer, initial: String, on_commit: Ca
 
 # Opens the scene's source file, finds the scene by ID, runs setter on it, then writes back.
 # Also syncs _scenes in memory so the detail panel stays consistent without a full graph refresh.
-func _patch_field(scene_id: String, setter: Callable) -> void:
+func _patch_field(scene_id: String, setter: Callable, label: String = "") -> void:
 	var file_name: String = _scenes.get(scene_id, {}).get("_editor_file", "")
 	if file_name.is_empty():
 		return
@@ -1522,6 +1607,7 @@ func _patch_field(scene_id: String, setter: Callable) -> void:
 	f.close()
 	if not data is Dictionary or not data.has("scenes"):
 		return
+	_begin_mutation(label if label != "" else _t("Modifier scène : %s" % scene_id, "Edit scene: %s" % scene_id))
 	for scene in (data["scenes"] as Array):
 		if scene.get("id", "") != scene_id:
 			continue
@@ -1530,6 +1616,8 @@ func _patch_field(scene_id: String, setter: Callable) -> void:
 		_scenes[scene_id] = scene
 		break
 	_write_json(path, data)
+	_end_mutation()
+	call_deferred("_populate_detail", scene_id)
 
 
 func _add_header(text: String) -> void:
