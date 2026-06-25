@@ -185,7 +185,22 @@ On confirmation:
 - All `next` and `choices[].next` fields pointing to this scene are removed across **all JSON files** in the project.
 - The graph is rebuilt.
 
-> Deletion is immediate and cannot be undone from the graph. Git is recommended for recovering accidental deletions.
+> Deletion can be undone with **Ctrl+Z**.
+
+### Undo / Redo
+
+All editing actions from the graph and the detail panel support Godot's native undo and redo.
+
+| Shortcut | Action |
+|---|---|
+| **Ctrl+Z** | Undo the last change |
+| **Ctrl+Y** | Redo the last undone change |
+
+Covered actions: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat**, contact rename, all edits in the Contacts panel.
+
+**Exception**: adding and removing languages (Languages section of the Contacts panel) are not undoable — those operations modify `ui.csv` and trigger a Godot reimport.
+
+> The undo history is scoped to the current editor session.
 
 ---
 
@@ -316,6 +331,6 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).
 
-`ContactsPanel.gd` is likewise decoupled from `StoryEditorPanel.gd`: it only receives a `get_scene_ids` callable for populating dropdowns, and communicates back via three signals (`story_modified`, `rename_contact_requested`, `error_occurred`). All dialogue file writes on contact rename go through `StoryEditorPanel`, which already owns `_write_json`.
+`ContactsPanel.gd` is likewise decoupled from `StoryEditorPanel.gd`: it receives four injected callables (`get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`) and communicates back via three signals (`story_modified`, `rename_contact_requested`, `error_occurred`). All dialogue file writes on contact rename go through `StoryEditorPanel`, which already owns `_write_json`. The `begin_mutation` / `end_mutation` / `snapshot_file` callables allow `ContactsPanel` to participate in the undo history without directly referencing `StoryEditorPanel`.
 
 Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `_json_expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.

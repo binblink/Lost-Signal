@@ -82,6 +82,7 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 - Only `GraphNode` children of `GraphEdit` are freed on rebuild — never `get_children()` blindly, as that would delete the internal `connection_layer` node and corrupt the graph.
 - `_editor_file` meta-key is injected per scene in memory by `scene_parser.gd` to track which file to write to; it is never written to disk.
 - `_write_json()` applies `_ordered_scene()` (semantic key order) then `_json_expand()` (custom serializer, compact at depth ≥ 4) before writing.
+- `ContactsPanel.gd` receives four injected callables from `StoryEditorPanel`: `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. The last three wire it into the undo/redo system without creating a direct dependency. All editor mutations use snapshot-based undo/redo via `EditorUndoRedoManager` (before/after file content pairs); CSV language mutations are excluded as they trigger a Godot reimport.
 
 Full user-facing docs: `docs/story_editor_en.md` (English), `docs/story_editor.md` (French).
 

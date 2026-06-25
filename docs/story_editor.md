@@ -185,7 +185,22 @@ Sur confirmation :
 - Tous les `next` et `choices[].next` qui pointaient vers cette scène sont supprimés dans **tous les fichiers JSON** du projet.
 - Le graphe est reconstruit.
 
-> La suppression est immédiate et non annulable depuis le graphe. Git est recommandé pour récupérer une suppression accidentelle.
+> La suppression peut être annulée avec **Ctrl+Z**.
+
+### Annuler / Rétablir
+
+Toutes les actions d'édition depuis le graphe et depuis le panneau de détail prennent en charge l'annulation et le rétablissement natifs de Godot.
+
+| Raccourci | Action |
+|---|---|
+| **Ctrl+Z** | Annule la dernière modification |
+| **Ctrl+Y** | Rétablit la dernière modification annulée |
+
+Les actions couvertes : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater**, renommage de contact, toutes les modifications dans le panneau Contacts.
+
+**Exception** : l'ajout et la suppression de langues (section Langues du panneau Contacts) ne sont pas annulables — ces opérations modifient `ui.csv` et déclenchent un réimport Godot.
+
+> L'historique d'annulation est limité à la session courante de l'éditeur.
 
 ---
 
@@ -316,6 +331,6 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).
 
-`ContactsPanel.gd` est de même découplé de `StoryEditorPanel.gd` : il reçoit uniquement un callable `get_scene_ids` pour peupler les dropdowns de scènes, et communique via trois signaux (`story_modified`, `rename_contact_requested`, `error_occurred`). Les écritures dans les fichiers de dialogue lors d'un renommage sont déléguées à `StoryEditorPanel`, qui possède déjà `_write_json`.
+`ContactsPanel.gd` est de même découplé de `StoryEditorPanel.gd` : il reçoit quatre callables injectés (`get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`) et communique via trois signaux (`story_modified`, `rename_contact_requested`, `error_occurred`). Les écritures dans les fichiers de dialogue lors d'un renommage sont déléguées à `StoryEditorPanel`, qui possède déjà `_write_json`. Les callables `begin_mutation` / `end_mutation` / `snapshot_file` permettent à `ContactsPanel` de participer à l'historique d'annulation sans référencer directement `StoryEditorPanel`.
 
 Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `_json_expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.
