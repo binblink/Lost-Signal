@@ -36,6 +36,12 @@ var _confirming_lang_change: bool = false
 
 func _ready() -> void:
 	_apply_theme()
+	_setup_narrative()
+	_setup_ui()
+	await _start_game()
+
+
+func _setup_narrative() -> void:
 	_narrative = preload("res://scripts/narrative_controller.gd").new()
 	add_child(_narrative)
 	_narrative.message_display = message_display
@@ -57,6 +63,8 @@ func _ready() -> void:
 	_narrative.game_ended.connect(_on_game_ended)
 	# [/END SCREEN]
 
+
+func _setup_ui() -> void:
 	confirm_dialog.visible = false
 	overlay.visible = false
 	reset_button.pressed.connect(_on_new_game_pressed)
@@ -113,6 +121,8 @@ func _ready() -> void:
 	_top_bar.refresh(_narrative.active_contact_id, _narrative.contact_names, _narrative.contact_statuses)
 	_contact_panel.show_panel()
 
+
+func _start_game() -> void:
 	if DialogueLoader.has_validation_issues():
 		overlay.visible = true
 		_validation_dialog.open(DialogueLoader.get_validation_report())
