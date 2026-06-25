@@ -127,15 +127,21 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 					_is_receiving = false
 					return
 				await message_display.receive_corrupted_message(msg.get("time", ""))
+				if _play_generation != _gen:
+					return
 				await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
 			elif media != null:
 				match media.get("type", ""):
 					"image":
 						await get_tree().create_timer(randf_range(DELAY_IMAGE_MIN, DELAY_IMAGE_MAX)).timeout
+						if _play_generation != _gen:
+							return
 						await message_display.receive_image_message(media["path"], msg.get("time", ""))
 						await get_tree().create_timer(DELAY_AFTER_MEDIA).timeout
 					"audio":
 						await get_tree().create_timer(randf_range(DELAY_AUDIO_MIN, DELAY_AUDIO_MAX)).timeout
+						if _play_generation != _gen:
+							return
 						await message_display.receive_audio_message(media["path"], msg.get("time", ""))
 						await get_tree().create_timer(DELAY_AFTER_MEDIA).timeout
 			elif text != null:
@@ -161,6 +167,8 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 								label.add_theme_color_override("font_color", ThemeManager.time_color)
 				else:
 					await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
+		if _play_generation != _gen:
+			return
 		current_message_index = i + 1
 		save_requested.emit(true)
 	_is_receiving = false
@@ -239,7 +247,7 @@ func handle_choice(index: int) -> void:
 
 func restore_pending_choice_for(contact_id: String) -> void:
 	if pending_choices.has(contact_id):
-		var pending_scene = DialogueLoader.get_scene(pending_choices[contact_id])
+		var pending_scene: Dictionary = DialogueLoader.get_scene(pending_choices[contact_id])
 		if pending_scene.has("choices"):
 			waiting_for_choice = true
 			current_scene = pending_scene
@@ -248,6 +256,10 @@ func restore_pending_choice_for(contact_id: String) -> void:
 			await choices_layer.show_choices(
 				_visible_choices.map(func(c): return c["text"])
 			)
+		else:
+			push_warning("[NarrativeController] pending_choices[%s] points to missing or invalid scene '%s' — clearing." % [contact_id, pending_choices[contact_id]])
+			pending_choices.erase(contact_id)
+			choices_layer.visible = false
 	else:
 		choices_layer.visible = false
 
