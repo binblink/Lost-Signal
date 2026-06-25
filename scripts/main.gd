@@ -1,28 +1,28 @@
 extends Control
 
 @onready var message_display    = %MessagesList
-@onready var input_bar          = %InputBar
-@onready var line_edit          = %TextInput
-@onready var choices_layer      = %ChoicesLayer
-@onready var confirm_dialog     = %ConfirmDialog
-@onready var overlay            = %Overlay
-@onready var reset_button       = %Reset
-@onready var panel_button       = %PanelButton
-@onready var settings_button    = %SettingsButton
-@onready var settings_dialog    = %SettingsDialog
-@onready var photo_overlay      = %PhotoOverlay
-@onready var photo_image        = %PhotoImage
-@onready var contact_name_label = %ContactName
-@onready var _status_dot        = %StatusDot
-@onready var _status_text       = %StatusText
-@onready var _status_warning    = %StatusWarning
-@onready var _contact_panel     = %ContactPanel
-@onready var btn_cancel  = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
-@onready var btn_restart = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
+@onready var input_bar: Control     = %InputBar
+@onready var line_edit: LineEdit    = %TextInput
+@onready var choices_layer          = %ChoicesLayer
+@onready var confirm_dialog: Control  = %ConfirmDialog
+@onready var overlay: Control         = %Overlay
+@onready var reset_button: Button     = %Reset
+@onready var panel_button: Button     = %PanelButton
+@onready var settings_button: Button  = %SettingsButton
+@onready var settings_dialog          = %SettingsDialog
+@onready var photo_overlay: Control   = %PhotoOverlay
+@onready var photo_image: TextureRect = %PhotoImage
+@onready var contact_name_label: Label = %ContactName
+@onready var _status_dot: Control      = %StatusDot
+@onready var _status_text: Label       = %StatusText
+@onready var _status_warning: Control  = %StatusWarning
+@onready var _contact_panel            = %ContactPanel
+@onready var btn_cancel:  Button = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Cancel")
+@onready var btn_restart: Button = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/HBoxContainer/Restart")
 @onready var _confirm_title: Label = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label")
 @onready var _confirm_body:  Label = %ConfirmDialog.get_node("MarginContainer/VBoxContainer/Label2")
-@onready var _exit_button = %ExitButton
-@onready var _clock_label = %ClockLabel
+@onready var _exit_button: Button = %ExitButton
+@onready var _clock_label: Label  = %ClockLabel
 
 var _total_unread: int = 0
 var _free_input_tween: Tween = null
@@ -239,8 +239,8 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	_narrative.contact_histories[_narrative.active_contact_id] = message_display.collect_messages_data()
 	_narrative.active_contact_id = contact_id
 	_top_bar.refresh(contact_id, _narrative.contact_names, _narrative.contact_statuses)
-	var contact_data = DialogueLoader.get_contact(contact_id)
-	var is_main = contact_data.get("is_main", false)
+	var contact_data: Dictionary = DialogueLoader.get_contact(contact_id)
+	var is_main: bool = contact_data.get("is_main", false)
 	line_edit.editable = is_main
 	line_edit.mouse_filter = Control.MOUSE_FILTER_STOP if is_main else Control.MOUSE_FILTER_IGNORE
 	message_display.clear_messages()
@@ -290,7 +290,7 @@ func save_game(notify_panel: bool = true) -> void:
 		_contact_panel.update_history(_narrative.active_contact_id, _narrative.contact_histories.get(_narrative.active_contact_id, []))
 
 func load_game() -> void:
-	var data = SaveManager.load_save()
+	var data: Dictionary = SaveManager.load_save()
 	if data.is_empty():
 		return
 	_narrative.set_state(data)
