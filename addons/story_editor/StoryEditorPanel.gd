@@ -14,6 +14,9 @@ const V_SPACING := 280.0
 @onready var _refresh_button:  Button        = %RefreshButton
 @onready var _reformat_button: Button        = %ReformatButton
 @onready var _contacts_button: Button        = %ContactsButton
+@onready var _settings_button: Button        = %SettingsButton
+@onready var _undo_button:     Button        = %UndoButton
+@onready var _redo_button:     Button        = %RedoButton
 @onready var _graph:           GraphEdit     = %GraphEdit
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
@@ -25,6 +28,7 @@ var _scenes:   Dictionary = {}
 var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
 var _contacts_win: Window = null
+var _settings_win: Window = null
 
 var undo_redo_manager: EditorUndoRedoManager = null
 var _in_mutation:       bool       = false
@@ -87,6 +91,8 @@ func _restore_snapshot(files: Dictionary) -> void:
 	_on_refresh_pressed()
 	if _contacts_win != null and is_instance_valid(_contacts_win):
 		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
+	if _settings_win != null and is_instance_valid(_settings_win):
+		(_settings_win.get_node("StorySettingsPanel") as Control).call("refresh")
 
 
 # ---------------------------------------------------------------------------
@@ -108,6 +114,9 @@ func _ready() -> void:
 	_refresh_button.pressed.connect(_on_refresh_pressed)
 	_reformat_button.pressed.connect(_on_reformat_pressed)
 	_contacts_button.pressed.connect(_on_contacts_pressed)
+	_settings_button.pressed.connect(_on_settings_pressed)
+	_undo_button.pressed.connect(_on_undo_pressed)
+	_redo_button.pressed.connect(_on_redo_pressed)
 	_graph.node_selected.connect(_on_node_selected)
 	_graph.gui_input.connect(_on_graph_gui_input)
 	_graph.connection_request.connect(_on_connection_request)
@@ -147,6 +156,42 @@ func _on_contacts_pressed() -> void:
 	_contacts_win.add_child(panel)
 	get_tree().get_root().add_child(_contacts_win)
 	_contacts_win.popup_centered()
+
+
+func _on_settings_pressed() -> void:
+	if _settings_win != null and is_instance_valid(_settings_win):
+		_settings_win.show()
+		(_settings_win.get_node("StorySettingsPanel") as Control).call("refresh")
+		return
+	_settings_win = Window.new()
+	_settings_win.title = _t("Paramètres du projet", "Project settings")
+	_settings_win.size = Vector2i(600, 700)
+	_settings_win.min_size = Vector2i(500, 400)
+	_settings_win.max_size = Vector2i(700, 0)
+	_settings_win.wrap_controls = true
+	_settings_win.close_requested.connect(func() -> void: _settings_win.hide())
+	var panel := preload("res://addons/story_editor/StorySettingsPanel.gd").new()
+	panel.name = "StorySettingsPanel"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.get_scene_ids  = func() -> Array: return _scenes.keys()
+	panel.begin_mutation = func(label: String) -> void: _begin_mutation(label)
+	panel.end_mutation   = func() -> void: _end_mutation()
+	panel.snapshot_file  = func(path: String) -> void: _snapshot_file(path)
+	panel.story_modified.connect(_on_refresh_pressed)
+	panel.error_occurred.connect(func(msg: String) -> void: _status_label.text = msg)
+	_settings_win.add_child(panel)
+	get_tree().get_root().add_child(_settings_win)
+	_settings_win.popup_centered()
+
+
+func _on_undo_pressed() -> void:
+	if undo_redo_manager != null:
+		undo_redo_manager.get_history_undo_redo(EditorUndoRedoManager.GLOBAL_HISTORY).undo()
+
+
+func _on_redo_pressed() -> void:
+	if undo_redo_manager != null:
+		undo_redo_manager.get_history_undo_redo(EditorUndoRedoManager.GLOBAL_HISTORY).redo()
 
 
 func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:

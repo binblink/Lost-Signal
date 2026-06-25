@@ -16,7 +16,7 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 
 ```
 +------------------------------------------------------------------------------+
-| [Refresh]  [Reformat]  [Contacts]                   11 scenes loaded         |
+| [Refresh]  [Reformat]  [Contacts]  [Settings]  |  [↩]  [↪]   11 scenes      |
 +------------------------------------------+-----------------------------------+
 |                                          |  scene_04                         |
 |  [> ch1_intro] --> [scene_01] --------> |  Contact  [Maeve         v]        |
@@ -42,7 +42,9 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
 - **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
-- **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for editing `story.json` without opening the file.
+- **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
+- **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
+- **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
@@ -204,9 +206,9 @@ Covered actions: connecting / disconnecting scenes, creating / deleting scenes, 
 
 ---
 
-## Contacts Panel
+## Settings Panel
 
-Click the **Contacts** button in the toolbar to open a floating window for editing `story.json` — the file that defines your characters and global settings. Everything writes immediately on change, with no Save button required.
+Click the **Settings** button in the toolbar to open a floating window for global project settings in `story.json`. Everything writes immediately on change, with no Save button required.
 
 ### Global fields
 
@@ -226,6 +228,27 @@ The **Languages** section lists the project's active languages (detected from th
 | Field + **+ Add** | Type an ISO 639-1 code (e.g. `de`) and click to add an empty column to `ui.csv`. Godot automatically regenerates the matching `.translation` file. |
 
 > Adding or removing a language here only affects `ui.csv` (interface strings). For a new language, you also need to create the localised dialogue file (e.g. `acte1.de.json`) and fill in the `history` text fields for each contact in the editor.
+
+### End screen
+
+The **End screen** section configures what is displayed after a scene marked `"end": true`.
+
+| Field | Interface |
+|---|---|
+| `title` | One field per active language — main title shown large. Saved as a localized dict when multiple languages are active, as a plain string when only one. |
+| `text` | One field per active language — secondary text below the title (teaser, coming soon…). Same format as `title`. |
+| `link URL` | Text field — URL opened on click (e.g. your itch.io page). Empty = no link shown |
+| `link label` | Text field — text shown on the link. Empty = the raw URL is shown |
+| `glitch` | Checkbox — enables text scramble on the title + animated scanlines + flicker |
+| `show_stats` | Checkbox — shows the number of messages exchanged during the session |
+
+To mark the final scene, add `"end": true` directly in that scene's JSON (see the [authoring guide](authoring_en.md#18-end-screen)).
+
+---
+
+## Contacts Panel
+
+Click the **Contacts** button in the toolbar to open a floating window for managing the character list in `story.json`. Everything writes immediately on change, with no Save button required.
 
 ### Contact list
 
@@ -248,21 +271,6 @@ Each contact is displayed as a card with all its configurable fields:
 - **×** on a history row — removes that entry immediately
 
 > **Renaming an `id`** is safe: the panel scans all currently loaded dialogue files and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
-
-### End screen
-
-The **End screen** section at the bottom of the Contacts panel configures what is displayed after a scene marked `"end": true`.
-
-| Field | Interface |
-|---|---|
-| `title` | One field per active language — main title shown large. Saved as a localized dict when multiple languages are active, as a plain string when only one. |
-| `text` | One field per active language — secondary text below the title (teaser, coming soon…). Same format as `title`. |
-| `link URL` | Text field — URL opened on click (e.g. your itch.io page). Empty = no link shown |
-| `link label` | Text field — text shown on the link. Empty = the raw URL is shown |
-| `glitch` | Checkbox — enables text scramble on the title + animated scanlines + flicker |
-| `show_stats` | Checkbox — shows the number of messages exchanged during the session |
-
-To mark the final scene, add `"end": true` directly in that scene's JSON (see the [authoring guide](authoring_en.md#18-end-screen)).
 
 ---
 
@@ -324,13 +332,15 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 |---|---|
 | `plugin.cfg` | Godot manifest (name, version) |
 | `plugin.gd` | `EditorPlugin` — adds/removes the panel |
-| `StoryEditorPanel.tscn` | Panel scene (`HSplitContainer[GraphEdit, ScrollContainer]`) + Contacts toolbar button |
-| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing; opens the Contacts window |
-| `ContactsPanel.gd` | Contacts panel — reads and writes `story.json`; communicates with the main panel via signals only |
+| `StoryEditorPanel.tscn` | Panel scene (`HSplitContainer[GraphEdit, ScrollContainer]`) + toolbar |
+| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing; opens the Contacts and Settings windows |
+| `StoryPanelBase.gd` | Shared base class for `ContactsPanel` and `StorySettingsPanel`: `story.json` read/write, undo/redo callables, UI helpers (`_section`, `_line_edit`, `_dropdown`, etc.) |
+| `ContactsPanel.gd` | Contacts panel — character list only; extends `StoryPanelBase` |
+| `StorySettingsPanel.gd` | Settings panel — global fields, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` — reads `story.json` + `dialogues/*.json` with locale support |
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).
 
-`ContactsPanel.gd` is likewise decoupled from `StoryEditorPanel.gd`: it receives four injected callables (`get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`) and communicates back via three signals (`story_modified`, `rename_contact_requested`, `error_occurred`). All dialogue file writes on contact rename go through `StoryEditorPanel`, which already owns `_write_json`. The `begin_mutation` / `end_mutation` / `snapshot_file` callables allow `ContactsPanel` to participate in the undo history without directly referencing `StoryEditorPanel`.
+Both `ContactsPanel.gd` and `StorySettingsPanel.gd` extend `StoryPanelBase.gd` and receive four callables injected by `StoryEditorPanel`: `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Both panels communicate back via the `story_modified` and `error_occurred` signals. `ContactsPanel` additionally emits `rename_contact_requested`, whose dialogue file writes are delegated to `StoryEditorPanel` (which owns `_write_json`).
 
 Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `_json_expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.

@@ -16,7 +16,7 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 
 ```
 +------------------------------------------------------------------------------+
-| [Refresh]  [Reformater]  [Contacts]               11 scenes chargees          |
+| [Refresh]  [Reformater]  [Contacts]  [Paramètres]  |  [↩]  [↪]   11 scenes  |
 +------------------------------------------+-----------------------------------+
 |                                          |  scene_04                         |
 |  [> ch1_intro] --> [scene_01] -------->  |  Contact  [Maeve         v]       |
@@ -42,7 +42,9 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
 - **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
-- **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour éditer `story.json` sans ouvrir le fichier.
+- **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
+- **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
+- **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 
@@ -204,9 +206,9 @@ Les actions couvertes : connexion / déconnexion de scènes, création / suppres
 
 ---
 
-## Panneau Contacts
+## Panneau Paramètres
 
-Cliquer sur le bouton **Contacts** dans la toolbar ouvre une fenêtre flottante pour éditer `story.json` — le fichier qui définit les personnages et la configuration globale. Chaque modification est écrite immédiatement, sans bouton Enregistrer.
+Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottante pour les réglages globaux du projet dans `story.json`. Chaque modification est écrite immédiatement, sans bouton Enregistrer.
 
 ### Champs globaux
 
@@ -226,6 +228,27 @@ La section **Langues** liste les langues actives du projet (détectées depuis l
 | Champ + **+ Ajouter** | Saisir un code ISO 639-1 (ex : `de`) et cliquer pour ajouter une colonne vide dans `ui.csv`. Godot régénère automatiquement le fichier `.translation` correspondant. |
 
 > Ajouter ou supprimer une langue ici ne modifie que `ui.csv` (chaînes d'interface). Pour une nouvelle langue, il faut également créer le fichier de dialogue localisé (ex : `acte1.de.json`) et remplir les champs `history` de chaque contact dans l'éditeur.
+
+### Écran de fin
+
+La section **Écran de fin** configure ce qui s'affiche après une scène marquée `"end": true`.
+
+| Champ | Interface |
+|---|---|
+| `title` | Un champ par langue active — titre principal affiché en grand. Sauvegardé comme dict localisé si plusieurs langues, comme string si une seule. |
+| `text` | Un champ par langue active — texte secondaire sous le titre (accroche, annonce de suite…). Même format que `title`. |
+| `lien URL` | Texte libre — URL ouverte au clic (ex : page itch.io). Vide = aucun lien |
+| `lien texte` | Texte libre — libellé affiché sur le lien. Vide = l'URL brute s'affiche |
+| `glitch` | Case à cocher — active le scramble de texte sur le titre + scanlines animées + flicker |
+| `show_stats` | Case à cocher — affiche le nombre de messages échangés pendant la session |
+
+Pour marquer la scène finale, ajoutez `"end": true` directement dans le JSON de la scène (voir [le guide auteur](authoring.md#18-écran-de-fin)).
+
+---
+
+## Panneau Contacts
+
+Cliquer sur le bouton **Contacts** dans la toolbar ouvre une fenêtre flottante pour gérer la liste des personnages dans `story.json`. Chaque modification est écrite immédiatement, sans bouton Enregistrer.
 
 ### Liste des contacts
 
@@ -248,21 +271,6 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 - **×** sur une ligne d'historique — supprime l'entrée immédiatement
 
 > **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue chargés et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
-
-### Écran de fin
-
-La section **Écran de fin** en bas du panneau Contacts configure ce qui s'affiche après une scène marquée `"end": true`.
-
-| Champ | Interface |
-|---|---|
-| `title` | Un champ par langue active — titre principal affiché en grand. Sauvegardé comme dict localisé si plusieurs langues, comme string si une seule. |
-| `text` | Un champ par langue active — texte secondaire sous le titre (accroche, annonce de suite…). Même format que `title`. |
-| `lien URL` | Texte libre — URL ouverte au clic (ex : page itch.io). Vide = aucun lien |
-| `lien texte` | Texte libre — libellé affiché sur le lien. Vide = l'URL brute s'affiche |
-| `glitch` | Case à cocher — active le scramble de texte sur le titre + scanlines animées + flicker |
-| `show_stats` | Case à cocher — affiche le nombre de messages échangés pendant la session |
-
-Pour marquer la scène finale, ajoutez `"end": true` directement dans le JSON de la scène (voir [le guide auteur](authoring.md#18-écran-de-fin)).
 
 ---
 
@@ -324,13 +332,15 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 |---|---|
 | `plugin.cfg` | Manifest Godot (nom, version) |
 | `plugin.gd` | `EditorPlugin` — ajoute/retire le panneau |
-| `StoryEditorPanel.tscn` | Scène du panneau (`HSplitContainer[GraphEdit, ScrollContainer]`) + bouton Contacts dans la toolbar |
-| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON ; ouvre la fenêtre Contacts |
-| `ContactsPanel.gd` | Panneau Contacts — lit et écrit `story.json` ; communique avec le panneau principal via signaux uniquement |
+| `StoryEditorPanel.tscn` | Scène du panneau (`HSplitContainer[GraphEdit, ScrollContainer]`) + toolbar |
+| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON ; ouvre les fenêtres Contacts et Paramètres |
+| `StoryPanelBase.gd` | Classe de base partagée par `ContactsPanel` et `StorySettingsPanel` : lecture/écriture de `story.json`, callables undo/redo, helpers UI (`_section`, `_line_edit`, `_dropdown`, etc.) |
+| `ContactsPanel.gd` | Panneau Contacts — liste des personnages uniquement ; étend `StoryPanelBase` |
+| `StorySettingsPanel.gd` | Panneau Paramètres — réglages globaux, langues, écran de fin ; étend `StoryPanelBase` |
 | `scene_parser.gd` | `RefCounted` autonome — lit `story.json` + `dialogues/*.json` avec support locale |
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).
 
-`ContactsPanel.gd` est de même découplé de `StoryEditorPanel.gd` : il reçoit quatre callables injectés (`get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`) et communique via trois signaux (`story_modified`, `rename_contact_requested`, `error_occurred`). Les écritures dans les fichiers de dialogue lors d'un renommage sont déléguées à `StoryEditorPanel`, qui possède déjà `_write_json`. Les callables `begin_mutation` / `end_mutation` / `snapshot_file` permettent à `ContactsPanel` de participer à l'historique d'annulation sans référencer directement `StoryEditorPanel`.
+`ContactsPanel.gd` et `StorySettingsPanel.gd` étendent tous deux `StoryPanelBase.gd` et reçoivent quatre callables injectés par `StoryEditorPanel` : `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Les deux panneaux communiquent avec le panneau principal via les signaux `story_modified` et `error_occurred`. `ContactsPanel` émet en plus `rename_contact_requested`, dont les écritures dans les fichiers de dialogue sont déléguées à `StoryEditorPanel` (qui possède `_write_json`).
 
 Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `_json_expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.
