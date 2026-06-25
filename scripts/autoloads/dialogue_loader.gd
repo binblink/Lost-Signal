@@ -11,6 +11,7 @@ var _title:          String     = ""
 var _triggers:       Dictionary = {}
 var validation_errors:   Array = []
 var validation_warnings: Array = []
+var _load_errors:        Array = []
 # [END SCREEN] — remove this line to remove the end screen feature.
 var _end_screen: Dictionary = {}
 # [/END SCREEN]
@@ -27,6 +28,7 @@ func reload_for_locale() -> void:
 	_triggers.clear()
 	validation_errors.clear()
 	validation_warnings.clear()
+	_load_errors.clear()
 	_load_story()
 	_load_dialogues_dir()
 	_validate()
@@ -109,7 +111,9 @@ func _load_scenes_from(path: String) -> void:
 				expanded.append_array(_normalize_message(m))
 			scene["messages_in"] = expanded
 		if _scenes.has(scene["id"]):
-			push_warning("DialogueLoader: duplicate ID '%s' in %s — skipped." % [scene["id"], path])
+			var _dup_msg: String = "Duplicate scene ID '%s' found in %s — first occurrence kept." % [scene["id"], path]
+			push_error("DialogueLoader: " + _dup_msg)
+			_load_errors.append(_dup_msg)
 			continue
 		_scenes[scene["id"]] = scene
 		var trigger = scene.get("trigger_after_scene", null)
@@ -261,7 +265,7 @@ func get_all_flags() -> Array:
 # ---------------------------------------------------------------------------
 
 func _validate() -> void:
-	var errors:   Array = []
+	var errors:   Array = _load_errors.duplicate()
 	var warnings: Array = []
 
 	var contact_ids: Array = _contacts.map(func(c): return c.get("id", ""))
