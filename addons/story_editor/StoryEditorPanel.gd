@@ -34,6 +34,7 @@ var undo_redo_manager: EditorUndoRedoManager = null
 var _in_mutation:       bool       = false
 var _current_snapshot:  Dictionary = {}
 var _current_label:     String     = ""
+var _fit_on_next_refresh: bool = false
 
 
 # ---------------------------------------------------------------------------
@@ -89,6 +90,8 @@ func _restore_snapshot(files: Dictionary) -> void:
 			f.store_string(content)
 			f.close()
 	_on_refresh_pressed()
+	if not _selected_scene_id.is_empty():
+		_populate_detail(_selected_scene_id)
 	if _contacts_win != null and is_instance_valid(_contacts_win):
 		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
 	if _settings_win != null and is_instance_valid(_settings_win):
@@ -111,7 +114,9 @@ func _make_stripe(index: int) -> VBoxContainer:
 
 
 func _ready() -> void:
-	_refresh_button.pressed.connect(_on_refresh_pressed)
+	_refresh_button.pressed.connect(func() -> void:
+		_fit_on_next_refresh = true
+		_on_refresh_pressed())
 	_reformat_button.pressed.connect(_on_reformat_pressed)
 	_contacts_button.pressed.connect(_on_contacts_pressed)
 	_settings_button.pressed.connect(_on_settings_pressed)
@@ -225,6 +230,7 @@ func _on_detach_pressed() -> void:
 	win.add_child(new_panel)
 	get_tree().get_root().add_child(win)
 	win.popup_centered()
+	new_panel._fit_on_next_refresh = true
 	new_panel._on_refresh_pressed()
 
 
@@ -399,6 +405,9 @@ func _compute_layout(scenes: Dictionary, outgoing: Dictionary) -> Dictionary:
 
 
 func _fit_view(positions: Dictionary) -> void:
+	if not _fit_on_next_refresh:
+		return
+	_fit_on_next_refresh = false
 	if positions.is_empty() or _graph.size.x < 10:
 		return
 	var max_x := 0.0
