@@ -134,7 +134,7 @@ This applies to any call that returns `Variant`: `Dictionary.get()`, `Array` ele
 Full spec: `docs/authoring_en.md`
 
 - Scene chain: `next` (after `free_input` or `trigger_after_scene`), `choices[].next`
-- Conditional display: `requires_flag` (string or array) or `condition` (structured with `and`/`or`/`flag`/`var`)
+- Conditional display: `requires_flag` (string or array) or `condition` (structured with `and`/`or`/`not`/`flag`/`var`)
 - Effects on message or choice: `{ "op": "set"|"add"|"sub", "var": "...", "value": ... }` or `{ "op": "rename"|"set_status", "contact": "...", "value": "..." }`
 - `free_input`: captures player text into a variable; use `free_input_placeholder` for the hint text; variable available as `{var_name}` in later messages
 - `text` as array: expands into multiple bubbles; `pause`/`effects` on first, `time` on last

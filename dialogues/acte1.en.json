@@ -44,6 +44,7 @@
 			]
 		},
 		{
+			"_notes": "No next on choices — the follow-up comes via scene_intro_05 (trigger_after_scene: scene_12). Mom takes time to reply.",
 			"id": "scene_intro_04",
 			"contact_id": "Maman",
 			"trigger_after_scene": "scene_intro_03",
@@ -51,20 +52,22 @@
 				{"text": "It's mom! Are you coming to stay for a few days next week? Hugs. Mom"}
 			],
 			"choices": [
-				{"text": "Yes mom", "message": "Yes mom"},
-				{"text": "No mom", "message": "No mom"},
+				{"text": "Yes mom", "message": "Yes mom", "flag": "answer_mom"},
+				{"text": "No mom", "message": "No mom", "flag": "answer_mom"},
 				{"text": "Why?", "message": "Why do you always put 'It's Mom' at the start of your messages? I know perfectly well it's you!", "flag": "question_mom"}
 			]
 		},
 		{
 			"id":"scene_intro_05",
 			"contact_id":"Maman",
-			"trigger_after_scene": "scene_intro_03",
+			"trigger_after_scene": "scene_12",
 			"messages_in":[
-				{"text":"It's mom! I want to make sure you know it's me. I wouldn't want you to get confused."}
+				{"text":"It's mom! I want to make sure you know it's me. I wouldn't want you to get confused. Hugs. Mom", "requires_flag":"question_mom"},
+				{"text":"It's mom! Ok. Hugs. Mom", "requires_flag":"answer_mom"},
+				{"text":"Answer your mother! Ungrateful child!", "condition":{"not":{"or":[{"flag": "answer_mom"},{"flag":"question_mom"}]}}}
 			],
 			"choices":[
-				{"text":"No chance", "message":"Don't worry at all. There's no way I'd ever mix you up with anyone else!"}
+				{"text":"No chance", "message":"Don't worry at all. There's no way I'd ever mix you up with anyone else!", "requires_flag":"question_mom"}
 			]
 		},
 		{

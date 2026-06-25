@@ -559,6 +559,7 @@ Chaque nœud peut être :
 - `{ "flag": "nom_flag" }` — vérifie un flag
 - `{ "var": "...", "op": "...", "value": ... }` — compare une variable
 - `{ "and": [...] }` ou `{ "or": [...] }` — sous-expression
+- `{ "not": { ... } }` — inverse n'importe quel nœud
 
 **ET entre un flag et une variable :**
 
@@ -580,6 +581,12 @@ Chaque nœud peut être :
     { "flag": "react_u" }
   ]
 }
+```
+
+**NOT — message affiché uniquement si le flag n'est PAS posé :**
+
+```json
+"condition": { "not": { "flag": "a_repondu_maman" } }
 ```
 
 **Imbrication :**

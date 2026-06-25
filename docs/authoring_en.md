@@ -559,6 +559,7 @@ Each node can be:
 - `{ "flag": "flag_name" }` — checks a flag
 - `{ "var": "...", "op": "...", "value": ... }` — compares a variable
 - `{ "and": [...] }` or `{ "or": [...] }` — sub-expression
+- `{ "not": { ... } }` — negates any node
 
 **AND between a flag and a variable:**
 
@@ -580,6 +581,12 @@ Each node can be:
     { "flag": "react_u" }
   ]
 }
+```
+
+**NOT — message shown only if flag is NOT set:**
+
+```json
+"condition": { "not": { "flag": "replied_maman" } }
 ```
 
 **Nested:**

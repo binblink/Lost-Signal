@@ -38,12 +38,13 @@
 				{"text": "Vous avez raison, je crois qu'il y a rien à espérer...", "requires_flag": "pathetic_salesman"},
 				{"text": "QUOI? Vous êtes en train de me prendre pour un fou c'est ça?", "requires_flag": "pathetic_salesman2"},
 				{"text": "VOUS VOULEZ UN MESSAGE DE CONFIRMATION ?? PAS DE PROBLEME, JE VOUS LE CONFIRME...", "requires_flag": "stop_requested"},
-				{"text": "JE ME DECARCASSE POUR VOUS TROUVER LES MEILLEURS PRIX ET LES MEILLEURS BON PLANS SUR DE VRAIES CHOSES UTILES A VOTRE VIE ET J'AI DROIT A QUOI DU MEPRIS!!!\nVOUS NE ME MERITEZ PAS!! \nVOUS NE MERITEZ RIEN!!!", "requires_flag": "dont_care"},
+				{"text": ["JE ME DECARCASSE POUR VOUS TROUVER LES MEILLEURS PRIX ET LES MEILLEURS BON PLANS SUR DE VRAIES CHOSES UTILES A VOTRE VIE ET J'AI DROIT A QUOI???", "DU MEPRIS!!!", "VOUS NE ME MERITEZ PAS!! \nVOUS NE MERITEZ RIEN!!!"], "requires_flag": "dont_care"},
 				{"text": "VOUS ETES PATHETIQUE!!!", "pause": "short"},
 				{"text": "PATHETIQUE!!!"}
 			]
 		},
 		{
+			"_notes": "Pas de next sur les choix — la suite arrive via scene_intro_05 (trigger_after_scene: scene_12). Maman met du temps à répondre.",
 			"id": "scene_intro_04",
 			"contact_id": "Maman",
 			"trigger_after_scene": "scene_intro_03",
@@ -51,20 +52,23 @@
 				{"text": "C'est maman! Tu viens passer quelques jours à la maison la semaine prochaine? Bise. Maman"}
 			],
 			"choices": [
-				{"text": "Oui maman", "message": "Oui maman"},
-				{"text": "Non maman", "message": "Non maman"},
+				{"text": "Oui maman", "message": "Oui maman", "flag":"answer_mom"},
+				{"text": "Non maman", "message": "Non maman", "flag":"answer_mom"},
 				{"text": "Pourquoi?", "message": "Pourquoi tu mets toujours 'C'est Maman' au debut de tes messages? Je sais très bien que c'est toi!", "flag": "question_mom"}
 			]
 		},
 		{
 			"id":"scene_intro_05",
 			"contact_id":"Maman",
-			"trigger_after_scene": "scene_intro_03",
+			"trigger_after_scene": "scene_12",
 			"messages_in":[
-				{"text":"C'est maman! Je veux être sûr que tu saches que c'est moi. Je voudrais pas que tu confondes."}
+				{"text":"C'est maman! Je veux être sûr que tu saches que c'est moi. Je voudrais pas que tu confondes.", "requires_flag":"question_mom"},
+				{"text":"C'est maman! Ok. Bise. Maman", "requires_flag":"answer_mom"},
+				{"text":["Tu réponds pas à ta mère!?", "Quelle indignité..."], "condition":{"not":{"or":[{"flag": "answer_mom"},{"flag":"question_mom"}]}}},
+				{"text":"...sur le service public!", "pause":"short", "edit":{"type":"delete","delay":3}, "condition":{"not":{"or":[{"flag": "answer_mom"},{"flag":"question_mom"}]}}}
 			],
 			"choices":[
-				{"text":"Aucun risque", "message":"Ne t'inquiète surtout pas. Il y a aucun risque que je te confonde avec une autre!"}
+				{"text":"Aucun risque", "message":"Ne t'inquiète surtout pas. Il y a aucun risque que je te confonde avec une autre!", "requires_flag":"question_mom"}
 			]
 		},
 		{

@@ -5,6 +5,7 @@ extends Control
 @onready var _btn_continue    = %BtnContinue
 @onready var _btn_new_game    = %BtnNewGame
 @onready var _btn_settings    = %BtnSettings
+@onready var _btn_quit        = %BtnQuit
 @onready var _overlay         = %Overlay
 @onready var _settings_dialog = %SettingsDialog
 
@@ -35,7 +36,8 @@ func _ready() -> void:
 	ThemeManager.restyle_button(_btn_continue, ThemeManager.topbar_color)
 	ThemeManager.restyle_button(_btn_new_game, ThemeManager.accent_color)
 	ThemeManager.restyle_button(_btn_settings, ThemeManager.topbar_color)
-	for btn in [_btn_continue, _btn_new_game, _btn_settings]:
+	ThemeManager.restyle_button(_btn_quit, ThemeManager.topbar_color)
+	for btn in [_btn_continue, _btn_new_game, _btn_settings, _btn_quit]:
 		btn.add_theme_color_override("font_color", ThemeManager.text_color)
 		btn.add_theme_font_size_override("font_size", ThemeManager.font_size)
 
@@ -47,6 +49,7 @@ func _ready() -> void:
 	_btn_continue.pressed.connect(_on_continue)
 	_btn_new_game.pressed.connect(_on_new_game)
 	_btn_settings.pressed.connect(_on_settings_pressed)
+	_btn_quit.pressed.connect(func() -> void: get_tree().quit())
 	_settings_dialog.accepted.connect(_on_settings_accepted)
 	_settings_dialog.cancelled.connect(func(): _overlay.visible = false)
 

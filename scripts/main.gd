@@ -123,9 +123,12 @@ func _setup_ui() -> void:
 
 
 func _start_game() -> void:
-	if DialogueLoader.has_validation_issues():
+	var _report := DialogueLoader.get_validation_report()
+	if not (_report["errors"] as Array).is_empty():
 		overlay.visible = true
-		_validation_dialog.open(DialogueLoader.get_validation_report())
+		_validation_dialog.open(_report)
+	elif OS.is_debug_build() and not (_report["warnings"] as Array).is_empty():
+		_validation_dialog.open(_report)
 
 	if OS.is_debug_build():
 		var debug_overlay := preload("res://scripts/debug_overlay.gd").new()

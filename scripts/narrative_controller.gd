@@ -335,6 +335,8 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 			if _eval_cond_node(sub):
 				return true
 		return false
+	if cond.has("not"):
+		return not _eval_cond_node(cond["not"])
 	if cond.has("flag"):
 		return flags.get(cond["flag"], false)
 	if cond.has("var"):
