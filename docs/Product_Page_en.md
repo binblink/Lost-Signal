@@ -172,7 +172,26 @@ Story state is saved **after every player choice and every received message**. F
 ---
 
 ### 🛠 Authoring workflow
-A complete game requires only:
+
+**1. Define your contacts**
+Open the Contacts panel from the Story Editor toolbar. Add a character: name, avatar, starting status. Thirty seconds per contact.
+
+**2. Create scenes in the graph**
+Right-click the graph background. Type a scene ID, pick a contact, choose the target file. A node appears.
+
+**3. Write messages and choices**
+Click the node. The detail panel opens on the right. Type messages, add choices with their reply text and destination scene — all from form fields.
+
+**4. Connect scenes**
+Drag from an output port to another node's input port. The `next` field is written to JSON automatically.
+
+**5. Add logic when needed**
+Flags, conditions, effects, triggers — all available from dropdowns in the detail panel. No JSON to open for common cases.
+
+**6. Test immediately**
+Press **F5** in Godot. Press **F9** to jump to any scene, set flags, inject variables — without replaying from the start.
+
+That's the loop: write → connect → test → iterate. A complete game requires only:
 
 ```
 story.json           ← contacts and starting scene
@@ -181,7 +200,7 @@ assets/              ← images, audio and music (optional)
 theme.json           ← visual style (optional)
 ```
 
-The Story Editor creates and edits all of this from inside Godot. JSON files remain available for direct editing when needed. No scripting, no nodes, no scenes to touch.
+No scripting, no nodes, no scenes to touch.
 
 ---
 
@@ -212,6 +231,22 @@ The Story Editor creates and edits all of this from inside Godot. JSON files rem
 ```
 
 Two messages arrive. The player picks a response. A variable updates. The story continues — no code written.
+
+---
+
+## 🏗 Why not build it yourself?
+
+You could. Here's what it actually takes.
+
+**The messaging UI** — chat bubbles (sent/received), correct text wrapping, scrolling, timestamps, contact switching, unread badges, animated typing indicator, image and audio bubbles with playback, avatars, status indicators. Realistic estimate: **2–4 weeks** for a clean, production-ready implementation.
+
+**The narrative engine** — flag and variable system with save/load, conditional message display with `and`/`or` logic, branching choices with effects, background trigger system, real-time delay scheduling persisted across sessions, free text input with variable injection. Another **3–6 weeks**.
+
+**The tooling** — debug overlay to jump to scenes without replaying, in-game story validator, visual graph editor with direct JSON editing. **2–4 weeks**, if you build them at all.
+
+**Grand total: 2–4 months of infrastructure** before you write a single line of story. And that's if you've done something similar before.
+
+Lost Signal gives you all of it on day one.
 
 ---
 

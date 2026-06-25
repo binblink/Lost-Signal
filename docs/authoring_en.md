@@ -736,6 +736,39 @@ No intermediate choice needed here. The scene triggers at the end of another via
 
 > **Note**: `resume_after_delay` works with any contact (`contact_id`). A secondary contact scene with a delay will arrive in the right conversation at the right time, with its notification badge.
 
+### Pattern 3 — Scene that plays when the player opens a contact
+
+When the player switches to a contact, the engine automatically sets the flag `opened_{contact_id}`. Combine this with `resume_after_flag` to trigger a scene the moment (or shortly after) the player opens that conversation.
+
+The key difference from a background scene: because the player is already looking at the conversation when the flag fires, the scene plays **live** (with typing indicator, animations, and `edit` effects) rather than being silently added to history.
+
+```json
+[
+  {
+    "id": "scene_mom_01",
+    "contact_id": "mom",
+    "trigger_after_scene": "some_earlier_scene",
+    "messages_in": [
+      { "text": "Did you arrive safely?" }
+    ],
+    "choices": [...]
+  },
+  {
+    "id": "scene_mom_02",
+    "contact_id": "mom",
+    "trigger_after_scene": "scene_mom_01",
+    "resume_after_flag": "opened_mom",
+    "messages_in": [
+      { "text": "...", "pause": "short", "edit": { "type": "delete", "delay": 2 } }
+    ]
+  }
+]
+```
+
+`scene_mom_02` queues up after `scene_mom_01`. When the player opens the `mom` conversation, the flag `opened_mom` is set, and `scene_mom_02` plays immediately — animated, in real time, with the delete effect firing after 2 seconds.
+
+> **Note**: the flag `opened_{contact_id}` is set every time the player switches to that contact. If the scene has already played, it won't replay — `resume_after_flag` is consumed on first use.
+
 ## 13. Validation
 
 The game automatically validates `story.json` and all `dialogues/*.json` files on launch in Godot.

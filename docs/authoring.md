@@ -736,6 +736,39 @@ Ici aucun choix intermédiaire n'est nécessaire. La scène se déclenche à la 
 
 > **Note** : `resume_after_delay` fonctionne avec n'importe quel contact (`contact_id`). Une scène secondaire avec un délai arrivera dans la conversation du bon contact au moment prévu, avec son badge de notification.
 
+### Pattern 3 — Scène déclenchée à l'ouverture d'un contact
+
+Quand le joueur bascule sur un contact, le moteur pose automatiquement le flag `opened_{contact_id}`. En combinant cela avec `resume_after_flag`, tu peux déclencher une scène au moment où le joueur ouvre cette conversation.
+
+La différence clé avec une scène de fond : comme le joueur est déjà sur la conversation quand le flag se déclenche, la scène joue **en direct** (avec indicateur de saisie, animations, et effets `edit`) plutôt que d'être silencieusement ajoutée à l'historique.
+
+```json
+[
+  {
+    "id": "scene_maman_01",
+    "contact_id": "Maman",
+    "trigger_after_scene": "une_scene_anterieure",
+    "messages_in": [
+      { "text": "Tu es bien arrivée?" }
+    ],
+    "choices": [...]
+  },
+  {
+    "id": "scene_maman_02",
+    "contact_id": "Maman",
+    "trigger_after_scene": "scene_maman_01",
+    "resume_after_flag": "opened_Maman",
+    "messages_in": [
+      { "text": "...", "pause": "short", "edit": { "type": "delete", "delay": 2 } }
+    ]
+  }
+]
+```
+
+`scene_maman_02` se met en attente après `scene_maman_01`. Quand le joueur ouvre la conversation de Maman, le flag `opened_Maman` est posé, et `scene_maman_02` se joue immédiatement — animée, en temps réel, avec l'effet de suppression au bout de 2 secondes.
+
+> **Note** : le flag `opened_{contact_id}` est posé à chaque fois que le joueur bascule sur ce contact. Si la scène a déjà joué, elle ne rejoue pas — `resume_after_flag` est consommé à la première utilisation.
+
 ## 13. Validation
 
 Le jeu valide automatiquement `story.json` et tous les fichiers `dialogues/*.json` au lancement dans Godot.

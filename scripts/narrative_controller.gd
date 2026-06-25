@@ -353,6 +353,10 @@ func _eval_cond_node(cond: Dictionary) -> bool:
 	return false
 
 
+func set_flag(flag_name: String) -> void:
+	_set_flag(flag_name)
+
+
 func _set_flag(flag_name: String) -> void:
 	flags[flag_name] = true
 	if deferred_scenes.has(flag_name):

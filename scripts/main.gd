@@ -261,6 +261,7 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	await message_display.render_history(_narrative.contact_histories.get(contact_id, []))
 	await message_display.scroll_to_bottom()
 	input_bar.visible = true
+	_narrative.set_flag("opened_" + contact_id)
 	await _narrative.restore_pending_choice_for(contact_id)
 
 

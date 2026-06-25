@@ -172,7 +172,26 @@ L'état de l'histoire est sauvegardé **après chaque choix du joueur et chaque 
 ---
 
 ### 🛠 Workflow d'écriture
-Un jeu complet ne nécessite que :
+
+**1. Définir vos contacts**
+Ouvrez le panneau Contacts depuis la barre d'outils du Story Editor. Ajoutez un personnage : nom, avatar, statut de départ. Trente secondes par contact.
+
+**2. Créer des scènes dans le graphe**
+Clic droit sur le fond du graphe. Saisissez un identifiant de scène, choisissez un contact, sélectionnez le fichier cible. Un nœud apparaît.
+
+**3. Écrire les messages et les choix**
+Cliquez sur le nœud. Le panneau de détail s'ouvre à droite. Tapez les messages, ajoutez des choix avec leur texte de réponse et la scène de destination — tout depuis des champs de formulaire.
+
+**4. Connecter les scènes**
+Faites glisser depuis un port de sortie vers le port d'entrée d'un autre nœud. Le champ `next` est écrit dans le JSON automatiquement.
+
+**5. Ajouter de la logique si besoin**
+Flags, conditions, effets, déclencheurs — tous accessibles depuis des menus déroulants dans le panneau de détail. Aucun JSON à ouvrir pour les cas courants.
+
+**6. Tester immédiatement**
+Appuyez sur **F5** dans Godot. Appuyez sur **F9** pour sauter à n'importe quelle scène, poser des flags, injecter des variables — sans rejouer depuis le début.
+
+C'est la boucle : écrire → connecter → tester → itérer. Un jeu complet ne nécessite que :
 
 ```
 story.json           ← contacts et scène de départ
@@ -181,7 +200,7 @@ assets/              ← images, audio et musique (optionnel)
 theme.json           ← style visuel (optionnel)
 ```
 
-Le Story Editor crée et édite tout cela depuis Godot. Les fichiers JSON restent disponibles pour les éditions directes quand c'est nécessaire. Aucun script, aucun nœud, aucune scène à toucher.
+Aucun script, aucun nœud, aucune scène à toucher.
 
 ---
 
@@ -212,6 +231,22 @@ Le Story Editor crée et édite tout cela depuis Godot. Les fichiers JSON resten
 ```
 
 Deux messages arrivent. Le joueur choisit une réponse. Une variable se met à jour. L'histoire continue — aucun code écrit.
+
+---
+
+## 🏗 Pourquoi ne pas le faire soi-même ?
+
+Vous pouvez. Voici ce que ça implique vraiment.
+
+**L'interface de messagerie** — bulles de chat (envoyé/reçu), retour à la ligne correct, défilement, horodatages, changement de contact, badges de messages non lus, indicateur de saisie animé, bulles image et audio avec interface de lecture, avatars, indicateurs de statut. Estimation réaliste : **2 à 4 semaines** pour une implémentation propre et production-ready.
+
+**Le moteur narratif** — système de flags et de variables avec sauvegarde/chargement, affichage conditionnel des messages avec logique `and`/`or`, choix à embranchements avec effets, système de déclenchement en arrière-plan, planification de délais en temps réel persistée entre les sessions, saisie libre avec injection de variables. Encore **3 à 6 semaines**.
+
+**Les outils** — overlay de debug pour sauter à n'importe quelle scène sans rejouer depuis le début, validateur d'histoire in-game, éditeur de graphe visuel avec édition JSON directe. **2 à 4 semaines**, si vous les construisez.
+
+**Total : 2 à 4 mois d'infrastructure** avant d'écrire une seule ligne d'histoire. Et c'est si vous avez déjà fait quelque chose de similaire.
+
+Lost Signal vous donne tout ça dès le premier jour.
 
 ---
 

@@ -277,6 +277,9 @@ func _validate() -> void:
 			var f = choice.get("flag", null)
 			if f != null and not f in flags_set:
 				flags_set.append(f)
+	# opened_{contact_id} flags are set by main.gd on contact switch — always valid
+	for cid: String in contact_ids:
+		flags_set.append("opened_" + cid)
 
 	# start_contact
 	if _start_contact != "" and not _start_contact in contact_ids:
@@ -424,6 +427,9 @@ func _check_condition(cond: Dictionary, label: String, flags_set: Array, warning
 	if cond.has("or"):
 		for i in range(cond["or"].size()):
 			_check_condition(cond["or"][i], "%s.or[%d]" % [label, i], flags_set, warnings, errors)
+		return
+	if cond.has("not"):
+		_check_condition(cond["not"], "%s.not" % label, flags_set, warnings, errors)
 		return
 	if cond.has("flag"):
 		if not cond["flag"] in flags_set:

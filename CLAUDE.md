@@ -139,5 +139,6 @@ Full spec: `docs/authoring_en.md`
 - `free_input`: captures player text into a variable; use `free_input_placeholder` for the hint text; variable available as `{var_name}` in later messages
 - `text` as array: expands into multiple bubbles; `pause`/`effects` on first, `time` on last
 - `resume_after_delay`: accepts `300`, `"5m"`, `"1h"` — delay is wall-clock time, survives game restarts
+- `opened_{contact_id}` flag: automatically set by `main.gd` whenever the player switches to a contact — use with `resume_after_flag` to trigger a scene the moment the player opens that conversation (plays animated/live, enabling `edit` effects)
 - Max 4 choices per scene (extras silently ignored)
 - `_notes` field on any scene is ignored by the engine (safe to use freely)
