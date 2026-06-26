@@ -18,6 +18,9 @@ const V_SPACING := 280.0
 @onready var _undo_button:     Button        = %UndoButton
 @onready var _redo_button:     Button        = %RedoButton
 @onready var _graph:           GraphEdit     = %GraphEdit
+
+var _locale_option: OptionButton = null
+var _ui_locale: String = OS.get_locale_language()
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
 const STRIPE_A := Color(0.18, 0.18, 0.22)
@@ -134,6 +137,21 @@ func _ready() -> void:
 		"Open in a separate window.\nThe window can be maximized.")
 	detach_btn.pressed.connect(_on_detach_pressed)
 	_refresh_button.get_parent().add_child(detach_btn)
+
+	_locale_option = OptionButton.new()
+	var detected: Array[String] = SceneParser.detect_locales()
+	for loc: String in detected:
+		_locale_option.add_item(loc)
+	_locale_option.tooltip_text = _t("Langue d'édition du dialogue", "Dialogue editing language")
+	_locale_option.item_selected.connect(func(idx: int) -> void:
+		var loc: String = _locale_option.get_item_text(idx)
+		_parser.locale_override = loc
+		_ui_locale = loc
+		_on_refresh_pressed()
+		if not _selected_scene_id.is_empty():
+			_populate_detail(_selected_scene_id)
+	)
+	_refresh_button.get_parent().add_child(_locale_option)
 
 
 func _on_contacts_pressed() -> void:
@@ -895,7 +913,7 @@ func _ordered_choice(choice: Dictionary) -> Dictionary:
 
 
 func _t(fr: String, en: String) -> String:
-	return fr if OS.get_locale_language() == "fr" else en
+	return fr if _ui_locale == "fr" else en
 
 
 func _port_color(conn_type: String) -> Color:

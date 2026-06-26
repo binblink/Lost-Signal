@@ -25,6 +25,8 @@ Press **F5** (or the ▶ button at the top right).
 
 The *Maeve* demo opens: go through a few exchanges to see what the engine can do — animated bubbles, multiple choices, secondary contact, image in a bubble.
 
+![Game interface — conversation and contact list](screenshots/game_conversation.png)
+
 ---
 
 ## Step 3 — Enable the Story Editor
@@ -37,6 +39,8 @@ Click it. You'll see the graph of all the demo scenes. Click a node to see its c
 
 > Take a few minutes to explore `acte1.json` from the graph — it's your reference model.
 
+![Story Editor — scene graph](screenshots/editor_graph.png)
+
 ---
 
 ## Step 4 — Create your contact
@@ -45,7 +49,7 @@ In the Story Editor, click **Contacts** (top bar).
 
 The Contacts panel lets you configure `story.json` without opening the file:
 
-1. Delete or rename the existing contact to fit your story
+1. If you want a clean start, delete the demo contacts. If you want to keep the demo as a reference, click **+ Contact** to add yours without touching the existing ones.
 2. Set an **ID** (e.g. `emma`), a **display name**, a **status** (`online`, `away`, `offline`, `network_issue`)
 3. Check **Main contact** — this is the character the player talks to from the start
 4. Click **Save**
@@ -64,10 +68,10 @@ The Contacts panel lets you configure `story.json` without opening the file:
       "id": "intro",
       "contact_id": "emma",
       "messages_in": [
-        { "text": "Hey there!", "out": false }
+        { "text": "Hey there!" }
       ],
       "choices": [
-        { "text": "Hi!", "next": null }
+        { "text": "Hi!" }
       ]
     }
   ]
@@ -80,7 +84,7 @@ The Contacts panel lets you configure `story.json` without opening the file:
 
 ## Step 6 — Set the starting scene
 
-In the Contacts panel, **Start scene** field: type `intro` (the ID of your first scene).
+In the **Settings** panel (the **Settings** button in the Story Editor toolbar), select `intro` from the **Start scene** dropdown.
 
 Or directly in `story.json`: `"start_scene": "intro"`.
 
@@ -94,6 +98,8 @@ If `story.json` or your JSON file has an error, a validation window appears with
 
 If everything is correct, your first dialogue appears.
 
+> **Played the game before?** A previous save may be hiding your new content. From the main menu, click **New Game** to start fresh.
+
 ---
 
 ## Step 8 — Build from the Story Editor
@@ -104,6 +110,8 @@ Once the project runs, work primarily from the Story Editor:
 - **Drag an output port to an input port** → connect two scenes (`next`)
 - **Click a node** → edit text, pauses, choices, effects in the right panel
 - **F9 in-game** → debug tool: jump to any scene instantly without replaying from the start
+
+![Story Editor — detail panel](screenshots/editor_panel.png)
 
 ---
 

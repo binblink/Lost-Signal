@@ -314,7 +314,7 @@ Le moteur convertit automatiquement une chaîne en objet `{ "text": "..." }`.
 }
 ```
 
-### Champs recommandés
+### Champs disponibles
 
 - `text` : contenu du message. Peut être `null` si un média est envoyé. Accepte aussi un **tableau de chaînes** pour enchaîner plusieurs bulles en une seule déclaration — voir ci-dessous.
 - `pause` : `short`, `medium`, `long`.

@@ -40,6 +40,8 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 
 Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[~ id]` = free input · `- - ->` = trigger connection
 
+![Story Editor — scene graph](screenshots/editor_graph.png)
+
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
 - **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
 - **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
@@ -86,6 +88,8 @@ If a scene has neither choices nor `next`, a **→ ?** port is shown: dragging f
 ---
 
 ## Detail Panel
+
+![Story Editor — detail panel](screenshots/editor_panel.png)
 
 > **The editor is a practical aid for writing scenes without touching JSON.** It covers the vast majority of common use cases. Some advanced features (structured `and`/`or` conditions, media, deferred corrections, music) are only accessible via direct JSON editing — see [What JSON Allows Beyond the Editor](#what-json-allows-beyond-the-editor) at the end of this document.
 
@@ -216,7 +220,7 @@ Click the **Settings** button in the toolbar to open a floating window for globa
 |---|---|
 | `title` | Text field — displayed in menus and the window title bar |
 | `start_scene` | Scene dropdown — first scene played on a new game |
-| `start_contact` | Contact dropdown — contact shown on screen after the start scene; if empty, the main contact is used |
+| `start_contact` | Contact dropdown — contact whose conversation is shown on screen at launch; if empty, the main contact is used |
 
 ### Languages
 

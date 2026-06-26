@@ -4,6 +4,50 @@ var start_scene: String = ""
 var contacts: Array = []
 var chosen_files: Dictionary = {}   # base_name → file_name (relatif à dialogues/)
 var error_message: String = ""
+var locale_override: String = ""    # si non vide, utilisé à la place de settings.json
+
+
+static func detect_locales() -> Array[String]:
+	var dir := DirAccess.open("res://dialogues")
+	if dir == null:
+		return []
+	var locales: Array[String] = []
+	var has_base := false
+	dir.list_dir_begin()
+	var f := dir.get_next()
+	while f != "":
+		if not dir.current_is_dir() and f.ends_with(".json"):
+			var base: String = f.get_basename()
+			var parts := base.split(".")
+			if parts.size() == 2:
+				var loc: String = parts[1]
+				if loc not in locales:
+					locales.append(loc)
+			elif parts.size() == 1:
+				has_base = true
+		f = dir.get_next()
+	dir.list_dir_end()
+	locales.sort()
+	if has_base:
+		var base_locale: String = _read_base_locale()
+		if base_locale not in locales:
+			locales.insert(0, base_locale)
+	return locales
+
+
+static func _read_base_locale() -> String:
+	if not FileAccess.file_exists("res://story.json"):
+		return "fr"
+	var sf := FileAccess.open("res://story.json", FileAccess.READ)
+	if sf == null:
+		return "fr"
+	var parsed: Variant = JSON.parse_string(sf.get_as_text())
+	sf.close()
+	if parsed is Dictionary:
+		var settings: Dictionary = parsed.get("settings", {})
+		var lang: String = settings.get("default_language", "fr")
+		return lang
+	return "fr"
 
 
 func parse_all() -> Dictionary:
@@ -70,6 +114,8 @@ func parse_all() -> Dictionary:
 
 
 func _read_locale() -> String:
+	if locale_override != "":
+		return locale_override
 	var settings := _read_json("user://settings.json")
 	return settings.get("language", "fr")
 

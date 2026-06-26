@@ -1,6 +1,6 @@
 # 💬 Lost Signal — Moteur narratif de messagerie en temps réel (Godot 4.6)
 
-> Créez des jeux narratifs interactifs à travers une interface de messagerie en temps réel — celle que les joueurs reconnaissent depuis Discord, Teams et les apps de chat modernes.
+> Créez des jeux narratifs interactifs à travers une interface de messagerie en temps réel — celle que les joueurs reconnaissent depuis Discord, WhatsApp et les apps de chat modernes.
 > **Aucune programmation requise. Construisez visuellement avec le Story Editor, ou écrivez du JSON directement.**
 
 ---
@@ -278,11 +278,11 @@ Lost Signal vous donne tout ça dès le premier jour.
 
 **Les histoires linéaires sont faciles. Les histoires parallèles demandent de la préparation.** Une histoire à un seul contact avec des choix à embranchements est simple à construire. Les narratives multi-contacts — où les personnages vous écrivent indépendamment et se coupent — nécessitent de réfléchir à la structure avant d'écrire. Les outils sont là ; le travail de design est le vôtre.
 
-**Le guide d'écriture est votre référence, pas un tutoriel.** `docs/authoring.md` couvre chaque champ et chaque fonctionnalité, mais suppose que vous cherchez quelque chose, pas que vous apprenez de zéro. Commencez par le scénario de démonstration et modifiez-le — c'est la façon la plus rapide d'entrer.
+**Le guide d'écriture est votre référence, pas un tutoriel.** `docs/authoring.md` couvre chaque champ et chaque fonctionnalité, mais suppose que vous cherchez quelque chose, pas que vous apprenez de zéro. Commencez par le scénario de démonstration et modifiez-le — c'est la façon la plus rapide d'entrer. Consultez le **[Guide de démarrage](getting_started.md)** pour aller de l'ouverture du projet à votre premier dialogue en 8 étapes.
 
 ---
 
 ## ⚠️ Prérequis
 
-- Godot 4.6
+- Godot 4.6 ou supérieur
 - Aucune dépendance externe ni plugin tiers

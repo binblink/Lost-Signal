@@ -40,6 +40,8 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 
 Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X id]` = fin de parcours · `[~ id]` = saisie libre · `- - ->` = connexion trigger
 
+![Story Editor — graphe des scènes](screenshots/editor_graph.png)
+
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
 - **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
 - **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
@@ -86,6 +88,8 @@ Si une scène n'a ni choix ni `next`, un port **→ ?** est affiché : il permet
 ---
 
 ## Panneau de détail
+
+![Story Editor — panneau de détail](screenshots/editor_panel.png)
 
 > **L'éditeur est une aide pratique pour écrire des scènes sans toucher au JSON.** Il couvre la grande majorité des cas d'usage courants. Certaines fonctionnalités avancées (conditions structurées `and`/`or`, médias, corrections différées, musique) restent accessibles uniquement via l'édition directe du fichier JSON — voir la section [Ce que le JSON permet en plus](#ce-que-le-json-permet-en-plus) en fin de document.
 
@@ -216,7 +220,7 @@ Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottan
 |---|---|
 | `title` | Texte libre — affiché dans les menus et la barre de titre de la fenêtre |
 | `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
-| `start_contact` | Dropdown de contacts — contact affiché à l'écran après la scène de départ ; si vide, le contact principal est utilisé |
+| `start_contact` | Dropdown de contacts — contact dont la conversation est affichée à l'écran au lancement ; si vide, le contact principal est utilisé |
 
 ### Langues
 

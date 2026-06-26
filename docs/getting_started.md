@@ -25,6 +25,8 @@ Appuyez sur **F5** (ou le bouton ▶ en haut à droite).
 
 La démo *Maeve* s'ouvre : parcourez quelques échanges pour voir ce que le moteur peut faire — bulles animées, choix multiples, contact secondaire, image dans une bulle.
 
+![Interface du jeu — conversation et liste des contacts](screenshots/game_conversation.png)
+
 ---
 
 ## Étape 3 — Activer le Story Editor
@@ -37,6 +39,8 @@ Cliquez dessus. Vous voyez le graphe de toutes les scènes de la démo. Cliquez 
 
 > Prenez quelques minutes pour explorer `acte1.json` depuis le graphe — c'est votre modèle de référence.
 
+![Story Editor — graphe des scènes](screenshots/editor_graph.png)
+
 ---
 
 ## Étape 4 — Créer votre contact
@@ -45,7 +49,7 @@ Dans le Story Editor, cliquez **Contacts** (barre du haut).
 
 Le panneau Contacts vous permet de configurer `story.json` sans ouvrir le fichier :
 
-1. Supprimez ou renommez le contact existant selon votre histoire
+1. Si vous voulez partir de zéro, supprimez les contacts de la démo. Si vous voulez garder la démo comme référence, cliquez **+ Contact** pour ajouter le vôtre sans toucher aux contacts existants.
 2. Définissez un **ID** (ex: `emma`), un **nom affiché**, un **statut** (`online`, `away`, `offline`, `network_issue`)
 3. Cochez **Contact principal** — c'est le personnage avec qui le joueur parle dès le lancement
 4. Cliquez **Sauvegarder**
@@ -64,10 +68,10 @@ Le panneau Contacts vous permet de configurer `story.json` sans ouvrir le fichie
       "id": "intro",
       "contact_id": "emma",
       "messages_in": [
-        { "text": "Bonjour !", "out": false }
+        { "text": "Bonjour !" }
       ],
       "choices": [
-        { "text": "Bonjour à toi.", "next": null }
+        { "text": "Bonjour à toi." }
       ]
     }
   ]
@@ -80,7 +84,7 @@ Le panneau Contacts vous permet de configurer `story.json` sans ouvrir le fichie
 
 ## Étape 6 — Définir la scène de départ
 
-Dans le panneau Contacts, champ **Scène de départ** : entrez `intro` (l'ID de votre première scène).
+Dans le panneau **Paramètres** (bouton **Paramètres** dans la barre d'outils du Story Editor), sélectionnez `intro` dans le menu déroulant **Scène de départ**.
 
 Ou directement dans `story.json` : `"start_scene": "intro"`.
 
@@ -94,6 +98,8 @@ Si `story.json` ou votre fichier JSON contient une erreur, une fenêtre de valid
 
 Si tout est correct, votre premier dialogue s'affiche.
 
+> **Vous avez déjà lancé le jeu avant ?** La sauvegarde précédente peut masquer votre nouveau contenu. Depuis le menu principal, cliquez **Nouvelle partie** pour repartir de zéro.
+
 ---
 
 ## Étape 8 — Continuer depuis le Story Editor
@@ -104,6 +110,8 @@ Une fois le projet lancé, travaillez principalement depuis le Story Editor :
 - **Glisser un port de sortie vers un port d'entrée** → connecter deux scènes (`next`)
 - **Cliquer sur un nœud** → éditer les textes, pauses, choix, effets dans le panneau de droite
 - **F9 en jeu** → outil de debug : sauter directement à n'importe quelle scène sans rejouer depuis le début
+
+![Story Editor — panneau de détail](screenshots/editor_panel.png)
 
 ---
 
