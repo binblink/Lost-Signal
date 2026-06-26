@@ -9,6 +9,7 @@ func refresh() -> void:
 		child.free()
 	var data := _read_story()
 	_build_global(data)
+	_build_timing()
 	_build_languages()
 	_build_end_screen(data)
 
@@ -51,6 +52,36 @@ func _build_global(data: Dictionary) -> void:
 			_write_story(d),
 		_t("Contact affiché à l'écran après la scène de départ.\nSi vide, le contact principal est montré par défaut.",
 			"Contact shown on screen after the start scene.\nIf empty, the main contact is shown by default."))
+
+
+# ---------------------------------------------------------------------------
+# UI — typing speed
+
+func _build_timing() -> void:
+	var theme_data := _read_theme()
+	_section(_content, _t("Vitesse de frappe", "Typing speed"), Color(0.10, 0.16, 0.20))
+
+	_spinbox(_content,
+		_t("Contacts", "Contacts"),
+		float(theme_data.get("contact_typing_speed", 0.08)),
+		0.01, 0.50, 0.01,
+		func(val: float) -> void:
+			var d := _read_theme()
+			d["contact_typing_speed"] = val
+			_write_theme(d),
+		_t("Délai par caractère pour l'indicateur '…' des contacts (secondes). Défaut : 0.08",
+			"Per-character delay for the contact '…' indicator (seconds). Default: 0.08"))
+
+	_spinbox(_content,
+		_t("Joueur", "Player"),
+		float(theme_data.get("player_typing_speed", 0.05)),
+		0.01, 0.50, 0.01,
+		func(val: float) -> void:
+			var d := _read_theme()
+			d["player_typing_speed"] = val
+			_write_theme(d),
+		_t("Délai par caractère lors de la frappe du joueur (secondes). Défaut : 0.05",
+			"Per-character delay for player message typing (seconds). Default: 0.05"))
 
 
 # ---------------------------------------------------------------------------

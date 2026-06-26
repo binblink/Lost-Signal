@@ -211,7 +211,7 @@
 		{
 			"id": "scene_11",
 			"messages_in": [
-				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des tâches..."], "requires_flag": "lost_key"},
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des taches..."], "requires_flag": "lost_key"},
 				{"text": ["Et risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag": "lockpick"}
 			],
 			"choices": [
@@ -222,7 +222,7 @@
 		{
 			"id": "scene_12",
 			"messages_in": [
-				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des tâches..."], "requires_flag": "lockpick"},
+				{"text": ["C'est le premier truc que j'ai vérifié.", "J'ai rien vu d'autre que quelques boules de poussières et des taches..."], "requires_flag": "lockpick"},
 				{"text": ["T'as cru que j'allais risquer de casser la serrure et de rester bloquée ici?", "Merci mais non merci..."], "requires_flag": "lost_key"},
 				{"text": ["Je pose le téléphone le temps de chercher autre chose", "Je t'écris dès que j'ai une piste"], "pause": "medium"}
 			],
@@ -258,19 +258,95 @@
 				{"text": ["J'ai rien fait du tout!", "J'étais en train de regarder un papier et d'un coup plus rien...", "Noir complet...", "Je crois que je suis au bord de la crise cardiaque."], "pause": "short", "requires_flag": "your_fault?"}
 			],
 			"choices": [
-				{"text": "Reste calme", "message": ["Reste calme Maeve.", "Je comprends que ça te fasse peur mais c'est rien.", "On va trouver un truc!"], "flag": "keep_going", "next": "scene_16"},
-				{"text": "Telephone?", "message": ["Il faut essayer quelque chose.", "Le téléphone que t'as trouvé...", "Il fait pas lampe-torche ?"], "flag": "torch", "next": "scene_16"}
+				{"text": "Reste calme", "message": ["Reste calme Maeve.", "Essaye de penser à un truc positif.", "Quelqu'un de ta famille? Des amis? Un mec?"], "flag": "keep_going", "next": "scene_15_a1"},
+				{"text": "C'est pas le moment!", "message": ["C'est pas le moment de faire une crise cardiaque Maeve!", "Y'a plus d'electricité donc on pourra pas te réanimer si ça arrive! :P"], "flag": "no_cpr", "next": "scene_15_b1"}
 			]
+		},
+		{
+			"id":"scene_15_a1",
+			"messages_in": [
+				{"text":["Un mec? Quelle idée...", "J'aime beaucoup trop ma liberté pour ça!"], "pause":"short" }
+			],
+			"choices":[
+				{"text":"Un chien ?", "message": ["Je sais pas moi...", "... un chien ?"], "flag":"dog", "next":"scene_15_a2"},
+				{"text":"Un chat ?", "message":["Je sais pas moi...", "... un chat ?"],"flag":"cat", "next":"scene_15_a2"}
+			]
+		},
+		{
+			"id":"scene_15_a2",
+			"messages_in":[
+				{"text": ["Euhh... Pardon mais t'es devin? :0", "Comment t'as pu savoir que je parlais de mon chat??"], "requires_flag":"cat"},
+				{"text": ["Presque!", "J'ai un chat!", "Pas juste un chat d'ailleurs", "Le plus beau chat du monde!"], "requires_flag":"dog"}
+			],
+			"choices":[
+				{"text": "Objectivité totale", "message":["On est vraiment face à un cas d'objectivité totale!", "Un moment rare dans une vie!"], "flag":"objectivity", "requires_flag":"dog", "next":"scene_15_a3"},
+				{"text": "Chiens > Chats", "message":["Je préfère les chiens perso...", "J'ai toujours l'impression que les chats me regardent de façon méprisante", "Ca me stresse!"], "flag":"dogs_ftw", "requires_flag":"dog", "next":"scene_15_a3"},
+				{"text":"Tout à fait !", "message":["Tout à fait !", "C'est un don qui se transmet de génération en génération.", "Contre une somme conséquente, je fais revenir l'être aimé et je guéris les maladies par message!"], "flag":"magician", "requires_flag":"cat", "next":"scene_15_a3"},
+				{"text":"Personne seule = Chat", "message":["Tu veux pas de mec...", "Y'a rien de plus mignon qu'un chat...", "Partant de là, j'avais une chance sur deux !"], "flag":"lonely_cat", "requires_flag":"cat", "next":"scene_15_a3"}
+			]
+		},
+		{
+			"id":"scene_15_a3",
+			"messages_in":[
+				{"text":["Et ça me fait plaisir que tu t'en rendes compte! :D", "Il me manque mon petit chat! :(", "Faut absolument que je sorte d'ici!"], "requires_flag":"objectivity"},
+				{"text":["Hahaha :)", "Je comprends mais tu sais...", "Un chat qui te méprise, il s'embête même pas à te regarder!", "Faut pas que ça te stresse.", "Rester coincé dans le noir dans une pièce bizarre, ça, ça mérite de stresser!"], "requires_flag":"dogs_ftw"},
+				{"text":["Ok madame Irma! :D", "Avant de faire revenir l'être aimé, faudrait déjà le faire venir! T'as pas plutot moyen de faire revenir la lumière ou ouvrir les portes par hasard?"], "requires_flag":"magician"},
+				{"text":["Ah ouais donc on se connait depuis quelques minutes et à tes yeux je suis déjà la folle au chat? Super!! :D", "Bon esprit de déduction en tout cas!", "Si tu pouvais le mettre à profit pour que la lumière revienne ça serait encore mieux! :)"], "requires_flag":"lonely_cat"}
+			],
+			"choices":[
+				{"text":"Tu vas sortir", "message":["T'inquiète pas, tu vas sortir et retrouver ta merveilleuse boule de poil méprisante!",  {"text": "A deux on va forcément y arriver!", "pause": "short"}, "D'ailleurs, t'as pas une idée pour faire un peu de lumière ?"], "requires_flag":"objectivity", "next":"scene_16"},
+				{"text":"C'est quand même pas normal!", "message":["Je comprends ce que tu dis et t'as peut être raison", "Mais je persiste, les chats c'est angoissant!", "Peut être pas autant qu'être enfermé sans lumière mais bon, au moins t'as un téléphone!"], "requires_flag":"dogs_ftw", "next":"scene_16"},
+				{"text":"{player_name} Irma STP", "message":["{player_name} Irma s'il te plait!", "Et je suis pas voyant mais si je faisais venir l'être aimé dans la pièce, là, tout de suite, je pense que tu ferais une crise cardiaque :D", "Et non je fais pas revenir la lumière, je comptais sur toi pour ça!"], "requires_flag":"magician", "next":"scene_16"},
+				{"text":"C'est pas moi qui l'ai dit...", "message":["J'ai pas dit 'folle au chat'", "J'ai juste deviné du premier coup", "Le problème c'est que j'ai tout donné sur cette déduction", "J'ai plus rien en stock pour ces histoires de lumière!"], "requires_flag":"lonely_cat", "next":"scene_16"}
+			]
+
+		},
+		{
+			"id":"scene_15_b1",
+			"messages_in":[
+				{"text":"Dans un univers alternatif où l'électricité ne s'est pas coupée, j'aimerais bien voir comment tu t'y prendrais pour me réanimer depuis une messagerie!" }
+			],
+			"choices":[
+				{"text":"Un tuto", "message":["Il doit bien y avoir un tuto Youtube pour ça...", "Y'a des tutos pour tout !"], "flag":"tuto", "next":"scene_15_b2"},
+				{"text":"Je suis formé", "message":["J'ai une certification de sauveteur à distance!", "J'ai déja sauvé 4 personnes sur Reddit et 2 complotistes sur Facebook.", "Faudra juste que je relise la partie sur la réanimation par message en cas de crise cardiaque, j'étais absent au moment où le sujet a été abordé!"], "flag":"savior", "next":"scene_15_b2"}
+			]
+		},
+		{
+			"id":"scene_15_b2",
+			"messages_in":[
+				{"text":["Un tuto YouTube ?", "Le temps que tu regardes le tuto et que tu bouges une oreille, j'aurais le temps de mourir 10 fois!"], "requires_flag":"tuto"},
+				{"text":["Ok docteur House! :D", "J'approuve pas le sauvetage de complotistes, t'aurais peut être dû t'arrêter à Reddit!", "Et c'est dommage cette absence pendant la certification...", "T'étais à deux doigts de pouvoir postuler dans un service de réanimation en full remote!"], "requires_flag":"savior"}
+			],
+			"choices":[
+				{"text":"Certes...", "message":["C'est vrai...", "Mais au moins j'aurai essayé!", "Et au pire, si ça échoue, ça me fera toujours une super anecdote à raconter en soirée!"], "requires_flag":"tuto", "flag":"anecdote", "next":"scene_15_b3"},
+				{"text":"Mais non!", "message":["Mais non!", {"text":"Je regarderai la vidéo en vitesse x2 pour limiter les dégats!", "pause":"short"}, "Du coup t'auras le temps de mourir que 5 fois! :P"], "requires_flag":"tuto", "flag":"video_rush", "next":"scene_15_b3"},
+				{"text":"Absence justifiée", "message":["J'ai tenté de postuler!", "J'ai reçu des mails d'insultes et je suis maintenant banni de 4 hopitaux de ma région...", "En pour mon absence, elle était justifiée!", "J'étais sur un cursus double avec une formation de pompier spécialisé dans la gestion des incendies par messages vocaux!" ], "requires_flag":"savior", "flag":"missed_school", "next":"scene_15_b3"},
+				{"text":"J'ai prété serment", "message":["Nous, les sauveteurs à distance, on prête serment pour pouvoir exercer!", "On doit tout donner pour sauver tout ceux qui ont besoin d'être sauvé.", "Platiste, dentiste, pianiste... peu importe le iste..."], "requires_flag":"savior", "flag":"oath", "next":"scene_15_b3" }
+			]
+		},
+		{
+			"id":"scene_15_b3",
+			"messages_in":[
+				{"text":["C'est vraiment rassurant de savoir que quoiqu'il m'arrive, je continuerai d'exister par le biais d'une anecdote...", "Tant que je suis encore en vie, t'as pas un tuto YouTube qui existe comment s'echapper d'une pièce flippante sans électricité?"], "requires_flag":"anecdote"},
+				{"text":["T'es au courant que, même si je les adore, je suis pas un chat et que j'ai qu'une seule vie?", "Va falloir que tu lises la vidéo en x10 si je veux avoir une chance!", "Sinon tu peux pas regarder si y'a un tuto pour réanimer les compteurs électrique à distance?"], "requires_flag":"video_rush"},
+				{"text":["Je crois que t'es trop en avance sur ton temps", "Les hopitaux sont pas encore prêts pour ce niveau de dématérialisation.", "Ce qui est dommage de mon point de vue, c'est que t'aies pas choisi une formation d'électricien à distance", "Ca m'aurait été vachement plus utile!" ], "requires_flag":"missed_school"},
+				{"text":["Ahh c'est le fameux serment d'e-pocrate ? :D", "Ta formation elle marche aussi avec les choses en ique, genre les compteurs electrique?", "Dans ma situation, ça serait très pratIQUE!"], "requires_flag":"oath"}
+			],
+			"choices":[
+				{"text":"Pas 'juste' une anecdote", "message":["Tu seras pas juste une anecdote","J'essaierai surement de vendre ton histoire à Netflix pour faire un documentaire ou un mini série!", "Y'a pas de petit profit! :D" , "J'ai regardé pour les tutos pour sortir et j'ai rien trouvé...", "T'as pas une idée de ton coté ?"], "next":"scene_16", "requires_flag":"anecdote"},
+				{"text":"Je suis pas un robot", "message":["Lire la vidéo en x10 c'est peut être un peu ambitieux, même pour la personne géniale que je suis!", "Je suis pas un robot!", "J'ai pas trouvé de tuto pour la réanimation de compteurs...", "T'as pas une idée de ton coté ?"], "next":"scene_16", "requires_flag":"video_rush"},
+				{"text":"Génie incompris", "message":["Un jour mon talent sera reconnu!", "Je rejoindrai la longue liste des génies incompris!", "C'est vrai que j'aurai pu anticiper que faire une formation d'electricien à distance me serait utile...", "Pour le jour ou une inconnue plongée dans le noir dans un lieu tout aussi inconnu m'enverrai un message  pour me demander de l'aide!", "Toujours rien de ton coté pour éclairer la pièce ?"], "next":"scene_16", "requires_flag":"missed_school"},
+				{"text":"Que les êtres vivants", "message":["Je suis pas sur mais je crois que ça fonctionne que sur les êtres vivants...", "J'ai pas encore eu l'occasion d'essayer de faire un massage cardiaque a distance sur un compteur electrique!", "Si on le trouve, tu peux toujours essayer et me dire si ça fonctionne!", "Sinon on peut aussi essayer de trouver autre chose!", "T'as pas une idée de ton coté ?"], "next":"scene_16", "requires_flag":"oath"}
+			]
+
 		},
 		{
 			"id": "scene_16",
 			"messages_in": [
-				{"text": ["T'as raison, il faut que je me reprenne.", "La priorité c'est de sortir."], "pause": "short"},
-				{"text": ["Je crois que le téléphone fait lampe-torche.", "Je vais essayer de l'allumer."], "pause": "medium", "requires_flag": "keep_going"},
-				{"text": ["Je crois que t'as raison pour le téléphone.", "Attends, j'essaye..."], "pause": "medium", "requires_flag": "torch"}
+				{"text": ["Je crois que le téléphone fait lampe-torche.", "Je vais essayer de l'allumer."], "pause": "medium"}
 			],
 			"choices": [
-				{"text": "Ok", "message": "Ok, je continue de réfléchir pendant ce temps.", "next": "scene_17"}
+				{"text": "Ok", "message": "Ok, je crois les doigts pour que ça fonctionne.", "next": "scene_17"}
 			]
 		},
 		{
@@ -286,7 +362,7 @@
 		{
 			"id": "scene_18a",
 			"messages_in": [
-				{"text": ["Ohh!", "Bien vu!", "Si ça marche je vais être obligé de te considérer comme un génie !", "Attends, j'essaye..."], "pause": "medium"},
+				{"text": ["Ohh!", "Bien vu!", "Si ça marche je vais être obligée de te considérer comme un génie !", "Attends, j'essaye..."], "pause": "medium"},
 				{"text": "OH PUTAIN!!!"}
 			],
 			"choices": [

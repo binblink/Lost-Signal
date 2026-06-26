@@ -1,5 +1,7 @@
 # Maeve // Lost Signal — Guide auteur
 
+_Dernière mise à jour : 27 juin 2026_
+
 Ce document explique comment écrire du contenu narratif pour le moteur de messages.
 Le principe : un auteur doit uniquement fournir des fichiers JSON bien formés, sans modifier le code.
 
@@ -492,6 +494,24 @@ Un choix est un objet avec au moins `text`.
 ```
 
 Dans cet exemple, le choix affiche d'abord le label `Mouais… curieux quand même.`, puis le joueur envoie deux messages à la suite.
+
+### Pause entre les bulles d'un choix
+
+Dans un tableau `message`, chaque élément peut être une chaîne ou un objet `{ "text": "...", "pause": "short" }`. Cela permet d'ajouter une pause avant la bulle suivante, exactement comme dans `messages_in`.
+
+```json
+{
+  "text": "On va y arriver.",
+  "message": [
+    "T'inquiète pas, tu vas t'en sortir!",
+    { "text": "À deux on va forcément trouver quelque chose.", "pause": "short" },
+    "T'as pas une idée pour faire un peu de lumière?"
+  ],
+  "next": "scene_suivante"
+}
+```
+
+Valeurs acceptées pour `pause` : `short`, `medium`, `long` — mêmes durées que pour les messages entrants.
 
 ## 7. Effets
 

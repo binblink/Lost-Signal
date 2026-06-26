@@ -9,10 +9,6 @@ const AudioBubbleIn  = preload("res://scenes/MessageBubbleAudioIn.tscn")
 const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 
 var line_edit: LineEdit = null
-var typing_speed: float = 0.05
-
-func _ready() -> void:
-	typing_speed = ThemeManager.typing_speed
 
 func _apply_emoticons(text: String) -> String:
 	return text \
@@ -122,7 +118,7 @@ func show_typing(text: String) -> bool:
 	var indicator = TypingIndicator.instantiate()
 	add_child(indicator)
 	await scroll_to_bottom()
-	var base_duration = text.length() * 0.08
+	var base_duration = text.length() * ThemeManager.contact_typing_speed
 	for c in text:
 		if c == "." or c == "!" or c == "?":
 			base_duration += 0.3
@@ -143,7 +139,7 @@ func type_message(text: String) -> void:
 		AudioManager.play_typing_click()
 		if line_edit:
 			line_edit.text = text.substr(0, i + 1)
-		var delay = typing_speed
+		var delay = ThemeManager.player_typing_speed
 		if i > 0 and (text[i - 1] == "." or text[i - 1] == "!" or text[i - 1] == "?" or text[i - 1] == ","):
 			delay += randf_range(0.1, 0.3)
 		else:

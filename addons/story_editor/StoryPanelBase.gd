@@ -13,6 +13,7 @@ var snapshot_file:  Callable = func(_path: String) -> void: pass
 var get_scene_ids: Callable = func() -> Array: return []
 
 const STORY_PATH := "res://story.json"
+const THEME_PATH := "res://theme.json"
 const CSV_PATH   := "res://translations/ui.csv"
 
 var _content: VBoxContainer
@@ -122,6 +123,49 @@ func _ordered_contact(c: Dictionary) -> Dictionary:
 
 
 # ---------------------------------------------------------------------------
+# theme.json read / write
+
+func _read_theme() -> Dictionary:
+	var f := FileAccess.open(THEME_PATH, FileAccess.READ)
+	if f == null:
+		return {}
+	var parsed = JSON.parse_string(f.get_as_text())
+	f.close()
+	return parsed if parsed is Dictionary else {}
+
+
+func _write_theme(data: Dictionary) -> void:
+	var tmp_path := THEME_PATH + ".tmp"
+	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
+	if f == null:
+		error_occurred.emit(_t("Erreur écriture : theme.json", "Write error: theme.json"))
+		return
+	f.store_string(JSON.stringify(_ordered_theme(data), "\t") + "\n")
+	f.close()
+	if FileAccess.file_exists(THEME_PATH):
+		DirAccess.remove_absolute(THEME_PATH)
+	var dir := DirAccess.open("res://")
+	if dir == null:
+		error_occurred.emit(_t("Erreur écriture : theme.json", "Write error: theme.json"))
+		return
+	dir.rename("theme.json.tmp", "theme.json")
+
+
+func _ordered_theme(data: Dictionary) -> Dictionary:
+	const KEYS := ["_note", "background_color", "topbar_color", "bubble_in_color",
+		"bubble_out_color", "accent_color", "text_color", "time_color",
+		"font_size", "contact_typing_speed", "player_typing_speed", "title_glitch"]
+	var result := {}
+	for k in KEYS:
+		if data.has(k):
+			result[k] = data[k]
+	for k in data:
+		if not result.has(k):
+			result[k] = data[k]
+	return result
+
+
+# ---------------------------------------------------------------------------
 # Widget helpers
 
 func _section(container: VBoxContainer, title: String, bg_color: Color = Color(0.15, 0.15, 0.18)) -> void:
@@ -193,6 +237,22 @@ func _label(parent: HBoxContainer, text: String, min_width: int) -> void:
 	lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
 	parent.add_child(lbl)
+
+
+func _spinbox(container: VBoxContainer, label: String, initial: float, min_val: float, max_val: float, step: float, on_change: Callable, tooltip: String = "") -> void:
+	var row := HBoxContainer.new()
+	_label(row, label, 110)
+	var spin := SpinBox.new()
+	spin.min_value = min_val
+	spin.max_value = max_val
+	spin.step = step
+	spin.value = initial
+	spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	if not tooltip.is_empty():
+		spin.tooltip_text = tooltip
+	spin.value_changed.connect(func(val: float) -> void: on_change.call(val))
+	row.add_child(spin)
+	container.add_child(row)
 
 
 func _checkbox(container: VBoxContainer, label: String, initial: bool, on_change: Callable, tooltip: String = "") -> void:

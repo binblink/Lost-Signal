@@ -212,7 +212,7 @@ Covered actions: connecting / disconnecting scenes, creating / deleting scenes, 
 
 ## Settings Panel
 
-Click the **Settings** button in the toolbar to open a floating window for global project settings in `story.json`. Everything writes immediately on change, with no Save button required.
+Click the **Settings** button in the toolbar to open a floating window for global project settings. Everything writes immediately on change, with no Save button required. Global fields and typing speeds are saved to `story.json` and `theme.json` respectively.
 
 ### Global fields
 
@@ -221,6 +221,18 @@ Click the **Settings** button in the toolbar to open a floating window for globa
 | `title` | Text field — displayed in menus and the window title bar |
 | `start_scene` | Scene dropdown — first scene played on a new game |
 | `start_contact` | Contact dropdown — contact whose conversation is shown on screen at launch; if empty, the main contact is used |
+<<<<<<< HEAD
+=======
+
+### Typing speed
+
+Configures typing delays in `theme.json`. Changes take effect on the next game launch.
+
+| Field | Interface |
+|---|---|
+| Contacts | SpinBox (0.01–0.50 s) — per-character delay for the `…` indicator shown while a contact is "typing". Default: `0.08` |
+| Player | SpinBox (0.01–0.50 s) — per-character delay for player reply typing. Default: `0.05` |
+>>>>>>> 7ba31cc (feat: language switcher in story editor toolbar + screenshots added to the md files)
 
 ### Languages
 

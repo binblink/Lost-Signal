@@ -212,7 +212,7 @@ Les actions couvertes : connexion / déconnexion de scènes, création / suppres
 
 ## Panneau Paramètres
 
-Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottante pour les réglages globaux du projet dans `story.json`. Chaque modification est écrite immédiatement, sans bouton Enregistrer.
+Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottante pour les réglages globaux du projet. Chaque modification est écrite immédiatement, sans bouton Enregistrer. Les champs globaux et les vitesses de frappe sont sauvegardés respectivement dans `story.json` et `theme.json`.
 
 ### Champs globaux
 
@@ -221,6 +221,18 @@ Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottan
 | `title` | Texte libre — affiché dans les menus et la barre de titre de la fenêtre |
 | `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
 | `start_contact` | Dropdown de contacts — contact dont la conversation est affichée à l'écran au lancement ; si vide, le contact principal est utilisé |
+<<<<<<< HEAD
+=======
+
+### Vitesse de frappe
+
+Configure les délais de saisie dans `theme.json`. Les modifications prennent effet au prochain lancement du jeu.
+
+| Champ | Interface |
+|---|---|
+| Contacts | SpinBox (0.01–0.50 s) — délai par caractère pour l'indicateur `…` affiché pendant qu'un contact "écrit". Défaut : `0.08` |
+| Joueur | SpinBox (0.01–0.50 s) — délai par caractère lors de la frappe des réponses du joueur. Défaut : `0.05` |
+>>>>>>> 7ba31cc (feat: language switcher in story editor toolbar + screenshots added to the md files)
 
 ### Langues
 

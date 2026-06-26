@@ -18,7 +18,7 @@ There are no automated tests. Validation runs automatically at launch: if `story
 |---|---|---|
 | `DialogueLoader` | `scripts/autoloads/dialogue_loader.gd` | Loads `story.json` and all `dialogues/*.json`; exposes scenes, contacts, triggers; runs structural validation on startup |
 | `SaveManager` | `scripts/autoloads/save_manager.gd` | Read/write `user://savegame.json` (JSON); serialises `NarrativeController.get_state()` |
-| `ThemeManager` | `scripts/autoloads/theme_manager.gd` | Loads `theme.json`; exposes colours and `font_size`/`typing_speed`; helpers `restyle_panel`, `restyle_bubble`, `restyle_choice_button` |
+| `ThemeManager` | `scripts/autoloads/theme_manager.gd` | Loads `theme.json`; exposes colours, `font_size`, `contact_typing_speed`, `player_typing_speed`; helpers `restyle_panel`, `restyle_bubble`, `restyle_choice_button` |
 | `SettingsManager` | `scripts/autoloads/settings_manager.gd` | Loads `user://settings.json`; manages language, volume, resolution; loads `translations/ui.csv` into `TranslationServer` |
 | `AudioManager` | `scripts/autoloads/audio_manager.gd` | Procedurally generates notification beep and typing click (no audio file needed); handles music playback with fade/duck |
 
@@ -134,6 +134,7 @@ This applies to any call that returns `Variant`: `Dictionary.get()`, `Array` ele
 Full spec: `docs/authoring_en.md`
 
 - Scene chain: `next` (after `free_input` or `trigger_after_scene`), `choices[].next`
+- Pause in player messages: `choices[].message` array items can be `{ "text": "...", "pause": "short" }` — same values as `messages_in`
 - Conditional display: `requires_flag` (string or array) or `condition` (structured with `and`/`or`/`not`/`flag`/`var`)
 - Effects on message or choice: `{ "op": "set"|"add"|"sub", "var": "...", "value": ... }` or `{ "op": "rename"|"set_status", "contact": "...", "value": "..." }`
 - `free_input`: captures player text into a variable; use `free_input_placeholder` for the hint text; variable available as `{var_name}` in later messages

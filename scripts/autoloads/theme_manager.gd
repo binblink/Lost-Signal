@@ -10,7 +10,8 @@ var accent_color:     Color = Color(0.0,         0.65882355, 0.5176471)
 var text_color:       Color = Color(0.9137255,   0.92941177, 0.9372549)
 var time_color:       Color = Color(0.5254902,   0.5882353,  0.627451)
 var font_size:        int   = 15
-var typing_speed:     float = 0.05
+var contact_typing_speed: float = 0.08
+var player_typing_speed:  float = 0.05
 var title_glitch:     bool  = true
 
 
@@ -57,7 +58,9 @@ func _load() -> void:
 	if data.has("text_color"):       text_color       = Color(data["text_color"])
 	if data.has("time_color"):       time_color       = Color(data["time_color"])
 	if data.has("font_size"):        font_size        = int(data["font_size"])
-	if data.has("typing_speed"):     typing_speed     = float(data["typing_speed"])
+	if data.has("contact_typing_speed"): contact_typing_speed = float(data["contact_typing_speed"])
+	if data.has("player_typing_speed"):  player_typing_speed  = float(data["player_typing_speed"])
+	elif data.has("typing_speed"):        player_typing_speed  = float(data["typing_speed"])
 	if data.has("title_glitch"):     title_glitch     = bool(data["title_glitch"])
 
 

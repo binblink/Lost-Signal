@@ -1,5 +1,7 @@
 # Maeve // Lost Signal — Authoring Guide
 
+_Last updated: 27 June 2026_
+
 This document explains how to write narrative content for the messaging engine.
 The idea: an author only needs to provide well-formed JSON files — no code changes required.
 
@@ -492,6 +494,24 @@ A choice is an object with at least a `text` field.
 ```
 
 In this example, the choice displays the label `Hmm… curious though.`, then the player sends two messages in sequence.
+
+### Pause Between Bubbles in a Choice
+
+In a `message` array, each item can be either a string or an object `{ "text": "...", "pause": "short" }`. This lets you add a pause before the next bubble, exactly like in `messages_in`.
+
+```json
+{
+  "text": "We'll figure it out.",
+  "message": [
+    "Don't worry, you're going to get out of there!",
+    { "text": "Together we'll find something.", "pause": "short" },
+    "Any idea how to get some light in there?"
+  ],
+  "next": "next_scene"
+}
+```
+
+Accepted values for `pause`: `short`, `medium`, `long` — same durations as for incoming messages.
 
 ## 7. Effects
 

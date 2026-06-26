@@ -410,7 +410,7 @@ func _check_choice(choice: Dictionary, ctx: String, j: int, flags_set: Array, co
 	if msg_data != null:
 		if msg_data is Array:
 			for k in range(msg_data.size()):
-				if not msg_data[k] is String:
+				if not msg_data[k] is String and not msg_data[k] is Dictionary:
 					errors.append("%s message[%d] must be a string." % [label, k])
 		elif not msg_data is String:
 			errors.append("%s 'message' must be a string or array of strings." % label)

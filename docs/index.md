@@ -87,7 +87,9 @@ Le framework utilise quelques concepts simples pour construire des histoires :
 
 ### Ce qui est sans risque
 
-- **`theme.json`** : couleurs, taille de police, vitesse de frappe, et options d'interface. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
+- **`theme.json`** : couleurs, taille de police, vitesses de frappe, et options d'interface. Tous les champs sont optionnels — un fichier invalide ou absent revient simplement au thème par défaut.
+  - `contact_typing_speed` (nombre flottant) : délai par caractère pour l'indicateur `…` des contacts (secondes). Défaut : `0.08`.
+  - `player_typing_speed` (nombre flottant) : délai par caractère lors de la saisie du joueur (secondes). Défaut : `0.05`.
   - `title_glitch` (`true` / `false`) : active ou désactive l'animation de glitch sur le titre du menu principal. Défaut : `true`.
 - **Repositionner ou redimensionner** des nœuds dans l'éditeur Godot.
 - **Modifier les marges, espacements, couleurs** dans l'inspecteur.

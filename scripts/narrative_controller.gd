@@ -224,7 +224,15 @@ func handle_choice(index: int) -> void:
 	var messages: Array = message_data if message_data is Array else [message_data]
 	_is_player_typing = true
 	for msg in messages:
-		await message_display.type_message(_apply_templates(msg))
+		if msg is Dictionary:
+			var pause = msg.get("pause", null)
+			if pause != null:
+				_is_player_typing = false
+				await do_pause(pause)
+				_is_player_typing = true
+			await message_display.type_message(_apply_templates(msg.get("text", "")))
+		else:
+			await message_display.type_message(_apply_templates(msg))
 	_is_player_typing = false
 	var next_scene_id: String = choice.get("next", "")
 	if next_scene_id != "" and DialogueLoader.has_scene(next_scene_id):

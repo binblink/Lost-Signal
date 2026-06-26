@@ -87,7 +87,9 @@ The framework uses a small set of concepts to build stories:
 
 ### Safe to Change
 
-- **`theme.json`**: colors, font size, typing speed, and interface options. All fields are optional — an invalid or missing file simply falls back to the default theme.
+- **`theme.json`**: colors, font size, typing speeds, and interface options. All fields are optional — an invalid or missing file simply falls back to the default theme.
+  - `contact_typing_speed` (float): per-character delay for the contact `…` typing indicator (seconds). Default: `0.08`.
+  - `player_typing_speed` (float): per-character delay for player message typing (seconds). Default: `0.05`.
   - `title_glitch` (`true` / `false`): enables or disables the glitch animation on the main menu title. Default: `true`.
 - **Repositioning or resizing** nodes in the Godot editor.
 - **Adjusting margins, spacing, and colors** in the Inspector.
