@@ -20,4 +20,5 @@ exports/
 
 # Autres fichiers à ignorer
 *.log
+*.old
 *.pdf
