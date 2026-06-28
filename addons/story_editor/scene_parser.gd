@@ -101,14 +101,27 @@ func parse_all() -> Dictionary:
 			break
 
 	for file_name in chosen.values():
-		var data := _read_json("res://dialogues/" + file_name)
-		if data.has("scenes"):
-			for scene in data["scenes"]:
-				if scene.has("id"):
-					if not scene.has("contact_id"):
-						scene["contact_id"] = main_contact_id
-					scene["_editor_file"] = file_name
-					scenes[scene["id"]] = scene
+		var path: String = "res://dialogues/" + str(file_name)
+		if not FileAccess.file_exists(path):
+			continue
+		var raw_file := FileAccess.open(path, FileAccess.READ)
+		if raw_file == null:
+			continue
+		var raw_text: String = raw_file.get_as_text()
+		raw_file.close()
+		var parsed: Variant = JSON.parse_string(raw_text)
+		if parsed == null:
+			error_message = str(file_name) + " : JSON invalide"
+			return scenes
+		if not parsed is Dictionary or not (parsed as Dictionary).has("scenes"):
+			continue
+		for scene: Variant in ((parsed as Dictionary)["scenes"] as Array):
+			var sd: Dictionary = scene as Dictionary
+			if sd.has("id"):
+				if not sd.has("contact_id"):
+					sd["contact_id"] = main_contact_id
+				sd["_editor_file"] = file_name
+				scenes[sd["id"]] = sd
 
 	return scenes
 

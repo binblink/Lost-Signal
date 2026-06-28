@@ -7,12 +7,15 @@ const STRIPE_A := Color(0.18, 0.18, 0.22)
 const STRIPE_B := Color(0.11, 0.11, 0.13)
 const STATUS_VALS := ["online", "away", "offline", "network_issue"]
 
+var _dialogue_files: PackedStringArray = PackedStringArray()
+
 
 func refresh() -> void:
 	if _content == null:
 		return
+	_dialogue_files = DirAccess.get_files_at("res://dialogues/")
 	for child in _content.get_children():
-		child.free()
+		child.queue_free()
 	var data := _read_story()
 	_build_contacts(data)
 
@@ -473,8 +476,7 @@ func _apply_lang_validation(field: LineEdit, code: String) -> void:
 
 
 func _validate_lang_code(code: String) -> bool:
-	var files := DirAccess.get_files_at("res://dialogues/")
-	for f: String in files:
+	for f: String in _dialogue_files:
 		if f.ends_with("." + code + ".json"):
 			return true
 	return false

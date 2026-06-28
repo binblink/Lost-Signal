@@ -12,7 +12,7 @@ const ROW_COLOR    := Color(0.14, 0.19, 0.24)
 
 func refresh() -> void:
 	for child in get_children():
-		child.free()
+		child.queue_free()
 
 	var margin := MarginContainer.new()
 	margin.set_anchors_preset(Control.PRESET_FULL_RECT)

@@ -6,7 +6,7 @@ func refresh() -> void:
 	if _content == null:
 		return
 	for child in _content.get_children():
-		child.free()
+		child.queue_free()
 	var data := _read_story()
 	_build_global(data)
 	_build_timing()

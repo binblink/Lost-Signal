@@ -31,8 +31,12 @@ const STRIPE_B := Color(0.11, 0.11, 0.13)
 
 var _parser  := SceneParser.new()
 var _scenes:   Dictionary = {}
-var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
+
+var _cached_flags:      Array            = []
+var _cached_vars:       Array            = []
+var _cached_scene_ids:  Array            = []
+var _dialogue_files:    PackedStringArray = PackedStringArray()
 var _contacts_win: Window = null
 var _settings_win: Window = null
 var _flags_win:    Window = null
@@ -346,9 +350,14 @@ func _on_reformat_pressed() -> void:
 func _on_refresh_pressed() -> void:
 	_scenes = _parser.parse_all()
 	if _parser.error_message != "":
-		_status_label.text = "Erreur : " + _parser.error_message
+		_status_label.text = _t("Erreur : ", "Error: ") + _parser.error_message
 		return
-	_status_label.text = "%d scènes chargées" % _scenes.size()
+	_status_label.text = _t("%d scènes chargées" % _scenes.size(), "%d scenes loaded" % _scenes.size())
+	_cached_flags    = _collect_flags()
+	_cached_vars     = _collect_vars()
+	_cached_scene_ids = _scenes.keys()
+	_cached_scene_ids.sort()
+	_dialogue_files  = DirAccess.get_files_at("res://dialogues/")
 	await _rebuild_graph(_scenes)
 
 
@@ -361,7 +370,6 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 	_graph.clear_connections()
 
 	var outgoing := _build_outgoing(scenes)
-	_outgoing = outgoing
 	var positions := _compute_layout(scenes, outgoing)
 
 	# Scènes qui ont au moins une connexion entrante
@@ -542,7 +550,8 @@ func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 			popup.add_item(_t("Supprimer cette scène", "Delete this scene"), 0)
 			var has_connected := false
 			for i in range(conns.size()):
-				if conns[i].get("target", "") != "":
+				var conn_type: String = str(conns[i].get("type", ""))
+				if conns[i].get("target", "") != "" and conn_type != "trigger" and conn_type != "resume":
 					if not has_connected:
 						popup.add_separator()
 						has_connected = true
@@ -657,7 +666,7 @@ func _write_disconnection_to_file(from_id: String, from_port: int) -> void:
 
 
 # Shared read-parse-mutate-write cycle for both connecting and disconnecting ports.
-# Port index is mapped to a connection type via _outgoing, which was built at last refresh.
+# Port index is resolved directly from _scenes: port 0 = next (if any), then choices in order.
 func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> void:
 	var from_scene: Dictionary = _scenes.get(from_id, {})
 	if from_scene.is_empty():
@@ -1101,7 +1110,7 @@ func _on_node_selected(node: Node) -> void:
 
 func _populate_detail(scene_id: String) -> void:
 	for child in _detail_content.get_children():
-		child.free()
+		child.queue_free()
 	var scene: Dictionary = _scenes.get(scene_id, {})
 	_add_header(scene_id)
 	_populate_contact_section(scene_id, scene)
@@ -1150,7 +1159,7 @@ func _populate_trigger_section(scene_id: String, scene: Dictionary) -> void:
 				else:
 					s["trigger_after_scene"] = val))
 	var resume_flag_val: String = str(scene.get("resume_after_flag", ""))
-	var rf_all_flags := _collect_flags()
+	var rf_all_flags: Array = _cached_flags.duplicate()
 	if resume_flag_val and not rf_all_flags.has(resume_flag_val):
 		rf_all_flags.append(resume_flag_val)
 		rf_all_flags.sort()
@@ -1701,7 +1710,7 @@ func _add_pause_dropdown(container: VBoxContainer, current_pause: String, on_cha
 
 
 func _add_req_flag_dropdown(container: VBoxContainer, current: String, on_change: Callable, tooltip: String = "") -> void:
-	var all_flags := _collect_flags()
+	var all_flags: Array = _cached_flags.duplicate()
 	if current and not all_flags.has(current):
 		all_flags.append(current)
 		all_flags.sort()
@@ -1732,8 +1741,7 @@ func _add_req_flag_dropdown(container: VBoxContainer, current: String, on_change
 
 
 func _add_scene_id_dropdown(container: VBoxContainer, label: String, current: String, none_label: String, tooltip: String, on_change: Callable) -> void:
-	var all_ids: Array = _scenes.keys()
-	all_ids.sort()
+	var all_ids: Array = _cached_scene_ids.duplicate()
 	if current and not all_ids.has(current):
 		all_ids.append(current)
 		all_ids.sort()
@@ -1933,7 +1941,7 @@ func _add_effect_row(container: VBoxContainer, scene_id: String, eff_idx: int, e
 					get_effs.call(s)[eff_idx][target_key] = contact_ids[idx - 1]))
 		row.add_child(target_opts)
 	else:
-		var all_vars := _collect_vars()
+		var all_vars: Array = _cached_vars.duplicate()
 		if target_val and not all_vars.has(target_val):
 			all_vars.append(target_val)
 			all_vars.sort()
@@ -2121,8 +2129,7 @@ func _apply_rename_lang_color(field: LineEdit, code: String) -> void:
 	if code.is_empty() or code.begins_with("??"):
 		field.add_theme_color_override("font_color", Color(1.0, 0.65, 0.2))
 		return
-	var files: PackedStringArray = DirAccess.get_files_at("res://dialogues/")
-	for f: String in files:
+	for f: String in _dialogue_files:
 		if f.ends_with("." + code + ".json"):
 			field.remove_theme_color_override("font_color")
 			return
