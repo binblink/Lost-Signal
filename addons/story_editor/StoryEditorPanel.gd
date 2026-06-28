@@ -310,6 +310,7 @@ func _on_detach_pressed() -> void:
 	win.wrap_controls = true
 	win.close_requested.connect(func() -> void: win.queue_free())
 	var new_panel = preload("res://addons/story_editor/StoryEditorPanel.tscn").instantiate()
+	new_panel.undo_redo_manager = undo_redo_manager
 	win.add_child(new_panel)
 	get_tree().get_root().add_child(win)
 	win.popup_centered()
@@ -658,28 +659,24 @@ func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> v
 	if file_name.is_empty():
 		_status_label.text = _t("Erreur : fichier source introuvable", "Error: source file not found")
 		return
-	var conns: Array = _outgoing.get(from_id, [])
 	var update_type := ""
 	var choice_index := -1
-	var has_real_next: bool    = from_scene.has("next")
-	var has_real_choices: bool = not (from_scene.get("choices", []) as Array).is_empty()
-	if not has_real_next and not has_real_choices:
+	var has_real_next: bool = from_scene.has("next")
+	var choices: Array = from_scene.get("choices", []) as Array
+	if not has_real_next and choices.is_empty():
 		update_type = "next"
-	elif from_port < conns.size():
-		var conn = conns[from_port]
-		match conn.type:
-			"next":
-				update_type = "next"
-			"choice":
-				update_type  = "choice"
-				choice_index = conn.get("choice_index", -1)
-			_:
-				_status_label.text = _t(
-					"Connexion en lecture seule (trigger/resume)",
-					"Read-only connection (trigger/resume)")
-				return
+	elif has_real_next and from_port == 0:
+		update_type = "next"
 	else:
-		return
+		var ci: int = from_port - (1 if has_real_next else 0)
+		if ci >= 0 and ci < choices.size():
+			update_type = "choice"
+			choice_index = ci
+		else:
+			_status_label.text = _t(
+				"Connexion en lecture seule (trigger/resume)",
+				"Read-only connection (trigger/resume)")
+			return
 	var path := "res://dialogues/" + file_name
 	var read_file := FileAccess.open(path, FileAccess.READ)
 	if read_file == null:
