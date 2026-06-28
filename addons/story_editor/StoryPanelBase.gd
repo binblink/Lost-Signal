@@ -12,9 +12,13 @@ var snapshot_file:  Callable = func(_path: String) -> void: pass
 ## Callable → Array of scene IDs; injected by StoryEditorPanel.
 var get_scene_ids: Callable = func() -> Array: return []
 
+## UI locale injected by StoryEditorPanel; defaults to OS locale so panels work standalone.
+var ui_locale: String = OS.get_locale_language()
+
 const STORY_PATH := "res://story.json"
 const THEME_PATH := "res://theme.json"
 const CSV_PATH   := "res://translations/ui.csv"
+const JsonUtils  = preload("res://addons/story_editor/json_utils.gd")
 
 var _content: VBoxContainer
 
@@ -63,7 +67,7 @@ func _write_story(data: Dictionary, label: String = "") -> void:
 		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
 		end_mutation.call()
 		return
-	f.store_string(_json_expand(_ordered_story(data), "") + "\n")
+	f.store_string(JsonUtils.expand(_ordered_story(data), "") + "\n")
 	f.close()
 	if FileAccess.file_exists(STORY_PATH):
 		DirAccess.remove_absolute(STORY_PATH)
@@ -289,44 +293,6 @@ func _get_supported_locales() -> Array[String]:
 
 
 func _t(fr: String, en: String) -> String:
-	return fr if OS.get_locale_language() == "fr" else en
+	return fr if ui_locale == "fr" else en
 
 
-func _json_compact(value: Variant) -> String:
-	if value is Dictionary:
-		if (value as Dictionary).is_empty():
-			return "{}"
-		var parts: Array[String] = []
-		for key in value:
-			parts.append(JSON.stringify(str(key)) + ": " + _json_compact(value[key]))
-		return "{" + ", ".join(parts) + "}"
-	if value is Array:
-		if (value as Array).is_empty():
-			return "[]"
-		var parts: Array[String] = []
-		for item in value:
-			parts.append(_json_compact(item))
-		return "[" + ", ".join(parts) + "]"
-	return JSON.stringify(value)
-
-
-func _json_expand(value: Variant, indent: String) -> String:
-	if indent.length() >= 4:
-		return _json_compact(value)
-	if value is Dictionary:
-		if (value as Dictionary).is_empty():
-			return "{}"
-		var next_indent := indent + "\t"
-		var parts: Array[String] = []
-		for key in value:
-			parts.append(next_indent + JSON.stringify(str(key)) + ": " + _json_expand(value[key], next_indent))
-		return "{\n" + ",\n".join(parts) + "\n" + indent + "}"
-	if value is Array:
-		if (value as Array).is_empty():
-			return "[]"
-		var next_indent := indent + "\t"
-		var parts: Array[String] = []
-		for item in value:
-			parts.append(next_indent + _json_expand(item, next_indent))
-		return "[\n" + ",\n".join(parts) + "\n" + indent + "]"
-	return JSON.stringify(value)

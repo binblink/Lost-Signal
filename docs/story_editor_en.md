@@ -48,6 +48,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
 - **🚩 Flags button**: opens the [Flags panel](#flags-panel) — a floating window listing all project flags with the scenes that set or use them.
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
+- **Contact filter**: dropdown listing all project contacts. Selecting a contact dims all scenes belonging to other contacts to 20% opacity — connections remain visible to keep global context. Choosing "All" restores normal display. The filter is preserved after a Refresh.
 - **Search field**: type a scene ID (or a fragment) and press Enter to center the graph on the matching scene and open its detail panel. Search is case-insensitive and follows priority order: exact match → prefix → substring. Escape clears the field.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.

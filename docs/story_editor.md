@@ -48,6 +48,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
 - **Bouton 🚩 Flags** : ouvre le [panneau Flags](#panneau-flags) — une fenêtre flottante listant tous les flags du projet avec leurs scènes d'origine et d'utilisation.
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
+- **Filtre contact** : dropdown listant tous les contacts du projet. Sélectionner un contact grise toutes les scènes des autres contacts à 20 % d'opacité — les connexions restent visibles pour garder le contexte global. Choisir « Tous » rétablit l'affichage normal. Le filtre est conservé après un Refresh.
 - **Champ de recherche** : saisir un ID de scène (ou un fragment) et appuyer sur Entrée centre le graphe sur la scène correspondante et ouvre son panneau de détail. La recherche est insensible à la casse et suit l'ordre de priorité : correspondance exacte → préfixe → sous-chaîne. Échap efface le champ.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.

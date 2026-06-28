@@ -2,6 +2,7 @@
 extends Control
 
 const SceneParser = preload("res://addons/story_editor/scene_parser.gd")
+const JsonUtils   = preload("res://addons/story_editor/json_utils.gd")
 
 const COLOR_NORMAL  := Color(0.8, 0.8, 0.8)
 const COLOR_TRIGGER := Color(1.0, 0.6, 0.0)
@@ -196,7 +197,9 @@ func _ready() -> void:
 func _on_contacts_pressed() -> void:
 	if _contacts_win != null and is_instance_valid(_contacts_win):
 		_contacts_win.show()
-		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
+		var existing_contacts: Control = _contacts_win.get_node("ContactsPanel")
+		existing_contacts.set("ui_locale", _ui_locale)
+		existing_contacts.call("refresh")
 		return
 	_contacts_win = Window.new()
 	_contacts_win.title = _t("Configuration des contacts", "Contact configuration")
@@ -212,6 +215,7 @@ func _on_contacts_pressed() -> void:
 	panel.begin_mutation  = func(label: String) -> void: _begin_mutation(label)
 	panel.end_mutation    = func() -> void: _end_mutation()
 	panel.snapshot_file   = func(path: String) -> void: _snapshot_file(path)
+	panel.ui_locale       = _ui_locale
 	panel.story_modified.connect(_on_refresh_pressed)
 	panel.rename_contact_requested.connect(_rename_contact_in_dialogues)
 	panel.error_occurred.connect(func(msg: String) -> void: _status_label.text = msg)
@@ -223,7 +227,9 @@ func _on_contacts_pressed() -> void:
 func _on_settings_pressed() -> void:
 	if _settings_win != null and is_instance_valid(_settings_win):
 		_settings_win.show()
-		(_settings_win.get_node("StorySettingsPanel") as Control).call("refresh")
+		var existing_settings: Control = _settings_win.get_node("StorySettingsPanel")
+		existing_settings.set("ui_locale", _ui_locale)
+		existing_settings.call("refresh")
 		return
 	_settings_win = Window.new()
 	_settings_win.title = _t("Paramètres du projet", "Project settings")
@@ -239,6 +245,7 @@ func _on_settings_pressed() -> void:
 	panel.begin_mutation = func(label: String) -> void: _begin_mutation(label)
 	panel.end_mutation   = func() -> void: _end_mutation()
 	panel.snapshot_file  = func(path: String) -> void: _snapshot_file(path)
+	panel.ui_locale      = _ui_locale
 	panel.story_modified.connect(_on_refresh_pressed)
 	panel.error_occurred.connect(func(msg: String) -> void: _status_label.text = msg)
 	_settings_win.add_child(panel)
@@ -882,48 +889,7 @@ func _write_json(path: String, data: Dictionary) -> bool:
 
 
 func _json_stringify_file(data: Dictionary) -> String:
-	return _json_expand(data, "") + "\n"
-
-
-func _json_compact(value) -> String:
-	if value is Dictionary:
-		if (value as Dictionary).is_empty():
-			return "{}"
-		var parts: Array[String] = []
-		for key in value:
-			parts.append(JSON.stringify(str(key)) + ": " + _json_compact(value[key]))
-		return "{" + ", ".join(parts) + "}"
-	if value is Array:
-		if (value as Array).is_empty():
-			return "[]"
-		var parts: Array[String] = []
-		for item in value:
-			parts.append(_json_compact(item))
-		return "[" + ", ".join(parts) + "]"
-	return JSON.stringify(value)
-
-
-# Expands top-level structure for readability, then falls back to compact past depth 4 (inside effects/choices arrays).
-func _json_expand(value, indent: String) -> String:
-	if indent.length() >= 4:
-		return _json_compact(value)
-	if value is Dictionary:
-		if (value as Dictionary).is_empty():
-			return "{}"
-		var next_indent := indent + "\t"
-		var parts: Array[String] = []
-		for key in value:
-			parts.append(next_indent + JSON.stringify(str(key)) + ": " + _json_expand(value[key], next_indent))
-		return "{\n" + ",\n".join(parts) + "\n" + indent + "}"
-	if value is Array:
-		if (value as Array).is_empty():
-			return "[]"
-		var next_indent := indent + "\t"
-		var parts: Array[String] = []
-		for item in value:
-			parts.append(next_indent + _json_expand(item, next_indent))
-		return "[\n" + ",\n".join(parts) + "\n" + indent + "]"
-	return JSON.stringify(value)
+	return JsonUtils.expand(data, "") + "\n"
 
 
 # Enforces a stable key order so unrelated edits don't produce noisy diffs. _editor_file is stripped — it's runtime-only.
@@ -1676,12 +1642,12 @@ func _populate_choice_row(stripe: VBoxContainer, scene_id: String, choice_idx: i
 
 func _populate_special_section(scene: Dictionary) -> void:
 	var specials: Array = []
-	for key in ["free_input", "next", "trigger_after_scene", "resume_after_flag", "music"]:
+	for key: String in ["next", "music"]:
 		if scene.has(key):
 			specials.append("%s: %s" % [key, str(scene[key])])
 	if specials.size() > 0:
-		_add_section(_t("Spécial", "Special"))
-		for s in specials:
+		_add_section(_t("JSON seulement", "JSON-only"))
+		for s: String in specials:
 			_add_item(_detail_content, s)
 
 
