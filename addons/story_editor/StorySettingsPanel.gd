@@ -161,9 +161,11 @@ func _add_language_to_csv(locale: String) -> void:
 	var out := FileAccess.open(CSV_PATH, FileAccess.WRITE)
 	if out == null:
 		return
+	var is_first_row := true
 	for row: PackedStringArray in rows:
 		var extended := PackedStringArray(row)
-		extended.append("")
+		extended.append(locale if is_first_row else "")
+		is_first_row = false
 		out.store_csv_line(extended)
 	out.close()
 	EditorInterface.get_resource_filesystem().reimport_files(

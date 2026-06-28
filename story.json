@@ -25,7 +25,10 @@
 		},
 		{
 			"id": "mom",
-			"names": {"fr": "Maman", "en": "Mom"},
+			"names": {
+				"fr": "Maman",
+				"en": "Mom"
+			},
 			"avatar": "res://assets/avatars/560219.png",
 			"status": "online",
 			"history": [

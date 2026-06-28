@@ -1824,7 +1824,6 @@ func _patch_field(scene_id: String, setter: Callable, label: String = "") -> voi
 		break
 	_write_json(path, data)
 	_end_mutation()
-	call_deferred("_populate_detail", scene_id)
 
 
 func _add_header(text: String) -> void:

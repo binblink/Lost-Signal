@@ -81,13 +81,13 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 			id_edit.text = cid
 			return
 		var d := _read_story()
-		for i in range((d["contacts"] as Array).size()):
-			if i != ci and (d["contacts"] as Array)[i].get("id", "") == new_id:
+		for contact: Dictionary in (d.get("contacts", []) as Array):
+			if contact.get("id", "") != cid and contact.get("id", "") == new_id:
 				error_occurred.emit(_t("ID déjà utilisé : " + new_id, "ID already in use: " + new_id))
 				id_edit.text = cid
 				return
 		rename_contact_requested.emit(cid, new_id)
-		(d["contacts"] as Array)[ci]["id"] = new_id
+		_find_contact(d, cid)["id"] = new_id
 		if d.get("start_contact", "") == cid:
 			d["start_contact"] = new_id
 		_write_story(d)
@@ -104,7 +104,7 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 		var val := name_edit.text.strip_edges()
 		if val != cname:
 			var d := _read_story()
-			(d["contacts"] as Array)[ci]["name"] = val
+			_find_contact(d, cid)["name"] = val
 			_write_story(d))
 	row1.add_child(name_edit)
 	var del_btn := Button.new()
@@ -122,7 +122,9 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 		dialog.confirmed.connect(func() -> void:
 			dialog.queue_free()
 			var d := _read_story()
-			(d["contacts"] as Array).remove_at(ci)
+			var idx: int = _find_contact_index(d, cid)
+			if idx >= 0:
+				(d["contacts"] as Array).remove_at(idx)
 			_write_story(d)
 			call_deferred("refresh"))
 		dialog.canceled.connect(func() -> void: dialog.queue_free())
@@ -131,7 +133,7 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 	inner.add_child(row1)
 
 	# — localized names
-	_names_section(inner, ci, c.get("names", {}))
+	_names_section(inner, cid, c.get("names", {}))
 
 	# — status / is_main
 	var row2 := HBoxContainer.new()
@@ -146,7 +148,7 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 	st_opts.selected = max(STATUS_VALS.find(cstatus), 0)
 	st_opts.item_selected.connect(func(idx: int) -> void:
 		var d := _read_story()
-		(d["contacts"] as Array)[ci]["status"] = STATUS_VALS[idx]
+		_find_contact(d, cid)["status"] = STATUS_VALS[idx]
 		_write_story(d))
 	row2.add_child(st_opts)
 	var is_main_cb := CheckBox.new()
@@ -158,10 +160,10 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 	is_main_cb.toggled.connect(func(pressed: bool) -> void:
 		var d := _read_story()
 		if pressed:
-			for i in range((d["contacts"] as Array).size()):
-				(d["contacts"] as Array)[i]["is_main"] = (i == ci)
+			for contact: Dictionary in (d.get("contacts", []) as Array):
+				contact["is_main"] = contact.get("id", "") == cid
 		else:
-			(d["contacts"] as Array)[ci]["is_main"] = false
+			_find_contact(d, cid)["is_main"] = false
 		_write_story(d)
 		call_deferred("refresh"))
 	row2.add_child(is_main_cb)
@@ -179,7 +181,7 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 		"Path to the avatar image (e.g. res://assets/avatars/maeve.png).\nLeave empty for no avatar.")
 	var save_avatar: Callable = func(val: String) -> void:
 		var d := _read_story()
-		(d["contacts"] as Array)[ci]["avatar"] = null if val.is_empty() else val
+		_find_contact(d, cid)["avatar"] = null if val.is_empty() else val
 		_write_story(d)
 	avatar_edit.focus_exited.connect(func() -> void:
 		save_avatar.call(avatar_edit.text.strip_edges()))
@@ -211,21 +213,21 @@ func _contact_card(ci: int, c: Dictionary) -> void:
 		func(val: String) -> void:
 			var d := _read_story()
 			if val.is_empty():
-				(d["contacts"] as Array)[ci].erase("pending_scene")
+				_find_contact(d, cid).erase("pending_scene")
 			else:
-				(d["contacts"] as Array)[ci]["pending_scene"] = val
+				_find_contact(d, cid)["pending_scene"] = val
 			_write_story(d),
 		_t("Scène mise en attente pour ce contact au démarrage.\nLe joueur verra un choix en suspens dès qu'il ouvrira cette conversation, avant même d'avoir interagi.",
 			"Scene queued for this contact at startup.\nThe player will see a pending choice as soon as they open this conversation, before any interaction."))
 
 	# — history
-	_history_rows(inner, ci, c.get("history", []))
+	_history_rows(inner, cid, c.get("history", []))
 
 
 # ---------------------------------------------------------------------------
 # UI — history entries
 
-func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
+func _history_rows(container: VBoxContainer, cid: String, history: Array) -> void:
 	var header := HBoxContainer.new()
 	var h_lbl := Label.new()
 	h_lbl.text = "history (%d)" % history.size()
@@ -239,7 +241,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		"Adds a pre-filled message visible when the conversation is first opened,\nbefore narration starts.\n→ checked = sent by player, unchecked = received.")
 	add_btn.pressed.connect(func() -> void:
 		var d := _read_story()
-		var contact_data: Dictionary = (d["contacts"] as Array)[ci]
+		var contact_data: Dictionary = _find_contact(d, cid)
 		if not contact_data.has("history"):
 			contact_data["history"] = []
 		(contact_data["history"] as Array).append({"text": "", "time": "00:00", "out": false})
@@ -264,7 +266,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		out_cb.tooltip_text = _t("Coché = envoyé par le joueur", "Checked = sent by player")
 		out_cb.toggled.connect(func(pressed: bool) -> void:
 			var d := _read_story()
-			((d["contacts"] as Array)[ci]["history"] as Array)[hi]["out"] = pressed
+			(_find_contact(d, cid)["history"] as Array)[hi]["out"] = pressed
 			_write_story(d))
 		meta_row.add_child(out_cb)
 
@@ -297,7 +299,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 			var combined: String = (d_val + " " + t_val) if d_val != "" else t_val
 			if combined != e_time:
 				var d := _read_story()
-				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["time"] = combined
+				(_find_contact(d, cid)["history"] as Array)[hi]["time"] = combined
 				_write_story(d)
 		date_edit.focus_exited.connect(save_time)
 		time_only_edit.focus_exited.connect(save_time)
@@ -318,9 +320,10 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 		del_btn.tooltip_text = _t("Supprimer ce message de l'historique.", "Remove this message from the history.")
 		del_btn.pressed.connect(func() -> void:
 			var d := _read_story()
-			((d["contacts"] as Array)[ci]["history"] as Array).remove_at(hi)
-			if ((d["contacts"] as Array)[ci]["history"] as Array).is_empty():
-				(d["contacts"] as Array)[ci].erase("history")
+			var c: Dictionary = _find_contact(d, cid)
+			(c["history"] as Array).remove_at(hi)
+			if (c["history"] as Array).is_empty():
+				c.erase("history")
 			_write_story(d)
 			call_deferred("refresh"))
 		meta_row.add_child(del_btn)
@@ -354,7 +357,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 			var new_val: Variant = result if result.size() > 1 else result.values()[0]
 			if new_val != raw_text:
 				var d := _read_story()
-				((d["contacts"] as Array)[ci]["history"] as Array)[hi]["text"] = new_val
+				(_find_contact(d, cid)["history"] as Array)[hi]["text"] = new_val
 				_write_story(d)
 		for loc: String in lang_edits:
 			(lang_edits[loc] as LineEdit).focus_exited.connect(save_text)
@@ -365,7 +368,7 @@ func _history_rows(container: VBoxContainer, ci: int, history: Array) -> void:
 # ---------------------------------------------------------------------------
 # Localized names section
 
-func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> void:
+func _names_section(container: VBoxContainer, cid: String, names: Dictionary) -> void:
 	var header := HBoxContainer.new()
 	var h_lbl := Label.new()
 	h_lbl.text = _t("Noms localisés", "Localized names")
@@ -379,7 +382,7 @@ func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> voi
 		"Adds a translated name for this contact.\nThe language code must match the suffix used in dialogue files (acte1.en.json → \"en\").")
 	add_btn.pressed.connect(func() -> void:
 		var d := _read_story()
-		var contact: Dictionary = (d["contacts"] as Array)[ci]
+		var contact: Dictionary = _find_contact(d, cid)
 		if not contact.has("names"):
 			contact["names"] = {}
 		var nd: Dictionary = contact["names"] as Dictionary
@@ -422,7 +425,7 @@ func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> voi
 		del_btn.tooltip_text = _t("Supprimer ce nom localisé.", "Remove this localized name.")
 		del_btn.pressed.connect(func() -> void:
 			var d := _read_story()
-			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			var contact: Dictionary = _find_contact(d, cid)
 			var nd: Dictionary = contact.get("names", {}) as Dictionary
 			nd.erase(e_lang)
 			if nd.is_empty():
@@ -442,7 +445,7 @@ func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> voi
 				lang_edit.text = e_lang
 				return
 			var d := _read_story()
-			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			var contact: Dictionary = _find_contact(d, cid)
 			var nd: Dictionary = contact.get("names", {}) as Dictionary
 			var cur_val: String = str(nd.get(e_lang, ""))
 			nd.erase(e_lang)
@@ -457,7 +460,7 @@ func _names_section(container: VBoxContainer, ci: int, names: Dictionary) -> voi
 			if cur_lang.is_empty() or new_name == e_name:
 				return
 			var d := _read_story()
-			var contact: Dictionary = (d["contacts"] as Array)[ci]
+			var contact: Dictionary = _find_contact(d, cid)
 			if not contact.has("names"):
 				contact["names"] = {}
 			(contact["names"] as Dictionary)[cur_lang] = new_name
@@ -480,6 +483,21 @@ func _validate_lang_code(code: String) -> bool:
 		if f.ends_with("." + code + ".json"):
 			return true
 	return false
+
+
+func _find_contact(d: Dictionary, cid: String) -> Dictionary:
+	for contact: Dictionary in (d.get("contacts", []) as Array):
+		if contact.get("id", "") == cid:
+			return contact
+	return {}
+
+
+func _find_contact_index(d: Dictionary, cid: String) -> int:
+	var arr: Array = d.get("contacts", []) as Array
+	for i: int in range(arr.size()):
+		if (arr[i] as Dictionary).get("id", "") == cid:
+			return i
+	return -1
 
 
 # ---------------------------------------------------------------------------
