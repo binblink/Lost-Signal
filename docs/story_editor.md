@@ -46,6 +46,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
 - **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
+- **Bouton 🚩 Flags** : ouvre le [panneau Flags](#panneau-flags) — une fenêtre flottante listant tous les flags du projet avec leurs scènes d'origine et d'utilisation.
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
 - **Champ de recherche** : saisir un ID de scène (ou un fragment) et appuyer sur Entrée centre le graphe sur la scène correspondante et ouvre son panneau de détail. La recherche est insensible à la casse et suit l'ordre de priorité : correspondance exacte → préfixe → sous-chaîne. Échap efface le champ.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
@@ -222,8 +223,6 @@ Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottan
 | `title` | Texte libre — affiché dans les menus et la barre de titre de la fenêtre |
 | `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
 | `start_contact` | Dropdown de contacts — contact dont la conversation est affichée à l'écran au lancement ; si vide, le contact principal est utilisé |
-<<<<<<< HEAD
-=======
 
 ### Vitesse de frappe
 
@@ -233,7 +232,6 @@ Configure les délais de saisie dans `theme.json`. Les modifications prennent ef
 |---|---|
 | Contacts | SpinBox (0.01–0.50 s) — délai par caractère pour l'indicateur `…` affiché pendant qu'un contact "écrit". Défaut : `0.08` |
 | Joueur | SpinBox (0.01–0.50 s) — délai par caractère lors de la frappe des réponses du joueur. Défaut : `0.05` |
->>>>>>> 7ba31cc (feat: language switcher in story editor toolbar + screenshots added to the md files)
 
 ### Langues
 
@@ -288,6 +286,24 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 - **×** sur une ligne d'historique — supprime l'entrée immédiatement
 
 > **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue chargés et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
+
+---
+
+## Panneau Flags
+
+Cliquer sur le bouton **🚩 Flags** dans la toolbar ouvre une fenêtre flottante en lecture seule listant tous les flags utilisés dans le projet, dérivés en temps réel depuis les scènes chargées.
+
+Pour chaque flag, trois catégories sont affichées (uniquement celles non vides) :
+
+| Catégorie | Source dans le JSON |
+|---|---|
+| ✏️ Défini par | `choices[].flag` — scènes dont un choix active ce flag |
+| ⏱ Attendu par | `resume_after_flag` — scènes qui attendent ce flag pour se déclencher |
+| ? Requis par | `requires_flag`, `condition` (à tous les niveaux : scène, message, choix) — scènes qui consultent ce flag |
+
+Cliquer sur un ID de scène dans la liste centre le graphe sur ce nœud et ouvre son panneau de détail.
+
+Le panneau se met à jour automatiquement après chaque Refresh du graphe.
 
 ---
 

@@ -46,6 +46,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
 - **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
+- **🚩 Flags button**: opens the [Flags panel](#flags-panel) — a floating window listing all project flags with the scenes that set or use them.
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
 - **Search field**: type a scene ID (or a fragment) and press Enter to center the graph on the matching scene and open its detail panel. Search is case-insensitive and follows priority order: exact match → prefix → substring. Escape clears the field.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
@@ -288,6 +289,24 @@ Each contact is displayed as a card with all its configurable fields:
 - **×** on a history row — removes that entry immediately
 
 > **Renaming an `id`** is safe: the panel scans all currently loaded dialogue files and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
+
+---
+
+## Flags Panel
+
+Clicking the **🚩 Flags** button opens a read-only floating window listing every flag used in the project, derived in real time from the loaded scenes.
+
+For each flag, three categories are shown (only the non-empty ones):
+
+| Category | JSON source |
+|---|---|
+| ✏️ Set by | `choices[].flag` — scenes whose choice activates this flag |
+| ⏱ Waited by | `resume_after_flag` — scenes that wait for this flag before triggering |
+| ? Required by | `requires_flag`, `condition` (at any level: scene, message, choice) — scenes that check this flag |
+
+Clicking a scene ID in the list centers the graph on that node and opens its detail panel.
+
+The panel updates automatically after every graph Refresh.
 
 ---
 

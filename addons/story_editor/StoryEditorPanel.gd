@@ -33,6 +33,7 @@ var _outgoing: Dictionary = {}
 var _selected_scene_id: String = ""
 var _contacts_win: Window = null
 var _settings_win: Window = null
+var _flags_win:    Window = null
 
 var undo_redo_manager: EditorUndoRedoManager = null
 var _in_mutation:       bool       = false
@@ -100,6 +101,10 @@ func _restore_snapshot(files: Dictionary) -> void:
 		(_contacts_win.get_node("ContactsPanel") as Control).call("refresh")
 	if _settings_win != null and is_instance_valid(_settings_win):
 		(_settings_win.get_node("StorySettingsPanel") as Control).call("refresh")
+	if _flags_win != null and is_instance_valid(_flags_win):
+		var fp: Control = _flags_win.get_node("FlagsPanel")
+		fp.set("scenes", _scenes)
+		fp.call("refresh")
 
 
 # ---------------------------------------------------------------------------
@@ -131,6 +136,14 @@ func _ready() -> void:
 	_graph.connection_request.connect(_on_connection_request)
 	_graph.disconnection_request.connect(_on_disconnection_request)
 	_graph.delete_nodes_request.connect(_on_delete_nodes_request)
+	var flags_btn := Button.new()
+	flags_btn.text = "🚩 " + _t("Flags", "Flags")
+	flags_btn.tooltip_text = _t(
+		"Liste tous les flags du projet avec les scènes qui les définissent ou les utilisent.",
+		"Lists all project flags with the scenes that set or use them.")
+	flags_btn.pressed.connect(_on_flags_pressed)
+	_refresh_button.get_parent().add_child(flags_btn)
+
 	var detach_btn := Button.new()
 	detach_btn.text = "🗗"
 	detach_btn.tooltip_text = _t(
@@ -223,6 +236,32 @@ func _on_settings_pressed() -> void:
 	_settings_win.add_child(panel)
 	get_tree().get_root().add_child(_settings_win)
 	_settings_win.popup_centered()
+
+
+func _on_flags_pressed() -> void:
+	if _flags_win != null and is_instance_valid(_flags_win):
+		var panel: Control = _flags_win.get_node("FlagsPanel")
+		panel.set("scenes",    _scenes)
+		panel.set("ui_locale", _ui_locale)
+		panel.call("refresh")
+		_flags_win.show()
+		return
+	_flags_win = Window.new()
+	_flags_win.title = _t("Flags du projet", "Project flags")
+	_flags_win.size     = Vector2i(640, 600)
+	_flags_win.min_size = Vector2i(480, 300)
+	_flags_win.wrap_controls = true
+	_flags_win.close_requested.connect(func() -> void: _flags_win.hide())
+	var panel := preload("res://addons/story_editor/FlagsPanel.gd").new()
+	panel.name        = "FlagsPanel"
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel.scenes      = _scenes
+	panel.ui_locale   = _ui_locale
+	panel.focus_scene = func(sid: String) -> void: _focus_scene(sid)
+	_flags_win.add_child(panel)
+	get_tree().get_root().add_child(_flags_win)
+	_flags_win.popup_centered()
+	panel.call("refresh")
 
 
 func _on_undo_pressed() -> void:
