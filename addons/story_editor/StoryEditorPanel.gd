@@ -19,8 +19,9 @@ const V_SPACING := 280.0
 @onready var _redo_button:     Button        = %RedoButton
 @onready var _graph:           GraphEdit     = %GraphEdit
 
-var _locale_option: OptionButton = null
-var _search_field:  LineEdit     = null
+var _locale_option:  OptionButton = null
+var _contact_filter: OptionButton = null
+var _search_field:   LineEdit     = null
 var _ui_locale: String = OS.get_locale_language()
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
@@ -166,6 +167,13 @@ func _ready() -> void:
 			_populate_detail(_selected_scene_id)
 	)
 	_refresh_button.get_parent().add_child(_locale_option)
+
+	_contact_filter = OptionButton.new()
+	_contact_filter.tooltip_text = _t(
+		"Filtre le graphe par contact — les autres scènes sont grisées.",
+		"Filters the graph by contact — other scenes are dimmed.")
+	_contact_filter.item_selected.connect(func(_idx: int) -> void: _apply_contact_filter())
+	_refresh_button.get_parent().add_child(_contact_filter)
 
 	_search_field = LineEdit.new()
 	_search_field.placeholder_text = _t("Chercher une scène…", "Find scene…")
@@ -374,6 +382,8 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 
 	await get_tree().process_frame
 	_fit_view(positions)
+	_refresh_contact_filter()
+	_apply_contact_filter()
 
 
 # ---------------------------------------------------------------------------
@@ -967,6 +977,51 @@ func _ordered_choice(choice: Dictionary) -> Dictionary:
 		if not result.has(key):
 			result[key] = choice[key]
 	return result
+
+
+# ---------------------------------------------------------------------------
+# Filtre par contact
+
+# Repeuple le dropdown en conservant la sélection courante si le contact existe encore.
+func _refresh_contact_filter() -> void:
+	if _contact_filter == null:
+		return
+	var prev_id: String = ""
+	if _contact_filter.selected > 0:
+		prev_id = str(_contact_filter.get_item_metadata(_contact_filter.selected))
+	_contact_filter.clear()
+	_contact_filter.add_item(_t("Tous", "All"))
+	_contact_filter.set_item_metadata(0, "")
+	for c: Dictionary in _parser.contacts:
+		var cid: String  = str(c.get("id",   ""))
+		var name: String = str(c.get("name", cid))
+		_contact_filter.add_item(name)
+		_contact_filter.set_item_metadata(_contact_filter.item_count - 1, cid)
+	# Restaure la sélection précédente si le contact est toujours présent
+	if not prev_id.is_empty():
+		for i in range(_contact_filter.item_count):
+			if str(_contact_filter.get_item_metadata(i)) == prev_id:
+				_contact_filter.select(i)
+				break
+
+
+# Règle le modulate de chaque nœud selon le filtre actif.
+# Nœuds du contact sélectionné : opacité pleine. Autres : 20 %.
+func _apply_contact_filter() -> void:
+	if _contact_filter == null:
+		return
+	var filter_id: String = str(_contact_filter.get_item_metadata(_contact_filter.selected))
+	var main_id:   String = _get_main_contact_id()
+	for child in _graph.get_children():
+		if not (child is GraphNode):
+			continue
+		var node    := child as GraphNode
+		var scene: Dictionary = _scenes.get(str(node.name), {})
+		var cid: String = str(scene.get("contact_id", main_id))
+		if cid.is_empty():
+			cid = main_id
+		var match: bool = filter_id.is_empty() or cid == filter_id
+		node.modulate = Color.WHITE if match else Color(1.0, 1.0, 1.0, 0.2)
 
 
 # ---------------------------------------------------------------------------
