@@ -47,6 +47,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
+- **Champ de recherche** : saisir un ID de scène (ou un fragment) et appuyer sur Entrée centre le graphe sur la scène correspondante et ouvre son panneau de détail. La recherche est insensible à la casse et suit l'ordre de priorité : correspondance exacte → préfixe → sous-chaîne. Échap efface le champ.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 

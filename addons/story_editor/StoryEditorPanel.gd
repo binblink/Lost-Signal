@@ -20,6 +20,7 @@ const V_SPACING := 280.0
 @onready var _graph:           GraphEdit     = %GraphEdit
 
 var _locale_option: OptionButton = null
+var _search_field:  LineEdit     = null
 var _ui_locale: String = OS.get_locale_language()
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
@@ -152,6 +153,23 @@ func _ready() -> void:
 			_populate_detail(_selected_scene_id)
 	)
 	_refresh_button.get_parent().add_child(_locale_option)
+
+	_search_field = LineEdit.new()
+	_search_field.placeholder_text = _t("Chercher une scène…", "Find scene…")
+	_search_field.custom_minimum_size = Vector2(180, 0)
+	_search_field.clear_button_enabled = true
+	_search_field.tooltip_text = _t(
+		"Entrée : centre le graphe sur la scène trouvée.\nEsc : efface le champ.",
+		"Enter: centers the graph on the matching scene.\nEsc: clears the field.")
+	_search_field.text_submitted.connect(_on_search_submitted)
+	_search_field.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventKey and (event as InputEventKey).keycode == KEY_ESCAPE:
+			_search_field.text = ""
+			_search_field.release_focus())
+	_refresh_button.get_parent().add_child(_search_field)
+
+	_fit_on_next_refresh = true
+	_on_refresh_pressed()
 
 
 func _on_contacts_pressed() -> void:
@@ -910,6 +928,58 @@ func _ordered_choice(choice: Dictionary) -> Dictionary:
 		if not result.has(key):
 			result[key] = choice[key]
 	return result
+
+
+# ---------------------------------------------------------------------------
+# Recherche de scène
+
+func _on_search_submitted(query: String) -> void:
+	query = query.strip_edges()
+	if query.is_empty():
+		return
+	var target_id := _find_scene_id(query)
+	if target_id.is_empty():
+		_status_label.text = _t("Scène introuvable : " + query, "Scene not found: " + query)
+		return
+	_focus_scene(target_id)
+
+
+# Retourne l'ID de scène correspondant à la requête.
+# Ordre de priorité : correspondance exacte → préfixe → sous-chaîne (insensible à la casse).
+func _find_scene_id(query: String) -> String:
+	var q := query.to_lower()
+	for sid: String in _scenes:
+		if sid.to_lower() == q:
+			return sid
+	for sid: String in _scenes:
+		if sid.to_lower().begins_with(q):
+			return sid
+	for sid: String in _scenes:
+		if q in sid.to_lower():
+			return sid
+	return ""
+
+
+# Centre le graphe sur le nœud correspondant à scene_id, le sélectionne et ouvre son panneau de détail.
+func _focus_scene(scene_id: String) -> void:
+	for child in _graph.get_children():
+		if not (child is GraphNode):
+			continue
+		if child.name != StringName(scene_id):
+			continue
+		var node := child as GraphNode
+		var node_size := node.size if node.size != Vector2.ZERO else Vector2(node.custom_minimum_size.x, 150.0)
+		_graph.scroll_offset = (node.position_offset + node_size / 2.0) * _graph.zoom - _graph.size / 2.0
+		for other in _graph.get_children():
+			if other is GraphNode:
+				(other as GraphNode).selected = false
+		node.selected = true
+		_selected_scene_id = scene_id
+		_populate_detail(scene_id)
+		return
+	_status_label.text = _t(
+		"Nœud introuvable : %s (cliquez Refresh)" % scene_id,
+		"Node not found: %s (click Refresh)" % scene_id)
 
 
 func _t(fr: String, en: String) -> String:

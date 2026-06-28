@@ -47,6 +47,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
+- **Search field**: type a scene ID (or a fragment) and press Enter to center the graph on the matching scene and open its detail panel. Search is case-insensitive and follows priority order: exact match → prefix → substring. Escape clears the field.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
