@@ -1025,13 +1025,13 @@ func _write_json(path: String, data: Dictionary) -> bool:
 	_snapshot_file(path)
 	var ordered_scenes: Array = []
 	for s in (data["scenes"] as Array):
-		ordered_scenes.append(_ordered_scene(s))
+		ordered_scenes.append(JsonUtils.ordered_scene(s))
 	data["scenes"] = ordered_scenes
 	var tmp_path: String = path + ".tmp"
 	var write_file := FileAccess.open(tmp_path, FileAccess.WRITE)
 	if write_file == null:
 		return false
-	write_file.store_string(_json_stringify_file(data))
+	write_file.store_string(JsonUtils.expand(data, "") + "\n")
 	write_file.close()
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
@@ -1039,60 +1039,6 @@ func _write_json(path: String, data: Dictionary) -> bool:
 	if dir == null:
 		return false
 	return dir.rename(path.get_file() + ".tmp", path.get_file()) == OK
-
-
-func _json_stringify_file(data: Dictionary) -> String:
-	return JsonUtils.expand(data, "") + "\n"
-
-
-# Enforces a stable key order so unrelated edits don't produce noisy diffs. _editor_file is stripped — it's runtime-only.
-func _ordered_scene(scene: Dictionary) -> Dictionary:
-	const SCENE_KEYS := ["_notes", "id", "contact_id", "trigger_after_scene",
-		"resume_after_flag", "resume_after_delay", "messages_in",
-		"free_input", "free_input_placeholder", "music", "next", "choices"]
-	var result := {}
-	for key in SCENE_KEYS:
-		if scene.has(key):
-			result[key] = scene[key]
-	for key in scene:
-		if key != "_editor_file" and not result.has(key):
-			result[key] = scene[key]
-	if result.has("messages_in"):
-		var ordered_msgs: Array = []
-		for msg in (result["messages_in"] as Array):
-			ordered_msgs.append(_ordered_message(msg))
-		result["messages_in"] = ordered_msgs
-	if result.has("choices"):
-		var ordered_choices: Array = []
-		for choice in (result["choices"] as Array):
-			ordered_choices.append(_ordered_choice(choice))
-		result["choices"] = ordered_choices
-	return result
-
-
-func _ordered_message(msg: Dictionary) -> Dictionary:
-	const MSG_KEYS := ["text", "edit", "effects", "media", "pause",
-		"requires_flag", "condition", "corrupted", "time"]
-	var result := {}
-	for key in MSG_KEYS:
-		if msg.has(key):
-			result[key] = msg[key]
-	for key in msg:
-		if not result.has(key):
-			result[key] = msg[key]
-	return result
-
-
-func _ordered_choice(choice: Dictionary) -> Dictionary:
-	const CHOICE_KEYS := ["text", "message", "flag", "requires_flag", "condition", "next", "effects"]
-	var result := {}
-	for key in CHOICE_KEYS:
-		if choice.has(key):
-			result[key] = choice[key]
-	for key in choice:
-		if not result.has(key):
-			result[key] = choice[key]
-	return result
 
 
 # ---------------------------------------------------------------------------
@@ -1832,10 +1778,14 @@ func _add_text_edit(container: VBoxContainer, initial: String, on_commit: Callab
 	edit.custom_minimum_size = Vector2(0, 52)
 	edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	edit.scroll_fit_content_height = true
+	# Array used as a mutable box so last_saved stays current across edits.
+	# Without it, reverting to the original value after a save would not trigger on_commit.
+	var last_saved := [initial]
 	edit.focus_exited.connect(func() -> void:
 		var val := edit.text
-		if val != initial:
-			on_commit.call(val))
+		if val != last_saved[0]:
+			on_commit.call(val)
+			last_saved[0] = val)
 	container.add_child(edit)
 
 
@@ -1852,10 +1802,14 @@ func _add_line_edit_row(container: VBoxContainer, label: String, initial: String
 	edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if tooltip:
 		edit.tooltip_text = tooltip
+	# Array used as a mutable box so last_saved stays current across edits.
+	# Without it, reverting to the original value after a save would not trigger on_commit.
+	var last_saved := [initial]
 	edit.focus_exited.connect(func() -> void:
 		var val := edit.text.strip_edges()
-		if val != initial:
-			on_commit.call(val))
+		if val != last_saved[0]:
+			on_commit.call(val)
+			last_saved[0] = val)
 	row.add_child(edit)
 	container.add_child(row)
 
@@ -1952,10 +1906,14 @@ func _add_text_edit_row(container: VBoxContainer, initial: String, on_commit: Ca
 	edit.custom_minimum_size = Vector2(0, 52)
 	edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	edit.scroll_fit_content_height = true
+	# Array used as a mutable box so last_saved stays current across edits.
+	# Without it, reverting to the original value after a save would not trigger on_commit.
+	var last_saved := [initial]
 	edit.focus_exited.connect(func() -> void:
 		var val := edit.text
-		if val != initial:
-			on_commit.call(val))
+		if val != last_saved[0]:
+			on_commit.call(val)
+			last_saved[0] = val)
 	row.add_child(edit)
 	var del_btn := Button.new()
 	del_btn.text = "×"
