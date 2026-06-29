@@ -1,6 +1,8 @@
 @tool
 extends Control
 
+signal files_written
+
 const SceneParser = preload("res://addons/story_editor/scene_parser.gd")
 const JsonUtils   = preload("res://addons/story_editor/json_utils.gd")
 
@@ -46,6 +48,8 @@ var _in_mutation:       bool       = false
 var _current_snapshot:  Dictionary = {}
 var _current_label:     String     = ""
 var _fit_on_next_refresh: bool = false
+var _detached_win:      Window   = null
+var _detached_refresh:  Callable = Callable()
 
 
 # ---------------------------------------------------------------------------
@@ -79,6 +83,7 @@ func _end_mutation() -> void:
 	undo_redo_manager.commit_action(false)
 	_current_snapshot = {}
 	_current_label    = ""
+	files_written.emit()
 
 
 func _snapshot_file(path: String) -> void:
@@ -100,6 +105,7 @@ func _restore_snapshot(files: Dictionary) -> void:
 		if f != null:
 			f.store_string(content)
 			f.close()
+	files_written.emit()
 	_on_refresh_pressed()
 	if not _selected_scene_id.is_empty():
 		_populate_detail(_selected_scene_id)
@@ -293,10 +299,18 @@ func _on_redo_pressed() -> void:
 		undo_redo_manager.get_history_undo_redo(EditorUndoRedoManager.GLOBAL_HISTORY).redo()
 
 
+func _all_dialogue_json_files() -> Array[String]:
+	var result: Array[String] = []
+	for f: String in DirAccess.get_files_at("res://dialogues/"):
+		if f.ends_with(".json"):
+			result.append(f)
+	return result
+
+
 func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
 	_begin_mutation(_t("Renommer contact %s → %s" % [old_id, new_id], "Rename contact %s → %s" % [old_id, new_id]))
-	for fname in _parser.chosen_files.values():
-		var path := "res://dialogues/" + str(fname)
+	for fname: String in _all_dialogue_json_files():
+		var path: String = "res://dialogues/" + fname
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f == null:
 			continue
@@ -315,18 +329,30 @@ func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
 
 
 func _on_detach_pressed() -> void:
-	var win := Window.new()
-	win.title = "Story Editor"
-	win.size = Vector2i(1400, 900)
-	win.wrap_controls = true
-	win.close_requested.connect(func() -> void: win.queue_free())
-	var new_panel = preload("res://addons/story_editor/StoryEditorPanel.tscn").instantiate()
-	new_panel.undo_redo_manager = undo_redo_manager
-	win.add_child(new_panel)
-	get_tree().get_root().add_child(win)
-	win.popup_centered()
-	new_panel._fit_on_next_refresh = true
-	new_panel._on_refresh_pressed()
+	if _detached_win != null and is_instance_valid(_detached_win):
+		_detached_win.show()
+		return
+	_detached_win = Window.new()
+	_detached_win.title = "Story Editor"
+	_detached_win.size = Vector2i(1400, 900)
+	_detached_win.wrap_controls = true
+	_detached_win.close_requested.connect(func() -> void:
+		if _detached_refresh.is_valid() and files_written.is_connected(_detached_refresh):
+			files_written.disconnect(_detached_refresh)
+		_detached_refresh = Callable()
+		_detached_win.queue_free()
+		_detached_win = null
+	)
+	var new_panel: Node = preload("res://addons/story_editor/StoryEditorPanel.tscn").instantiate()
+	new_panel.set("undo_redo_manager", undo_redo_manager)
+	_detached_win.add_child(new_panel)
+	get_tree().get_root().add_child(_detached_win)
+	_detached_win.popup_centered()
+	new_panel.set("_fit_on_next_refresh", true)
+	new_panel.call("_on_refresh_pressed")
+	new_panel.connect("files_written", func() -> void: _on_refresh_pressed())
+	_detached_refresh = func() -> void: new_panel.call("_on_refresh_pressed")
+	files_written.connect(_detached_refresh)
 
 
 func _on_reformat_pressed() -> void:
@@ -720,8 +746,8 @@ func _delete_scenes(ids: Array[String]) -> void:
 		id_set[id] = true
 
 	var files_data: Dictionary = {}
-	for fname in _parser.chosen_files.values():
-		var path: String = "res://dialogues/" + str(fname)
+	for fname: String in _all_dialogue_json_files():
+		var path: String = "res://dialogues/" + fname
 		var f := FileAccess.open(path, FileAccess.READ)
 		if f == null:
 			continue
@@ -966,8 +992,7 @@ func _refresh_contact_filter() -> void:
 	_contact_filter.set_item_metadata(0, "")
 	for c: Dictionary in _parser.contacts:
 		var cid: String  = str(c.get("id",   ""))
-		var name: String = str(c.get("name", cid))
-		_contact_filter.add_item(name)
+		_contact_filter.add_item(cid)
 		_contact_filter.set_item_metadata(_contact_filter.item_count - 1, cid)
 	# Restaure la sélection précédente si le contact est toujours présent
 	if not prev_id.is_empty():
