@@ -66,6 +66,9 @@ Chaque scène JSON correspond à un nœud. Le nom affiché dans le titre du nœu
 |---|---|
 | **▶** avant l'ID | Scène de départ (`start_scene` dans `story.json`) |
 | **✎** après l'ID | Scène avec `free_input` (saisie libre du joueur) |
+| **📝** après l'ID | Scène avec des notes internes (`_notes`) |
+| Couleur de titre | Chaque contact a une couleur de barre de titre générée automatiquement depuis son ID — constante d'une session à l'autre |
+| Texte en petit sous le titre | Aperçu tronqué (60 car.) du premier message de la scène |
 | **⛔ Fin de parcours** (rouge) | La scène n'a aucune sortie — probable oubli d'auteur |
 | **⚠ Isolée** (jaune) | Aucune scène ne pointe vers cette scène — elle ne sera jamais atteinte |
 

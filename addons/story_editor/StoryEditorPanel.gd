@@ -413,6 +413,7 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 		var node := _create_graph_node(scene_id, scene, outgoing.get(scene_id, []),
 				is_start, is_dead_end, is_isolated)
 		_graph.add_child(node)
+		_apply_contact_color(node, str(scene.get("contact_id", "")))
 		node.position_offset = positions.get(scene_id, Vector2.ZERO)
 
 	for scene_id in outgoing:
@@ -551,7 +552,58 @@ func _fit_view(positions: Dictionary) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Nœuds du graphe
+# Nœuds du graphe — helpers visuels
+
+func _contact_color(contact_id: String) -> Color:
+	if contact_id.is_empty():
+		return Color(0.18, 0.20, 0.26)
+	var h: float = float(contact_id.hash() & 0x7FFFFFFF) / float(0x7FFFFFFF)
+	return Color.from_hsv(h, 0.55, 0.30)
+
+
+func _contact_accent(contact_id: String) -> Color:
+	if contact_id.is_empty():
+		return Color(0.5, 0.8, 1.0)
+	var h: float = float(contact_id.hash() & 0x7FFFFFFF) / float(0x7FFFFFFF)
+	return Color.from_hsv(h, 0.40, 0.90)
+
+
+func _apply_contact_color(node: GraphNode, contact_id: String) -> void:
+	var base_sb: StyleBox = _graph.get_theme_stylebox("titlebar", "GraphNode")
+	var style: StyleBoxFlat
+	if base_sb is StyleBoxFlat:
+		style = (base_sb as StyleBoxFlat).duplicate()
+	else:
+		style = StyleBoxFlat.new()
+		style.corner_radius_top_left  = 4
+		style.corner_radius_top_right = 4
+		style.content_margin_left   = 12.0
+		style.content_margin_right  = 12.0
+		style.content_margin_top    = 6.0
+		style.content_margin_bottom = 6.0
+	style.bg_color = _contact_color(contact_id)
+	node.add_theme_stylebox_override("titlebar", style)
+
+
+func _first_message_preview(scene: Dictionary) -> String:
+	var msgs: Array = scene.get("messages_in", [])
+	if msgs.is_empty() or not msgs[0] is Dictionary:
+		return ""
+	var first: Dictionary = msgs[0]
+	var raw: Variant = first.get("text", "")
+	var text: String = ""
+	if raw is Array:
+		var arr: Array = raw
+		if not arr.is_empty():
+			var el: Variant = arr[0]
+			text = str((el as Dictionary).get("text", "")) if el is Dictionary else str(el)
+	elif raw is String:
+		text = raw
+	text = text.strip_edges()
+	if text.is_empty():
+		return ""
+	return text.left(60) + ("…" if text.length() > 60 else "")
+
 
 func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 		is_start: bool = false, is_dead_end: bool = false, is_isolated: bool = false) -> GraphNode:
@@ -563,6 +615,8 @@ func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 		title = "▶  " + title
 	if scene.has("free_input"):
 		title += "  ✎"
+	if scene.has("_notes"):
+		title += "  📝"
 	node.title = title
 	node.name  = scene_id
 	node.custom_minimum_size = Vector2(220, 0)
@@ -595,14 +649,29 @@ func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 				popup.queue_free())
 			popup.popup_on_parent(Rect2(node.global_position + mb.position, Vector2.ZERO)))
 
-	# Slot 0 : contact — port d'entrée
-	var contact_label := Label.new()
-	contact_label.text = scene.get("contact_id", "—")
-	contact_label.add_theme_color_override("font_color", Color(0.5, 0.8, 1.0))
-	node.add_child(contact_label)
-	node.set_slot(0, true, 0, Color.WHITE, false, 0, Color.WHITE)
+	var contact_id: String = str(scene.get("contact_id", ""))
+	var slot_idx := 0
 
-	var slot_idx := 1
+	# Aperçu du premier message (pas de port)
+	var first_text: String = _first_message_preview(scene)
+	if not first_text.is_empty():
+		var preview_lbl := Label.new()
+		preview_lbl.text = first_text
+		preview_lbl.add_theme_font_size_override("font_size", 10)
+		preview_lbl.add_theme_color_override("font_color", Color(0.55, 0.58, 0.62))
+		preview_lbl.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		preview_lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		node.add_child(preview_lbl)
+		node.set_slot(slot_idx, false, 0, Color.WHITE, false, 0, Color.WHITE)
+		slot_idx += 1
+
+	# Contact — port d'entrée
+	var contact_label := Label.new()
+	contact_label.text = contact_id if not contact_id.is_empty() else "—"
+	contact_label.add_theme_color_override("font_color", _contact_accent(contact_id))
+	node.add_child(contact_label)
+	node.set_slot(slot_idx, true, 0, Color.WHITE, false, 0, Color.WHITE)
+	slot_idx += 1
 
 	if conns.is_empty():
 		# Port "→ ?" : permet de tirer une connexion depuis une scène sans sortie

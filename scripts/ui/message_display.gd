@@ -58,7 +58,83 @@ func _apply_emoticons(text: String) -> String:
 		.replace("o.O", "🤨") \
 		.replace("O.o", "🤨") \
 		.replace("</3", "💔") \
-		.replace("<3",  "❤️")
+		.replace("<3",  "❤️") \
+		.replace("(facepalm)", "🤦") \
+		.replace("(handshake)", "🤝") \
+		.replace("(brokenheart)", "💔") \
+		.replace("(monocle)", "🧐") \
+		.replace("(nervous)", "😬") \
+		.replace("(sparkle)", "✨") \
+		.replace("(computer)", "💻") \
+		.replace("(warning)", "⚠️") \
+		.replace("(laptop)", "💻") \
+		.replace("(muscle)", "💪") \
+		.replace("(trophy)", "🏆") \
+		.replace("(sleepy)", "😴") \
+		.replace("(sweat)", "😅") \
+		.replace("(medal)", "🏅") \
+		.replace("(crazy)", "🤪") \
+		.replace("(cross)", "❌") \
+		.replace("(rofl)", "🤣") \
+		.replace("(pray)", "🙏") \
+		.replace("(clap)", "👏") \
+		.replace("(wave)", "👋") \
+		.replace("(shrug)", "🤷") \
+		.replace("(heart)", "❤️") \
+		.replace("(think)", "🤔") \
+		.replace("(laugh)", "😂") \
+		.replace("(punch)", "👊") \
+		.replace("(pizza)", "🍕") \
+		.replace("(money)", "💰") \
+		.replace("(email)", "📧") \
+		.replace("(music)", "🎵") \
+		.replace("(phone)", "📱") \
+		.replace("(party)", "🎊") \
+		.replace("(check)", "✅") \
+		.replace("(skull)", "💀") \
+		.replace("(chart)", "📈") \
+		.replace("(poop)", "💩") \
+		.replace("(idea)", "💡") \
+		.replace("(love)", "😍") \
+		.replace("(nerd)", "🤓") \
+		.replace("(tada)", "🎉") \
+		.replace("(cake)", "🎂") \
+		.replace("(beer)", "🍺") \
+		.replace("(gift)", "🎁") \
+		.replace("(book)", "📖") \
+		.replace("(hug)", "🤗") \
+		.replace("(yum)", "😋") \
+		.replace("(lol)", "😂") \
+		.replace("(zzz)", "💤") \
+		.replace("(zip)", "🤐") \
+		.replace("(sick)", "🤒") \
+		.replace("(flex)", "💪") \
+		.replace("(cool)", "😎") \
+		.replace("(fire)", "🔥") \
+		.replace("(eyes)", "👀") \
+		.replace("(star)", "⭐") \
+		.replace("(snow)", "❄️") \
+		.replace("(moon)", "🌙") \
+		.replace("(tick)", "✅") \
+		.replace("(flag)", "🚩") \
+		.replace("(lock)", "🔒") \
+		.replace("(time)", "⏰") \
+		.replace("(bell)", "🔔") \
+		.replace("(sun)", "☀️") \
+		.replace("(cat)", "🐱") \
+		.replace("(dog)", "🐶") \
+		.replace("(key)", "🔑") \
+		.replace("(bow)", "🙇") \
+		.replace("(100)", "💯") \
+		.replace("(ok)", "👌") \
+		.replace("(rainbow)", "🌈") \
+		.replace("(coffee)", "☕") \
+		.replace("(Y)", "👍") \
+		.replace("(N)", "👎") \
+		.replace("(y)", "👍") \
+		.replace("(n)", "👎") \
+		.replace("(!)", "❗") \
+		.replace("(?)", "❓")
 
 func receive_message(text: String, time: String) -> MarginContainer:
 	var bubble = BubbleIn.instantiate()

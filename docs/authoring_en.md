@@ -920,6 +920,49 @@ If you can't copy-paste an emoji, use the standard text shortcuts — the engine
 | `>_<` | 😣 | | `o.O`  | 🤨 |
 | `<3`  | ❤️  | | `</3`  | 💔 |
 
+### Parenthesis shortcuts (Teams style)
+
+| Shortcut | Emoji | | Shortcut | Emoji |
+|----------|-------|-|----------|-------|
+| `(y)` | 👍 | | `(n)` | 👎 |
+| `(ok)` | 👌 | | `(clap)` | 👏 |
+| `(wave)` | 👋 | | `(punch)` | 👊 |
+| `(muscle)` | 💪 | | `(flex)` | 💪 |
+| `(handshake)` | 🤝 | | `(pray)` | 🙏 |
+| `(facepalm)` | 🤦 | | `(shrug)` | 🤷 |
+| `(hug)` | 🤗 | | `(bow)` | 🙇 |
+| `(eyes)` | 👀 | | `(heart)` | ❤️ |
+| `(brokenheart)` | 💔 | | `(love)` | 😍 |
+| `(think)` | 🤔 | | `(laugh)` | 😂 |
+| `(lol)` | 😂 | | `(rofl)` | 🤣 |
+| `(yum)` | 😋 | | `(cool)` | 😎 |
+| `(nerd)` | 🤓 | | `(crazy)` | 🤪 |
+| `(monocle)` | 🧐 | | `(sweat)` | 😅 |
+| `(nervous)` | 😬 | | `(sleepy)` | 😴 |
+| `(sick)` | 🤒 | | `(zip)` | 🤐 |
+| `(skull)` | 💀 | | `(poop)` | 💩 |
+| `(fire)` | 🔥 | | `(100)` | 💯 |
+| `(star)` | ⭐ | | `(sparkle)` | ✨ |
+| `(check)` | ✅ | | `(tick)` | ✅ |
+| `(cross)` | ❌ | | `(warning)` | ⚠️ |
+| `(idea)` | 💡 | | `(money)` | 💰 |
+| `(time)` | ⏰ | | `(zzz)` | 💤 |
+| `(coffee)` | ☕ | | `(beer)` | 🍺 |
+| `(pizza)` | 🍕 | | `(cake)` | 🎂 |
+| `(gift)` | 🎁 | | `(music)` | 🎵 |
+| `(phone)` | 📱 | | `(email)` | 📧 |
+| `(tada)` | 🎉 | | `(party)` | 🎊 |
+| `(trophy)` | 🏆 | | `(medal)` | 🏅 |
+| `(book)` | 📖 | | `(computer)` | 💻 |
+| `(laptop)` | 💻 | | `(chart)` | 📈 |
+| `(cat)` | 🐱 | | `(dog)` | 🐶 |
+| `(sun)` | ☀️ | | `(moon)` | 🌙 |
+| `(snow)` | ❄️ | | `(rainbow)` | 🌈 |
+| `(flag)` | 🚩 | | `(lock)` | 🔒 |
+| `(key)` | 🔑 | | `(bell)` | 🔔 |
+| `(skull)` | 💀 | | `(!)` | ❗ |
+| `(?)` | ❓ | | | |
+
 ## 17. Main Menu
 
 The main menu is fully configured from `story.json` and `theme.json` — no code changes needed.

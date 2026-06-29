@@ -66,6 +66,9 @@ Each JSON scene maps to one node. The title of the node is the scene's `id`.
 |---|---|
 | **▶** before the ID | Starting scene (`start_scene` in `story.json`) |
 | **✎** after the ID | Scene with `free_input` (player types a free-text response) |
+| **📝** after the ID | Scene with internal notes (`_notes`) |
+| Title bar color | Each contact gets an automatically generated title bar color derived from its ID — consistent across sessions |
+| Small text below the title | Truncated preview (60 chars) of the scene's first message |
 | **⛔ Dead end** (red) | The scene has no outgoing connections — likely an authoring oversight |
 | **⚠ Isolated** (yellow) | No other scene points to this one — it can never be reached |
 

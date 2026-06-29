@@ -920,6 +920,49 @@ Si vous ne pouvez pas copier-coller un emoji, utilisez les raccourcis texte habi
 | `>_<` | 😣 | | `o.O`  | 🤨 |
 | `<3`  | ❤️  | | `</3`  | 💔 |
 
+### Raccourcis parenthèses (style Teams)
+
+| Raccourci | Emoji | | Raccourci | Emoji |
+|-----------|-------|-|-----------|-------|
+| `(y)` | 👍 | | `(n)` | 👎 |
+| `(ok)` | 👌 | | `(clap)` | 👏 |
+| `(wave)` | 👋 | | `(punch)` | 👊 |
+| `(muscle)` | 💪 | | `(flex)` | 💪 |
+| `(handshake)` | 🤝 | | `(pray)` | 🙏 |
+| `(facepalm)` | 🤦 | | `(shrug)` | 🤷 |
+| `(hug)` | 🤗 | | `(bow)` | 🙇 |
+| `(eyes)` | 👀 | | `(heart)` | ❤️ |
+| `(brokenheart)` | 💔 | | `(love)` | 😍 |
+| `(think)` | 🤔 | | `(laugh)` | 😂 |
+| `(lol)` | 😂 | | `(rofl)` | 🤣 |
+| `(yum)` | 😋 | | `(cool)` | 😎 |
+| `(nerd)` | 🤓 | | `(crazy)` | 🤪 |
+| `(monocle)` | 🧐 | | `(sweat)` | 😅 |
+| `(nervous)` | 😬 | | `(sleepy)` | 😴 |
+| `(sick)` | 🤒 | | `(zip)` | 🤐 |
+| `(skull)` | 💀 | | `(poop)` | 💩 |
+| `(fire)` | 🔥 | | `(100)` | 💯 |
+| `(star)` | ⭐ | | `(sparkle)` | ✨ |
+| `(check)` | ✅ | | `(tick)` | ✅ |
+| `(cross)` | ❌ | | `(warning)` | ⚠️ |
+| `(idea)` | 💡 | | `(money)` | 💰 |
+| `(time)` | ⏰ | | `(zzz)` | 💤 |
+| `(coffee)` | ☕ | | `(beer)` | 🍺 |
+| `(pizza)` | 🍕 | | `(cake)` | 🎂 |
+| `(gift)` | 🎁 | | `(music)` | 🎵 |
+| `(phone)` | 📱 | | `(email)` | 📧 |
+| `(tada)` | 🎉 | | `(party)` | 🎊 |
+| `(trophy)` | 🏆 | | `(medal)` | 🏅 |
+| `(book)` | 📖 | | `(computer)` | 💻 |
+| `(laptop)` | 💻 | | `(chart)` | 📈 |
+| `(cat)` | 🐱 | | `(dog)` | 🐶 |
+| `(sun)` | ☀️ | | `(moon)` | 🌙 |
+| `(snow)` | ❄️ | | `(rainbow)` | 🌈 |
+| `(flag)` | 🚩 | | `(lock)` | 🔒 |
+| `(key)` | 🔑 | | `(bell)` | 🔔 |
+| `(skull)` | 💀 | | `(!)` | ❗ |
+| `(?)` | ❓ | | | |
+
 ## 17. Menu principal
 
 Le menu principal est entièrement configuré depuis `story.json` et `theme.json` — aucune modification de code n'est nécessaire.
