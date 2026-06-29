@@ -48,6 +48,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
 - **Bouton 🚩 Flags** : ouvre le [panneau Flags](#panneau-flags) — une fenêtre flottante listant tous les flags du projet avec leurs scènes d'origine et d'utilisation.
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
+- **Bouton 🗗** : ouvre le Story Editor dans une fenêtre séparée — pratique sur un second écran. Un deuxième clic ramène la fenêtre existante au lieu d'en ouvrir une nouvelle. La fenêtre peut être mise en plein écran.
 - **Filtre contact** : dropdown listant tous les contacts du projet. Sélectionner un contact grise toutes les scènes des autres contacts à 20 % d'opacité — les connexions restent visibles pour garder le contexte global. Choisir « Tous » rétablit l'affichage normal. Le filtre est conservé après un Refresh.
 - **Champ de recherche** : saisir un ID de scène (ou un fragment) et appuyer sur Entrée centre le graphe sur la scène correspondante et ouvre son panneau de détail. La recherche est insensible à la casse et suit l'ordre de priorité : correspondance exacte → préfixe → sous-chaîne. Échap efface le champ.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
@@ -102,6 +103,7 @@ Cliquer sur un nœud ouvre le panneau de détail à droite. Tous les champs sont
 
 | Champ | Interface |
 |---|---|
+| `_notes` | Zone de texte — notes internes sur la scène, ignorées par le moteur. Apparaissent en vert en haut du panneau. |
 | Contact | Dropdown — tous les contacts du projet |
 | `trigger_after_scene` | Dropdown de scènes — se déclenche quand la scène choisie vient d'être jouée |
 | `resume_after_flag` | Dropdown de flags — attend en coulisse jusqu'à ce que ce flag soit activé |
@@ -178,12 +180,19 @@ La scène est ajoutée en fin de fichier avec un message vide `{ "text": "" }`. 
 
 ```
 Supprimer cette scène
+Dupliquer cette scène
 ─────────────────────
 Déconnecter : C'est du spam → scene_02
 Déconnecter : Oui, je vous reçois → scene_02
 ```
 
 Cliquer sur une entrée "Déconnecter" supprime le `next` correspondant dans le JSON (le choix ou le `next` de scène reste, mais sans destination).
+
+### Dupliquer une scène
+
+**Clic droit sur le nœud** → **Dupliquer cette scène**.
+
+La scène est copiée dans le même fichier JSON avec un nouvel ID (`{id}_copy`, puis `{id}_copy2`… en cas de collision). Les messages, les choix et tous les textes sont copiés ; les liens sortants (`next`, `trigger_after_scene`, `resume_after_flag`, `resume_after_delay`, `choices[].next`) sont effacés pour éviter les connexions dupliquées. L'opération est annulable avec **Ctrl+Z**.
 
 ### Supprimer une scène
 
@@ -286,7 +295,7 @@ Chaque contact est affiché sous forme de carte avec tous ses champs éditables 
 - **+ msg** sur une carte — ajoute une entrée d'historique
 - **×** sur une ligne d'historique — supprime l'entrée immédiatement
 
-> **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue chargés et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
+> **Renommer un `id`** est sans risque : le panneau scanne tous les fichiers de dialogue du projet et met à jour chaque `contact_id` qui correspondait à l'ancienne valeur. Le champ `start_contact` global est aussi mis à jour si nécessaire.
 
 ---
 
@@ -319,7 +328,6 @@ L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suiva
 | `edit` (corrections différées) | Le texte corrigé (`corrected_text`) est éditable ; le type et le délai restent en lecture seule |
 | `time` (délai d'apparition d'un message) | Cas avancé rare |
 | `music` | Cas avancé rare |
-| `_notes` | Commentaires internes, ignorés par le moteur |
 
 Pour toute édition JSON, utiliser le bouton **Reformater** ensuite pour remettre les clés dans l'ordre canonique.
 
@@ -372,9 +380,11 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 | `ContactsPanel.gd` | Panneau Contacts — liste des personnages uniquement ; étend `StoryPanelBase` |
 | `StorySettingsPanel.gd` | Panneau Paramètres — réglages globaux, langues, écran de fin ; étend `StoryPanelBase` |
 | `scene_parser.gd` | `RefCounted` autonome — lit `story.json` + `dialogues/*.json` avec support locale |
+| `FlagsPanel.gd` | Panneau Flags — liste en lecture seule tous les flags du projet avec leurs scènes d'origine ; `Control` pur, non connecté à `StoryPanelBase` |
+| `json_utils.gd` | Sérialiseur JSON sur mesure : `expand()` (expansion jusqu'à la profondeur 3, compact au-delà) et `compact()` |
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).
 
 `ContactsPanel.gd` et `StorySettingsPanel.gd` étendent tous deux `StoryPanelBase.gd` et reçoivent quatre callables injectés par `StoryEditorPanel` : `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Les deux panneaux communiquent avec le panneau principal via les signaux `story_modified` et `error_occurred`. `ContactsPanel` émet en plus `rename_contact_requested`, dont les écritures dans les fichiers de dialogue sont déléguées à `StoryEditorPanel` (qui possède `_write_json`).
 
-Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `_json_expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.
+Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `JsonUtils.expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.

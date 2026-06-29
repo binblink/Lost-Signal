@@ -48,6 +48,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
 - **🚩 Flags button**: opens the [Flags panel](#flags-panel) — a floating window listing all project flags with the scenes that set or use them.
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
+- **🗗 button**: opens the Story Editor in a separate window — handy on a second screen. A second click brings the existing window to the front instead of opening a new one. The window can be maximized.
 - **Contact filter**: dropdown listing all project contacts. Selecting a contact dims all scenes belonging to other contacts to 20% opacity — connections remain visible to keep global context. Choosing "All" restores normal display. The filter is preserved after a Refresh.
 - **Search field**: type a scene ID (or a fragment) and press Enter to center the graph on the matching scene and open its detail panel. Search is case-insensitive and follows priority order: exact match → prefix → substring. Escape clears the field.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
@@ -102,6 +103,7 @@ Clicking a node opens the detail panel on the right. All fields are **directly e
 
 | Field | Interface |
 |---|---|
+| `_notes` | Text area — internal notes on the scene, ignored by the engine. Appear in green at the top of the panel. |
 | Contact | Dropdown — all contacts in the project |
 | `trigger_after_scene` | Scene dropdown — triggers when the selected scene has just played |
 | `resume_after_flag` | Flag dropdown — waits in the background until this flag is set |
@@ -178,12 +180,19 @@ The scene is appended to the file with an empty message `{ "text": "" }`. It app
 
 ```
 Delete this scene
+Duplicate this scene
 ─────────────────────
 Disconnect: That's spam → scene_02
 Disconnect: Yes, I hear you → scene_02
 ```
 
 Clicking a "Disconnect" entry removes the corresponding `next` from the JSON (the choice or scene `next` remains but without a destination).
+
+### Duplicate a Scene
+
+**Right-click on the node** → **Duplicate this scene**.
+
+The scene is copied into the same JSON file with a new ID (`{id}_copy`, then `{id}_copy2`… on collision). All messages, choices, and text are copied; outgoing links (`next`, `trigger_after_scene`, `resume_after_flag`, `resume_after_delay`, `choices[].next`) are cleared to avoid duplicate connections. The operation is undoable with **Ctrl+Z**.
 
 ### Delete a Scene
 
@@ -224,8 +233,6 @@ Click the **Settings** button in the toolbar to open a floating window for globa
 | `title` | Text field — displayed in menus and the window title bar |
 | `start_scene` | Scene dropdown — first scene played on a new game |
 | `start_contact` | Contact dropdown — contact whose conversation is shown on screen at launch; if empty, the main contact is used |
-<<<<<<< HEAD
-=======
 
 ### Typing speed
 
@@ -235,7 +242,6 @@ Configures typing delays in `theme.json`. Changes take effect on the next game l
 |---|---|
 | Contacts | SpinBox (0.01–0.50 s) — per-character delay for the `…` indicator shown while a contact is "typing". Default: `0.08` |
 | Player | SpinBox (0.01–0.50 s) — per-character delay for player reply typing. Default: `0.05` |
->>>>>>> 7ba31cc (feat: language switcher in story editor toolbar + screenshots added to the md files)
 
 ### Languages
 
@@ -289,7 +295,7 @@ Each contact is displayed as a card with all its configurable fields:
 - **+ msg** on any card — appends a history entry to that contact
 - **×** on a history row — removes that entry immediately
 
-> **Renaming an `id`** is safe: the panel scans all currently loaded dialogue files and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
+> **Renaming an `id`** is safe: the panel scans all dialogue files in the project and updates every `contact_id` that matched the old value. The `start_contact` global field is also updated if it pointed to the renamed contact.
 
 ---
 
@@ -322,7 +328,6 @@ The editor covers the vast majority of scenarios. The following features still r
 | `edit` (deferred corrections) | The corrected text (`corrected_text`) is editable; type and delay remain read-only |
 | `time` (message appearance delay) | Advanced, rarely needed |
 | `music` | Advanced, rarely needed |
-| `_notes` | Internal comments, ignored by the engine |
 
 After any JSON edit, use the **Reformat** button to restore canonical key ordering.
 
@@ -375,9 +380,11 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 | `ContactsPanel.gd` | Contacts panel — character list only; extends `StoryPanelBase` |
 | `StorySettingsPanel.gd` | Settings panel — global fields, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` — reads `story.json` + `dialogues/*.json` with locale support |
+| `FlagsPanel.gd` | Flags panel — read-only list of every project flag with its originating scenes; plain `Control`, not connected to `StoryPanelBase` |
+| `json_utils.gd` | Custom JSON serializer: `expand()` (expands to depth 3, compact beyond) and `compact()` |
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).
 
 Both `ContactsPanel.gd` and `StorySettingsPanel.gd` extend `StoryPanelBase.gd` and receive four callables injected by `StoryEditorPanel`: `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Both panels communicate back via the `story_modified` and `error_occurred` signals. `ContactsPanel` additionally emits `rename_contact_requested`, whose dialogue file writes are delegated to `StoryEditorPanel` (which owns `_write_json`).
 
-Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `_json_expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.
+Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `JsonUtils.expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.
