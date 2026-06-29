@@ -574,6 +574,7 @@ func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 			node.get_viewport().set_input_as_handled()
 			var popup := PopupMenu.new()
 			popup.add_item(_t("Supprimer cette scène", "Delete this scene"), 0)
+			popup.add_item(_t("Dupliquer cette scène", "Duplicate this scene"), 1)
 			var has_connected := false
 			for i in range(conns.size()):
 				var conn_type: String = str(conns[i].get("type", ""))
@@ -587,6 +588,8 @@ func _create_graph_node(scene_id: String, scene: Dictionary, conns: Array,
 			popup.id_pressed.connect(func(id: int) -> void:
 				if id == 0:
 					_on_delete_nodes_request([StringName(scene_id)])
+				elif id == 1:
+					_duplicate_scene(scene_id)
 				elif id >= 100:
 					_write_disconnection_to_file(scene_id, id - 100)
 				popup.queue_free())
@@ -902,6 +905,52 @@ func _write_scene_to_file(scene_id: String, contact_id: String, file_name: Strin
 	_on_refresh_pressed()
 
 
+func _duplicate_scene(source_id: String) -> void:
+	var source: Dictionary = _scenes.get(source_id, {})
+	var file_name: String = source.get("_editor_file", "")
+	if file_name.is_empty():
+		return
+	var base_id := source_id + "_copy"
+	var new_id := base_id
+	var n := 2
+	while _scenes.has(new_id):
+		new_id = base_id + str(n)
+		n += 1
+	var path := "res://dialogues/" + file_name
+	var rf := FileAccess.open(path, FileAccess.READ)
+	if rf == null:
+		_status_label.text = _t("Erreur lecture : " + file_name, "Read error: " + file_name)
+		return
+	var data = JSON.parse_string(rf.get_as_text())
+	rf.close()
+	if not data is Dictionary or not data.has("scenes"):
+		return
+	_begin_mutation(_t("Dupliquer scène : %s" % source_id, "Duplicate scene: %s" % source_id))
+	var new_scene: Dictionary = {}
+	for key: String in source:
+		if key != "_editor_file":
+			new_scene[key] = source[key]
+	new_scene["id"] = new_id
+	new_scene.erase("next")
+	new_scene.erase("trigger_after_scene")
+	new_scene.erase("resume_after_flag")
+	new_scene.erase("resume_after_delay")
+	if new_scene.has("choices"):
+		var new_choices: Array = []
+		for ch: Dictionary in (new_scene["choices"] as Array):
+			var c: Dictionary = ch.duplicate()
+			c.erase("next")
+			new_choices.append(c)
+		new_scene["choices"] = new_choices
+	(data["scenes"] as Array).append(new_scene)
+	if not _write_json(path, data):
+		_status_label.text = _t("Erreur écriture : " + file_name, "Write error: " + file_name)
+		_end_mutation()
+		return
+	_end_mutation()
+	_on_refresh_pressed()
+
+
 # Always re-orders scenes before writing so git diffs stay readable regardless of edit order.
 func _write_json(path: String, data: Dictionary) -> bool:
 	_snapshot_file(path)
@@ -1138,11 +1187,34 @@ func _populate_detail(scene_id: String) -> void:
 		child.queue_free()
 	var scene: Dictionary = _scenes.get(scene_id, {})
 	_add_header(scene_id)
+	_populate_notes_section(scene_id, scene)
 	_populate_contact_section(scene_id, scene)
 	_populate_trigger_section(scene_id, scene)
 	_populate_messages_section(scene_id, scene)
 	_populate_choices_section(scene_id, scene)
 	_populate_special_section(scene)
+
+
+func _populate_notes_section(scene_id: String, scene: Dictionary) -> void:
+	var notes_val: String = str(scene.get("_notes", ""))
+	var edit := TextEdit.new()
+	edit.text = notes_val
+	edit.placeholder_text = _t("📝 Notes (ignorées par le moteur)…", "📝 Notes (ignored by the engine)…")
+	edit.custom_minimum_size = Vector2(0, 48)
+	edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
+	edit.scroll_fit_content_height = true
+	edit.add_theme_color_override("font_color", Color(0.55, 0.65, 0.55))
+	edit.add_theme_color_override("font_placeholder_color", Color(0.35, 0.42, 0.35))
+	edit.focus_exited.connect(func() -> void:
+		var val := edit.text
+		if val == notes_val:
+			return
+		_patch_field(scene_id, func(s: Dictionary) -> void:
+			if val.is_empty():
+				s.erase("_notes")
+			else:
+				s["_notes"] = val))
+	_detail_content.add_child(edit)
 
 
 func _populate_contact_section(scene_id: String, scene: Dictionary) -> void:
