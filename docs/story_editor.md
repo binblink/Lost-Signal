@@ -378,16 +378,17 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 | `plugin.cfg` | Manifest Godot (nom, version) |
 | `plugin.gd` | `EditorPlugin` — ajoute/retire le panneau |
 | `StoryEditorPanel.tscn` | Scène du panneau (`HSplitContainer[GraphEdit, ScrollContainer]`) + toolbar |
-| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON ; ouvre les fenêtres Contacts et Paramètres |
+| `StoryEditorPanel.gd` | Logique principale : parsing, layout BFS, rendu, édition, écriture JSON ; ouvre les fenêtres Contacts et Paramètres ; possède l'undo/redo |
+| `SceneDetailPanel.gd` | `RefCounted` — formulaire d'édition de scène (panneau droit) ; toutes les fonctions `_populate_*` et `_add_*` ; reçoit ses dépendances via des callables injectés par `StoryEditorPanel` |
 | `StoryPanelBase.gd` | Classe de base partagée par `ContactsPanel` et `StorySettingsPanel` : lecture/écriture de `story.json`, callables undo/redo, helpers UI (`_section`, `_line_edit`, `_dropdown`, etc.) |
 | `ContactsPanel.gd` | Panneau Contacts — liste des personnages uniquement ; étend `StoryPanelBase` |
 | `StorySettingsPanel.gd` | Panneau Paramètres — réglages globaux, langues, écran de fin ; étend `StoryPanelBase` |
 | `scene_parser.gd` | `RefCounted` autonome — lit `story.json` + `dialogues/*.json` avec support locale |
 | `FlagsPanel.gd` | Panneau Flags — liste en lecture seule tous les flags du projet avec leurs scènes d'origine ; `Control` pur, non connecté à `StoryPanelBase` |
-| `json_utils.gd` | Sérialiseur JSON sur mesure : `expand()` (expansion jusqu'à la profondeur 3, compact au-delà) et `compact()` |
+| `json_utils.gd` | Helpers JSON statiques : `expand()` / `compact()` (sérialiseur sur mesure), `ordered_scene/message/choice()` (ordre stable des clés pour des diffs lisibles) |
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).
 
 `ContactsPanel.gd` et `StorySettingsPanel.gd` étendent tous deux `StoryPanelBase.gd` et reçoivent quatre callables injectés par `StoryEditorPanel` : `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Les deux panneaux communiquent avec le panneau principal via les signaux `story_modified` et `error_occurred`. `ContactsPanel` émet en plus `rename_contact_requested`, dont les écritures dans les fichiers de dialogue sont déléguées à `StoryEditorPanel` (qui possède `_write_json`).
 
-Les scènes sont écrites via `_write_json()` qui applique `_ordered_scene()` (tri sémantique des clés) puis `JsonUtils.expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.
+Les scènes sont écrites via `_write_json()` qui appelle `JsonUtils.ordered_scene()` (tri sémantique des clés, défini dans `json_utils.gd`) puis `JsonUtils.expand()` (sérialiseur sur mesure : expansion jusqu'à la profondeur 3, compact au-delà). `story.json` utilise le même sérialiseur dans `ContactsPanel`.

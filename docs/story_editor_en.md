@@ -378,16 +378,17 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 | `plugin.cfg` | Godot manifest (name, version) |
 | `plugin.gd` | `EditorPlugin` — adds/removes the panel |
 | `StoryEditorPanel.tscn` | Panel scene (`HSplitContainer[GraphEdit, ScrollContainer]`) + toolbar |
-| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing; opens the Contacts and Settings windows |
+| `StoryEditorPanel.gd` | Main logic: parsing, BFS layout, graph rendering, editing, JSON writing; opens the Contacts and Settings windows; owns undo/redo |
+| `SceneDetailPanel.gd` | `RefCounted` — right-side scene editor form; all `_populate_*` and `_add_*` helpers; receives dependencies via callable properties injected by `StoryEditorPanel` |
 | `StoryPanelBase.gd` | Shared base class for `ContactsPanel` and `StorySettingsPanel`: `story.json` read/write, undo/redo callables, UI helpers (`_section`, `_line_edit`, `_dropdown`, etc.) |
 | `ContactsPanel.gd` | Contacts panel — character list only; extends `StoryPanelBase` |
 | `StorySettingsPanel.gd` | Settings panel — global fields, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` — reads `story.json` + `dialogues/*.json` with locale support |
 | `FlagsPanel.gd` | Flags panel — read-only list of every project flag with its originating scenes; plain `Control`, not connected to `StoryPanelBase` |
-| `json_utils.gd` | Custom JSON serializer: `expand()` (expands to depth 3, compact beyond) and `compact()` |
+| `json_utils.gd` | Static JSON helpers: `expand()` / `compact()` (custom serializer), `ordered_scene/message/choice()` (stable key order for readable diffs) |
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).
 
 Both `ContactsPanel.gd` and `StorySettingsPanel.gd` extend `StoryPanelBase.gd` and receive four callables injected by `StoryEditorPanel`: `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. Both panels communicate back via the `story_modified` and `error_occurred` signals. `ContactsPanel` additionally emits `rename_contact_requested`, whose dialogue file writes are delegated to `StoryEditorPanel` (which owns `_write_json`).
 
-Scenes are written via `_write_json()`, which applies `_ordered_scene()` (semantic key ordering) then `JsonUtils.expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.
+Scenes are written via `_write_json()`, which calls `JsonUtils.ordered_scene()` (semantic key ordering, defined in `json_utils.gd`) then `JsonUtils.expand()` (custom serializer: expands to depth 3, compact beyond). `story.json` uses the same serializer in `ContactsPanel`.

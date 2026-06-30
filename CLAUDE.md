@@ -68,11 +68,13 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 | `plugin.cfg` | Godot plugin manifest |
 | `plugin.gd` | `EditorPlugin` — mounts/unmounts the bottom panel |
 | `StoryEditorPanel.tscn` | Panel scene: `HSplitContainer[GraphEdit, ScrollContainer]` + toolbar |
-| `StoryEditorPanel.gd` | Graph rendering, BFS layout, detail panel, editing, JSON writing; opens Contacts and Settings windows |
+| `StoryEditorPanel.gd` | Graph rendering, BFS layout, editing, JSON writing; opens Contacts and Settings windows; owns undo/redo |
+| `SceneDetailPanel.gd` | `RefCounted` — right-side scene editor form; all `_populate_*` and `_add_*` helpers; receives dependencies via callable properties injected by `StoryEditorPanel` |
 | `StoryPanelBase.gd` | Shared base (`extends Control`) for both floating panels: `story.json` read/write, undo/redo callables, UI helpers |
 | `ContactsPanel.gd` | Character list editor; extends `StoryPanelBase` |
 | `StorySettingsPanel.gd` | Global settings, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` that reads JSON files with locale support (uses `OS.get_locale_language()`, not `SettingsManager`) |
+| `json_utils.gd` | Static helpers: `compact`, `expand` (custom JSON serializer), `ordered_scene/message/choice` (stable key order for clean diffs) |
 
 **Editing actions** (all write directly to JSON and trigger an auto-refresh):
 - **Right-click on background** → create a new scene (ID, contact, target file)
@@ -84,7 +86,7 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 - `scene_parser.gd` is decoupled from `dialogue_loader.gd` because game autoloads are unavailable in editor context.
 - Only `GraphNode` children of `GraphEdit` are freed on rebuild — never `get_children()` blindly, as that would delete the internal `connection_layer` node and corrupt the graph.
 - `_editor_file` meta-key is injected per scene in memory by `scene_parser.gd` to track which file to write to; it is never written to disk.
-- `_write_json()` applies `_ordered_scene()` (semantic key order) then `_json_expand()` (custom serializer, compact at depth ≥ 4) before writing.
+- `_write_json()` calls `JsonUtils.ordered_scene()` (stable key order) then `JsonUtils.expand()` (custom serializer, compact at depth ≥ 4) before writing.
 - Both floating panels (`ContactsPanel`, `StorySettingsPanel`) extend `StoryPanelBase` and receive four injected callables: `get_scene_ids`, `begin_mutation`, `end_mutation`, `snapshot_file`. The last three wire them into the undo/redo system without creating a direct dependency on `StoryEditorPanel`. All editor mutations use snapshot-based undo/redo via `EditorUndoRedoManager` (before/after file content pairs); CSV language mutations are excluded as they trigger a Godot reimport.
 
 Full user-facing docs: `docs/story_editor_en.md` (English), `docs/story_editor.md` (French).
