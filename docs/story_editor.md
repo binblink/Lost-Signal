@@ -15,28 +15,31 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 ## Interface
 
 ```
-+------------------------------------------------------------------------------+
-| [Refresh]  [Reformater]  [Contacts]  [Paramètres]  |  [↩]  [↪]   11 scenes  |
-+------------------------------------------+-----------------------------------+
-|                                          |  scene_04                         |
-|  [> ch1_intro] --> [scene_01] -------->  |  Contact  [Maeve         v]       |
-|                         |                |                                   |
-|  [! orpheline]   [X scene_02]            |  Messages -------------------     |
-|                                          |                                   |
-|  [~ scene_03] - - - trigger - - - ->     |   Bonjour !               [x]     |
-|                                          |   +------------------------+      |
-|                                          |   | Je t'ecris depuis le  |       |
-|                                          |   | train.                |       |
-|                                          |   +------------------------+      |
-|                                          |   pause    [medium  v]            |
-|                                          |   requires [--      v]            |
-|                                          |                                   |
-|                                          |  Choix  ------------------        |
-|                                          |   C'est du spam -> [-- v] [x]     |
-|                                          |   Je vous recois-> [-- v] [x]     |
-|                                          |   [+ choix]                       |
-+------------------------------------------+-----------------------------------+
++--------------------------------------------------------------------------------------+
+| [Refresh] [Reformater] [Contacts] [Paramètres] [↩] [↪]   2/5 : scene_03            |
+| [🚩 Flags] [📊 Analyser] [🗗]  [fr v]  [Tous v]  [Chercher...________] [<-] [->]   |
++-------------------------------------------+------------------------------------------+
+|                                           |  scene_04                                |
+|  [> ch1_intro] --> [scene_01] -------->   |  Contact  [Maeve              v]         |
+|                         |                 |                                          |
+|  [! orpheline]   [X scene_02]             |  Messages ----------------------         |
+|                                           |                                          |
+|  [~ scene_03] - - - trigger - - - ->      |   Bonjour !                   [x]        |
+|                                           |   +-------------------------+            |
+|                                           |   | Je t'ecris depuis le   |            |
+|                                           |   | train.                 |            |
+|                                           |   +-------------------------+            |
+|                                           |   pause    [medium  v]                   |
+|                                           |   requires [--      v]                   |
+|                                           |                                          |
+|                                           |  Choix  -------------------              |
+|                                           |   C'est du spam -> [-- v] [x]            |
+|                                           |   Je vous recois-> [-- v] [x]            |
+|                                           |   [+ choix]                              |
++-------------------------------------------+------------------------------------------+
 ```
+
+> La toolbar est une seule rangée horizontale ; elle est représentée sur deux lignes ici pour la lisibilité.
 
 Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X id]` = fin de parcours · `[~ id]` = saisie libre · `- - ->` = connexion trigger
 
@@ -47,6 +50,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
 - **Bouton 🚩 Flags** : ouvre le [panneau Flags](#panneau-flags) — une fenêtre flottante listant tous les flags du projet avec leurs scènes d'origine et d'utilisation.
+- **Bouton 📊 Analyser** : ouvre le [panneau Analyser](#panneau-analyser) — une fenêtre flottante présentant une analyse complète du récit (accessibilité, flags inutilisés, boucles, personnages, durée indicative).
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
 - **Bouton 🗗** : ouvre le Story Editor dans une fenêtre séparée — pratique sur un second écran. Un deuxième clic ramène la fenêtre existante au lieu d'en ouvrir une nouvelle. La fenêtre peut être mise en plein écran.
 - **Filtre contact** : dropdown listant tous les contacts du projet. Sélectionner un contact grise toutes les scènes des autres contacts à 20 % d'opacité — les connexions restent visibles pour garder le contexte global. Choisir « Tous » rétablit l'affichage normal. Le filtre est conservé après un Refresh.
@@ -320,6 +324,25 @@ Le panneau se met à jour automatiquement après chaque Refresh du graphe.
 
 ---
 
+## Panneau Analyser
+
+Cliquer sur le bouton **📊 Analyser** dans la toolbar ouvre une fenêtre flottante en lecture seule présentant une analyse du récit calculée en temps réel depuis les scènes chargées.
+
+| Section | Contenu |
+|---|---|
+| **Vue d'ensemble** | Nombre de scènes, messages, choix, fins (sans continuation), scènes inaccessibles, boucles et flags inutilisés (avec indicateur coloré si > 0) |
+| **Accessibilité** | Pourcentage de scènes accessibles depuis `start_scene` (parcours exhaustif depuis la scène de départ) ; liste cliquable des scènes inaccessibles |
+| **Flags inutilisés** | Flags activés par `choices[].flag` mais jamais vérifiés dans `requires_flag`, `condition` ou `resume_after_flag` (section absente si tous les flags sont utilisés) |
+| **Boucles** | Circuits fermés détectés par exploration des chemins — scènes où le joueur peut rester indéfiniment sans condition de sortie (section absente si aucune boucle) |
+| **Personnages** | Nombre de messages par contact, trié par volume décroissant, avec pourcentage du total |
+| **Durée indicative** | ≈ Xh YY ou ≈ N min — basé sur 200 mots/min en comptant **toutes** les branches (chemin complet inclus) |
+
+Cliquer sur un ID de scène dans les sections Accessibilité ou Boucles centre le graphe sur ce nœud.
+
+Le panneau se recalcule automatiquement à chaque ouverture (si déjà ouvert, cliquer à nouveau le bouton rafraîchit les données).
+
+---
+
 ## Ce que le JSON permet en plus
 
 L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suivantes nécessitent encore une édition directe du fichier JSON :
@@ -385,6 +408,7 @@ Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant
 | `StorySettingsPanel.gd` | Panneau Paramètres — réglages globaux, langues, écran de fin ; étend `StoryPanelBase` |
 | `scene_parser.gd` | `RefCounted` autonome — lit `story.json` + `dialogues/*.json` avec support locale |
 | `FlagsPanel.gd` | Panneau Flags — liste en lecture seule tous les flags du projet avec leurs scènes d'origine ; `Control` pur, non connecté à `StoryPanelBase` |
+| `AnalysisPanel.gd` | Panneau Analyser — analyse en lecture seule : accessibilité par parcours depuis `start_scene`, détection de cycles, flags inutilisés, compte par contact, durée indicative ; `Control` pur |
 | `json_utils.gd` | Helpers JSON statiques : `expand()` / `compact()` (sérialiseur sur mesure), `ordered_scene/message/choice()` (ordre stable des clés pour des diffs lisibles) |
 
 `scene_parser.gd` est volontairement découplé de `dialogue_loader.gd` pour fonctionner dans le contexte éditeur (les autoloads du jeu ne sont pas disponibles dans un plugin `@tool`).

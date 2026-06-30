@@ -75,6 +75,8 @@ An `@tool` EditorPlugin that renders a visual graph of all narrative scenes and 
 | `StorySettingsPanel.gd` | Global settings, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` that reads JSON files with locale support (uses `OS.get_locale_language()`, not `SettingsManager`) |
 | `json_utils.gd` | Static helpers: `compact`, `expand` (custom JSON serializer), `ordered_scene/message/choice` (stable key order for clean diffs) |
+| `FlagsPanel.gd` | Read-only flags panel — lists all flags with originating scenes; plain `Control`, injected props: `scenes`, `ui_locale`, `focus_scene` |
+| `AnalysisPanel.gd` | Read-only analysis panel — BFS accessibility, DFS cycle detection, unused flags, per-contact counts, indicative duration; plain `Control`, injected props: `scenes`, `start_scene`, `ui_locale`, `focus_scene` |
 
 **Editing actions** (all write directly to JSON and trigger an auto-refresh):
 - **Right-click on background** → create a new scene (ID, contact, target file)

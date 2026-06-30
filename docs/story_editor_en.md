@@ -15,28 +15,31 @@ The Story Editor is a Godot plugin built into the project. It displays a **visua
 ## Interface
 
 ```
-+------------------------------------------------------------------------------+
-| [Refresh]  [Reformat]  [Contacts]  [Settings]  |  [↩]  [↪]   11 scenes      |
-+------------------------------------------+-----------------------------------+
-|                                          |  scene_04                         |
-|  [> ch1_intro] --> [scene_01] --------> |  Contact  [Maeve         v]        |
-|                         |               |                                    |
-|  [! orphan]      [X scene_02]           |  Messages -------------------      |
-|                                          |                                   |
-|  [~ scene_03] - - - trigger - - - ->    |   Hello!                  [x]      |
-|                                          |   +---------------------------+   |
-|                                          |   | I'm writing from the     |    |
-|                                          |   | train.                   |    |
-|                                          |   +---------------------------+   |
-|                                          |   pause    [medium  v]            |
-|                                          |   requires [--      v]            |
-|                                          |                                   |
-|                                          |  Choices  ----------------        |
-|                                          |   That's spam    -> [-- v] [x]    |
-|                                          |   Yes, I hear you-> [-- v] [x]    |
-|                                          |   [+ choice]                      |
-+------------------------------------------+-----------------------------------+
++--------------------------------------------------------------------------------------+
+| [Refresh] [Reformat] [Contacts] [Settings] [↩] [↪]   2/5 : scene_03                |
+| [🚩 Flags] [📊 Analyse] [🗗]  [fr v]  [All v]  [Find by ID or text...____] [<-][->] |
++-------------------------------------------+------------------------------------------+
+|                                           |  scene_04                                |
+|  [> ch1_intro] --> [scene_01] -------->   |  Contact  [Maeve              v]         |
+|                         |                 |                                          |
+|  [! orphan]      [X scene_02]             |  Messages ----------------------         |
+|                                           |                                          |
+|  [~ scene_03] - - - trigger - - - ->      |   Hello!                      [x]        |
+|                                           |   +---------------------------+          |
+|                                           |   | I'm writing from the     |          |
+|                                           |   | train.                   |          |
+|                                           |   +---------------------------+          |
+|                                           |   pause    [medium  v]                   |
+|                                           |   requires [--      v]                   |
+|                                           |                                          |
+|                                           |  Choices  -------------------            |
+|                                           |   That's spam    -> [-- v] [x]           |
+|                                           |   Yes, I hear you-> [-- v] [x]           |
+|                                           |   [+ choice]                             |
++-------------------------------------------+------------------------------------------+
 ```
+
+> The toolbar is a single horizontal row; it is shown on two lines here for readability.
 
 Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[~ id]` = free input · `- - ->` = trigger connection
 
@@ -47,6 +50,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
 - **🚩 Flags button**: opens the [Flags panel](#flags-panel) — a floating window listing all project flags with the scenes that set or use them.
+- **📊 Analyse button**: opens the [Analysis panel](#analysis-panel) — a floating window with a full narrative analysis (accessibility, unused flags, loops, characters, indicative duration).
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
 - **🗗 button**: opens the Story Editor in a separate window — handy on a second screen. A second click brings the existing window to the front instead of opening a new one. The window can be maximized.
 - **Contact filter**: dropdown listing all project contacts. Selecting a contact dims all scenes belonging to other contacts to 20% opacity — connections remain visible to keep global context. Choosing "All" restores normal display. The filter is preserved after a Refresh.
@@ -320,6 +324,25 @@ The panel updates automatically after every graph Refresh.
 
 ---
 
+## Analysis Panel
+
+Clicking the **📊 Analyse** button opens a read-only floating window with a real-time analysis of the loaded scenes.
+
+| Section | Contents |
+|---|---|
+| **Overview** | Scene count, messages, choices, dead ends (no continuation), unreachable scenes, loops, unused flags (colour-coded if > 0) |
+| **Accessibility** | Percentage of scenes reachable from `start_scene` (exhaustive traversal from the start scene); clickable list of unreachable scenes |
+| **Unused flags** | Flags set by `choices[].flag` but never checked in `requires_flag`, `condition`, or `resume_after_flag` (section hidden if all flags are used) |
+| **Loops** | Closed cycles found by path exploration — scenes where the player can stay indefinitely with no exit condition (section hidden if none) |
+| **Characters** | Message count per contact, sorted by volume descending, with percentage of total |
+| **Indicative duration** | ≈ Xh YY or ≈ N min — based on 200 words/min counting **all** branches (including those never taken) |
+
+Clicking a scene ID in the Accessibility or Loops sections centers the graph on that node.
+
+The panel recalculates on every open (if already open, clicking the button again refreshes the data).
+
+---
+
 ## What JSON Allows Beyond the Editor
 
 The editor covers the vast majority of scenarios. The following features still require direct JSON editing:
@@ -385,6 +408,7 @@ The plugin lives in `addons/story_editor/` and does not touch any existing proje
 | `StorySettingsPanel.gd` | Settings panel — global fields, languages, end screen; extends `StoryPanelBase` |
 | `scene_parser.gd` | Standalone `RefCounted` — reads `story.json` + `dialogues/*.json` with locale support |
 | `FlagsPanel.gd` | Flags panel — read-only list of every project flag with its originating scenes; plain `Control`, not connected to `StoryPanelBase` |
+| `AnalysisPanel.gd` | Analysis panel — read-only narrative analysis: reachability traversal from `start_scene`, cycle detection, unused flags, per-contact message counts, indicative duration; plain `Control` |
 | `json_utils.gd` | Static JSON helpers: `expand()` / `compact()` (custom serializer), `ordered_scene/message/choice()` (stable key order for readable diffs) |
 
 `scene_parser.gd` is intentionally decoupled from `dialogue_loader.gd` to work in the editor context (game autoloads are not available inside a `@tool` plugin).

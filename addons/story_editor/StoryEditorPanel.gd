@@ -44,9 +44,11 @@ var _cached_flags:      Array            = []
 var _cached_vars:       Array            = []
 var _cached_scene_ids:  Array            = []
 var _dialogue_files:    PackedStringArray = PackedStringArray()
-var _contacts_win: Window = null
-var _settings_win: Window = null
-var _flags_win:    Window = null
+var _contacts_win:  Window = null
+var _settings_win:  Window = null
+var _flags_win:     Window = null
+var _analysis_win:  Window = null
+var _analysis_btn:  Button = null
 
 var undo_redo_manager: EditorUndoRedoManager = null
 var _in_mutation:       bool       = false
@@ -162,6 +164,14 @@ func _ready() -> void:
 	flags_btn.pressed.connect(_on_flags_pressed)
 	_refresh_button.get_parent().add_child(flags_btn)
 
+	_analysis_btn = Button.new()
+	_analysis_btn.text = "📊 " + _t("Analyser", "Analyse")
+	_analysis_btn.tooltip_text = _t(
+		"Analyse le récit : accessibilité, flags inutilisés, boucles, personnages, durée indicative.",
+		"Analyses the narrative: accessibility, unused flags, loops, characters, indicative duration.")
+	_analysis_btn.pressed.connect(_on_analysis_pressed)
+	_refresh_button.get_parent().add_child(_analysis_btn)
+
 	var detach_btn := Button.new()
 	detach_btn.text = "🗗"
 	detach_btn.tooltip_text = _t(
@@ -179,6 +189,7 @@ func _ready() -> void:
 		var loc: String = _locale_option.get_item_text(idx)
 		_parser.locale_override = loc
 		_ui_locale = loc
+		_analysis_btn.text = "📊 " + _t("Analyser", "Analyse")
 		_on_refresh_pressed()
 		if not _selected_scene_id.is_empty():
 			_detail_panel.populate(_selected_scene_id)
@@ -330,6 +341,34 @@ func _on_flags_pressed() -> void:
 	get_tree().get_root().add_child(_flags_win)
 	_flags_win.popup_centered()
 	panel.call("refresh")
+
+
+func _on_analysis_pressed() -> void:
+	if _analysis_win != null and is_instance_valid(_analysis_win):
+		var existing: Control = _analysis_win.get_node("AnalysisPanel")
+		existing.set("scenes",      _scenes)
+		existing.set("start_scene", _parser.start_scene)
+		existing.set("ui_locale",   _ui_locale)
+		existing.call("refresh")
+		_analysis_win.show()
+		return
+	_analysis_win = Window.new()
+	_analysis_win.title = _t("Analyse du récit", "Narrative analysis")
+	_analysis_win.size     = Vector2i(580, 700)
+	_analysis_win.min_size = Vector2i(420, 300)
+	_analysis_win.wrap_controls = true
+	_analysis_win.close_requested.connect(func() -> void: _analysis_win.hide())
+	var panel_a := preload("res://addons/story_editor/AnalysisPanel.gd").new()
+	panel_a.name        = "AnalysisPanel"
+	panel_a.set_anchors_preset(Control.PRESET_FULL_RECT)
+	panel_a.scenes      = _scenes
+	panel_a.start_scene = _parser.start_scene
+	panel_a.ui_locale   = _ui_locale
+	panel_a.focus_scene = func(sid: String) -> void: _focus_scene(sid)
+	_analysis_win.add_child(panel_a)
+	get_tree().get_root().add_child(_analysis_win)
+	_analysis_win.popup_centered()
+	panel_a.call("refresh")
 
 
 func _on_undo_pressed() -> void:
