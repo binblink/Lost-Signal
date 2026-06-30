@@ -1,11 +1,87 @@
 # Maeve // Lost Signal — Guide auteur
 
-_Dernière mise à jour : 27 juin 2026_
+_Dernière mise à jour : 30 juin 2026_
 
 Ce document explique comment écrire du contenu narratif pour le moteur de messages.
 Le principe : un auteur doit uniquement fournir des fichiers JSON bien formés, sans modifier le code.
 
-## 1. Principe général
+> **Outil recommandé :** le Story Editor (plugin Godot intégré) permet de créer et modifier les scènes sans ouvrir de fichier JSON. Le JSON est le format de stockage — ce guide en décrit la structure pour les cas avancés et comme référence complète.
+
+> **Vocabulaire :** dans ce document, *scène* et *nœud* désignent la même chose vue depuis deux endroits différents — une scène dans le fichier JSON = un nœud dans le graphe du Story Editor. Les deux termes sont interchangeables.
+
+---
+
+## Table des matières
+
+🟢 Débutant — à lire en premier &nbsp;&nbsp; 🟡 Intermédiaire — quand vous avez besoin de plus &nbsp;&nbsp; 🔴 Avancé — peut être ignoré pour les histoires simples
+
+- [Votre première scène — tutoriel minimal](#votre-première-scène--tutoriel-minimal)
+- [1. Principe général](#1-principe-général) 🟢
+- [2. story.json](#2-storyjson) 🟡
+- [3. Fichier de dialogue](#3-fichier-de-dialogue-dialoguesjson) 🟢
+- [4. Messages entrants](#4-messages-entrants-messages_in) 🟢
+- [5. Messages média](#5-messages-média) 🟡
+- [6. Choix](#6-choix-choices) 🟢
+- [7. Effets](#7-effets) 🟡
+- [8. Variables et conditions](#8-variables-et-conditions) 🟡
+- [9. free_input](#9-free_input) 🟡
+- [10. Templates](#10-templates) 🟡
+- [11. Contacts secondaires](#11-contacts-secondaires) 🟡
+- [12. Triggers et scènes différées](#12-triggers-et-scènes-différées) 🔴
+- [13. Validation](#13-validation) 🟢
+- [14. Localisation des dialogues](#14-localisation-des-dialogues) 🔴
+- [15. Outil de debug — Jump to Scene](#15-outil-de-debug--jump-to-scene) 🟢
+- [16. Menu principal](#16-menu-principal) 🟡
+- [17. Écran de fin](#17-écran-de-fin) 🟡
+- [Annexe A — Raccourcis emoji](#annexe-a--raccourcis-emoji)
+
+---
+
+## Votre première scène — tutoriel minimal
+
+Avant d'explorer les fonctionnalités avancées, voici une scène complète et fonctionnelle :
+
+```json
+{
+  "scenes": [
+    {
+      "id": "intro",
+      "contact_id": "maeve",
+      "messages_in": [
+        { "text": "Bonjour." },
+        { "text": "Vous êtes bien là ?", "pause": "short" }
+      ],
+      "choices": [
+        {
+          "text": "Oui, je suis là.",
+          "message": "Oui, je vous reçois.",
+          "next": "scene_suite"
+        },
+        {
+          "text": "Qui êtes-vous ?",
+          "message": "Qui êtes-vous ?",
+          "next": "scene_suite"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Ce que contient cette scène :
+- **`id`** — identifiant unique de la scène
+- **`contact_id`** — le personnage qui envoie les messages
+- **`messages_in`** — les messages reçus par le joueur, dans l'ordre
+- **`pause`** — délai avant l'envoi de la bulle suivante (`short`, `medium`, `long`)
+- **`choices`** — les boutons de réponse proposés au joueur
+- **`message`** — ce que le joueur envoie quand il clique sur ce choix
+- **`next`** — la scène jouée ensuite
+
+Tout le reste dans ce document est une extension de ce modèle.
+
+---
+
+## 1. Principe général 🟢
 
 Le jeu charge automatiquement :
 - `story.json` pour la configuration des contacts et de la scène de départ
@@ -13,7 +89,7 @@ Le jeu charge automatiquement :
 
 Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
 
-## 2. `story.json`
+## 2. `story.json` 🟡
 
 ### Structure minimale
 
@@ -35,7 +111,7 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
   - `id` : identifiant unique du contact.
   - `name` : texte affiché dans le bandeau. Utilisé comme valeur par défaut si aucune traduction n'est définie pour la langue active.
   - `names` : dictionnaire de noms localisés — voir ci-dessous.
-  - `is_main` : `true` pour le contact principal scriptable.
+  - `is_main` : `true` pour désigner le contact principal — celui que le moteur utilise comme interlocuteur central quand aucune configuration spéciale n'est définie. Un seul contact peut avoir `is_main: true` ; le Story Editor décoche automatiquement les autres à la sélection.
   - `avatar` : chemin vers l'image d'avatar du contact, ou `null`. Voir ci-dessous.
   - `status` : `online`, `away`, `offline`, `network_issue`.
   - `history` : messages pré-existants affichés dès le début d'une nouvelle partie. Voir ci-dessous.
@@ -70,6 +146,14 @@ Un prénom propre (`"Maeve"`, `"Alex"`) n'a généralement pas besoin d'être da
 
 **Le code langue doit correspondre exactement** au suffixe utilisé dans vos fichiers de dialogue. Si vous avez `acte1.en.json`, le code est `"en"`. Si vous avez `acte1.de.json`, le code est `"de"`. Une coquille dans le code (`"EN"` au lieu de `"en"`, `"fr-FR"` au lieu de `"fr"`) fera silencieusement tomber le moteur sur `name` — aucune erreur n'est levée.
 
+**Ordre de priorité des noms :**
+
+| Priorité | Source | Condition |
+|---|---|---|
+| 1 | Renommage narratif (`rename`) | Déclenché par un effet pendant la partie |
+| 2 | `names[code_langue]` | Clé correspondant à la langue active dans `names` |
+| 3 | `name` | Valeur par défaut / secours |
+
 > **Nota :** `names` ne gère que le nom affiché avant qu'un renommage narratif ait eu lieu. Si une scène renomme le contact via un effet `rename`, le nouveau nom prend le dessus pour le reste de la session. Pour les renommages narratifs qui doivent eux aussi être traduits, l'effet `rename` accepte un dictionnaire localisé en `value` — voir [Effets](#7-effets) ci-dessous.
 
 ---
@@ -89,6 +173,8 @@ Le champ `avatar` accepte un chemin Godot vers une image (PNG, JPG, JPEG ou WEBP
 **Convention recommandée :** placez les images d'avatar dans `assets/avatars/`. Le panneau Contacts du Story Editor propose un bouton `…` pour sélectionner l'image directement depuis l'explorateur de fichiers Godot.
 
 **Format recommandé :** image carrée, PNG ou WEBP. Le moteur recadre automatiquement l'image au format rond — une image carrée garantit un recadrage centré sans perte.
+
+**Taille recommandée :** 512 × 512 px, poids inférieur à 1 Mo. Des images plus grandes fonctionnent mais augmentent inutilement la taille du projet.
 
 ---
 
@@ -179,6 +265,8 @@ ID d'une scène existante dont les **choix** seront présentés au joueur dès q
 
 La scène référencée par `pending_scene` doit exister dans les fichiers de dialogue et contenir un champ `choices`. Lorsque le joueur sélectionne un choix, la scène reprend normalement — la suite narrative (`next`, flags, effets) s'applique comme pour n'importe quelle scène.
 
+> **Important :** `history` n'est pas une scène jouée. Aucun flag, variable ou effet n'est déclenché par les entrées `history`. Si votre récit dépend d'un flag censé avoir été posé pendant la conversation pré-existante, posez ce flag via un autre mécanisme — `pending_scene`, une scène déclenchée au démarrage, ou une valeur initiale dans le debug overlay.
+
 > Ces deux champs sont ignorés si une sauvegarde existe — le jeu restaure l'état sauvegardé, pas l'état initial.
 
 ### Exemple complet : option B — contacts secondaires avant le contact principal
@@ -254,7 +342,7 @@ La scène référencée par `pending_scene` doit exister dans les fichiers de di
 
 **Plusieurs contacts secondaires :** ajoutez autant de contacts que nécessaire, chacun avec son propre `history` et `pending_scene`. Le joueur peut naviguer librement entre eux. Le flag qui débloque le contact principal peut être posé par n'importe laquelle de ces réponses — c'est l'auteur qui choisit laquelle.
 
-## 3. Fichier de dialogue (`dialogues/*.json`)
+## 3. Fichier de dialogue (`dialogues/*.json`) 🟢
 
 Chaque fichier contient :
 
@@ -290,7 +378,7 @@ Chaque fichier contient :
 
 La musique baisse automatiquement (ducking) quand le joueur lance un message vocal, puis remonte à la fin de la lecture.
 
-## 4. Messages entrants (`messages_in`)
+## 4. Messages entrants (`messages_in`) 🟢
 
 ### Forme courte
 
@@ -425,7 +513,7 @@ Pour ajouter une pause sur une bulle spécifique, remplacez la chaîne par un ob
 
 Les chaînes et les objets peuvent être mélangés librement dans le même tableau. Le `requires_flag` du parent s'applique à toutes les bulles quoi qu'il arrive.
 
-## 5. Messages média
+## 5. Messages média 🟡
 
 ### Image
 
@@ -453,7 +541,7 @@ Les chaînes et les objets peuvent être mélangés librement dans le même tabl
 - Les fichiers audio doivent être placés dans le dossier `assets/sounds/`
 - Dans le JSON, utilisez toujours un chemin Godot commençant par `res://assets/sounds/`
 
-## 6. Choix (`choices`)
+## 6. Choix (`choices`) 🟢
 
 Un choix est un objet avec au moins `text`.
 
@@ -513,7 +601,7 @@ Dans un tableau `message`, chaque élément peut être une chaîne ou un objet `
 
 Valeurs acceptées pour `pause` : `short`, `medium`, `long` — mêmes durées que pour les messages entrants.
 
-## 7. Effets
+## 7. Effets 🟡
 
 Les effets sont déclarés dans le champ `effects` d'un **message** ou d'un **choix** et s'appliquent immédiatement.
 
@@ -549,7 +637,7 @@ Le moteur résout le dictionnaire selon la langue active au moment où l'effet s
 
 Une chaîne simple (ex. `"Maeve"`) reste le bon choix pour les prénoms identiques dans toutes les langues — elle prend le dessus sur toute valeur localisée.
 
-## 8. Variables et conditions
+## 8. Variables et conditions 🟡
 
 ### Variables
 
@@ -624,7 +712,7 @@ Chaque nœud peut être :
 }
 ```
 
-## 9. `free_input`
+## 9. `free_input` 🟡
 
 Permet au joueur de taper un texte libre.
 
@@ -643,7 +731,7 @@ Permet au joueur de taper un texte libre.
 
 La valeur saisie est ensuite injectable dans n'importe quel texte via les templates (voir section suivante) : `"Alors {prenom}, qu'est-ce que tu faisais ce soir-là?"`
 
-## 10. Templates
+## 10. Templates 🟡
 
 Les valeurs de variable peuvent être injectées dans les textes avec des accolades :
 
@@ -651,7 +739,7 @@ Les valeurs de variable peuvent être injectées dans les textes avec des accola
 "text": "Merci {nom_joueur}, je suis rassurée."
 ```
 
-## 11. Contacts secondaires
+## 11. Contacts secondaires 🟡
 
 Quand une scène a un `contact_id` différent du contact actuellement actif, le moteur la joue en arrière-plan : les messages sont ajoutés à l'historique de ce contact, un badge de notification apparaît dans le panneau, et le joueur choisit quand basculer pour lire la conversation.
 
@@ -668,7 +756,7 @@ C'est le mécanisme principal pour les histoires multi-contacts. Exemple : Maeve
 
 Cette scène se déclenche automatiquement après `scene_03` et arrive dans la conversation d'Alex, pas de Maeve.
 
-## 12. Triggers et scènes différées
+## 12. Triggers et scènes différées 🔴
 
 - `trigger_after_scene` : la scène se joue automatiquement après l'ID donné.
 - `resume_after_flag` : la scène est différée jusqu'à ce que le flag soit activé.
@@ -789,7 +877,7 @@ La différence clé avec une scène de fond : comme le joueur est déjà sur la 
 
 > **Note** : le flag `opened_{contact_id}` est posé à chaque fois que le joueur bascule sur ce contact. Si la scène a déjà joué, elle ne rejoue pas — `resume_after_flag` est consommé à la première utilisation.
 
-## 13. Validation
+## 13. Validation 🟢
 
 Le jeu valide automatiquement `story.json` et tous les fichiers `dialogues/*.json` au lancement dans Godot.
 
@@ -797,7 +885,16 @@ Si des erreurs ou des avertissements sont trouvés, une fenêtre apparaît immé
 
 L'auteur n'a rien à installer : il suffit de lancer le projet dans Godot et de lire le rapport qui s'affiche.
 
-## 14. Localisation des dialogues
+### Erreurs vs avertissements
+
+Les deux font apparaître la fenêtre de validation au lancement.
+
+| Type | Exemples | Conséquence |
+|---|---|---|
+| **Erreur** | Scène introuvable (`next`, `trigger_after_scene`, `start_scene`) · Contact introuvable · `messages_in` absent · `resume_after_flag` dont le flag n'est jamais posé (deadlock) · Cycle de triggers · Champ requis manquant dans un effet ou une condition · ID de scène dupliqué | Problème structurel grave — la scène ne peut pas fonctionner |
+| **Avertissement** | `requires_flag` référençant un flag jamais posé · Choix sans `next` (narration s'arrête) · Message silencieux sans effet ni pause (sera ignoré) · `free_input` sans `next` · Valeur de `pause` inconnue · Op d'effet inconnue | Probablement un oubli auteur — le jeu tourne mais le comportement est suspect |
+
+## 14. Localisation des dialogues 🔴
 
 Le moteur supporte plusieurs langues via des fichiers de dialogue distincts.
 
@@ -856,7 +953,7 @@ BTN_CANCEL,Cancel,Annuler,Cancelar
 
 La langue système est détectée automatiquement au premier lancement. Le joueur peut la modifier via le menu **Paramètres** (⚙).
 
-## 15. Outil de debug — Jump to Scene
+## 15. Outil de debug — Jump to Scene 🟢
 
 Un overlay de debug est intégré au moteur pour faciliter les tests sans avoir à rejouer le début à chaque fois.
 
@@ -884,7 +981,107 @@ Cliquez sur **Jump** pour appliquer l'état et lancer la scène. La conversation
 
 **Fermer** (ou F9) referme l'overlay sans rien changer à l'état du jeu.
 
-## 16. Emoji
+> Les valeurs injectées via F9 (flags, variables, vars) ne sont pas sauvegardées — elles disparaissent si vous relancez le jeu sans repasser par l'overlay.
+
+## 16. Menu principal 🟡
+
+Le menu principal est entièrement configuré depuis `story.json` et `theme.json` — aucune modification de code n'est nécessaire.
+
+### Titre
+
+Le champ `title` dans `story.json` définit le texte affiché en grand dans le menu principal.
+
+```json
+{
+  "title": "Mon Histoire",
+  "start_scene": "intro",
+  "contacts": [ ... ]
+}
+```
+
+Si le champ est absent, le titre reste vide.
+
+### Effet de glitch
+
+Par défaut, le titre s'affiche avec une animation de glitch : les caractères s'affichent comme du bruit au chargement, puis se décodent progressivement, avec des corruptions aléatoires en idle.
+
+Pour désactiver cet effet, ajoutez `"title_glitch": false` dans `theme.json` :
+
+```json
+{
+  "title_glitch": false
+}
+```
+
+| Valeur | Comportement |
+|--------|-------------|
+| `true` (défaut) | Animation de décodage au chargement + glitches aléatoires en idle |
+| `false` | Titre statique, affiché immédiatement |
+
+---
+
+## 17. Écran de fin 🟡
+
+Lorsqu'une scène contient `"end": true`, le moteur affiche un écran de fin au lieu de chercher une scène suivante.
+
+### Marquer une scène comme fin
+
+```json
+{
+  "id": "scene_finale",
+  "messages_in": [
+    { "text": "À bientôt." }
+  ],
+  "end": true
+}
+```
+
+`"end": true` est compatible avec `messages_in` et `choices` — la scène se joue normalement, puis l'écran de fin apparaît. Il est incompatible avec `next` et `trigger_after_scene` (ignorés si `end` est présent).
+
+### Configurer l'écran (`end_screen` dans `story.json`)
+
+```json
+{
+  "title": "...",
+  "start_scene": "...",
+  "contacts": [ ... ],
+  "end_screen": {
+    "title": "CONNECTION TERMINATED",
+    "text": "La suite arrive.",
+    "link_url": "https://itch.io/votre-jeu",
+    "link_label": "En savoir plus",
+    "glitch": true,
+    "show_stats": true
+  }
+}
+```
+
+Tous les champs sont optionnels. Si `end_screen` est absent de `story.json`, un écran minimal s'affiche avec seulement les boutons Nouvelle partie et Quitter.
+
+| Champ | Type | Défaut | Description |
+|---|---|---|---|
+| `title` | string ou dict localisé | `"CONNECTION TERMINATED"` | Texte principal affiché en grand, police monospace. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
+| `text` | string ou dict localisé | *(absent)* | Texte secondaire sous le titre — accroche, annonce de suite, etc. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
+| `link_url` | string | *(absent)* | URL ouverte au clic. Si absent, aucun lien n'est affiché |
+| `link_label` | string | *(l'URL brute)* | Texte affiché sur le lien. Si absent, l'URL s'affiche directement |
+| `glitch` | bool | `false` | Active l'effet glitch : scramble de texte sur le titre + scanlines animées + flicker |
+| `show_stats` | bool | `false` | Affiche le nombre de messages échangés pendant la session |
+
+### Effet glitch
+
+Quand `"glitch": true`, trois effets se combinent :
+
+- **Scramble de texte** — les caractères du titre sont périodiquement remplacés par du bruit, puis se restituent (même algorithme que le titre du menu principal)
+- **Scanlines animées** — des bandes horizontales lumineuses dérivent lentement sur l'écran
+- **Flicker** — l'écran clignote aléatoirement à faible intensité
+
+### Édition via le Story Editor
+
+Le panneau **Contacts** du Story Editor expose une section **Écran de fin** avec tous les champs configurables directement — aucun fichier JSON à ouvrir.
+
+---
+
+## Annexe A — Raccourcis emoji
 
 Les emoji fonctionnent dans tous les champs textuels : `text`, `message`, `free_input_placeholder`.
 
@@ -962,99 +1159,3 @@ Si vous ne pouvez pas copier-coller un emoji, utilisez les raccourcis texte habi
 | `(key)` | 🔑 | | `(bell)` | 🔔 |
 | `(skull)` | 💀 | | `(!)` | ❗ |
 | `(?)` | ❓ | | | |
-
-## 17. Menu principal
-
-Le menu principal est entièrement configuré depuis `story.json` et `theme.json` — aucune modification de code n'est nécessaire.
-
-### Titre
-
-Le champ `title` dans `story.json` définit le texte affiché en grand dans le menu principal.
-
-```json
-{
-  "title": "Mon Histoire",
-  "start_scene": "intro",
-  "contacts": [ ... ]
-}
-```
-
-Si le champ est absent, le titre reste vide.
-
-### Effet de glitch
-
-Par défaut, le titre s'affiche avec une animation de glitch : les caractères s'affichent comme du bruit au chargement, puis se décodent progressivement, avec des corruptions aléatoires en idle.
-
-Pour désactiver cet effet, ajoutez `"title_glitch": false` dans `theme.json` :
-
-```json
-{
-  "title_glitch": false
-}
-```
-
-| Valeur | Comportement |
-|--------|-------------|
-| `true` (défaut) | Animation de décodage au chargement + glitches aléatoires en idle |
-| `false` | Titre statique, affiché immédiatement |
-
----
-
-## 18. Écran de fin
-
-Lorsqu'une scène contient `"end": true`, le moteur affiche un écran de fin au lieu de chercher une scène suivante.
-
-### Marquer une scène comme fin
-
-```json
-{
-  "id": "scene_finale",
-  "messages_in": [
-    { "text": "À bientôt." }
-  ],
-  "end": true
-}
-```
-
-`"end": true` est compatible avec `messages_in` et `choices` — la scène se joue normalement, puis l'écran de fin apparaît. Il est incompatible avec `next` et `trigger_after_scene` (ignorés si `end` est présent).
-
-### Configurer l'écran (`end_screen` dans `story.json`)
-
-```json
-{
-  "title": "...",
-  "start_scene": "...",
-  "contacts": [ ... ],
-  "end_screen": {
-    "title": "CONNECTION TERMINATED",
-    "text": "La suite arrive.",
-    "link_url": "https://itch.io/votre-jeu",
-    "link_label": "En savoir plus",
-    "glitch": true,
-    "show_stats": true
-  }
-}
-```
-
-Tous les champs sont optionnels. Si `end_screen` est absent de `story.json`, un écran minimal s'affiche avec seulement les boutons Nouvelle partie et Quitter.
-
-| Champ | Type | Défaut | Description |
-|---|---|---|---|
-| `title` | string ou dict localisé | `"CONNECTION TERMINATED"` | Texte principal affiché en grand, police monospace. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
-| `text` | string ou dict localisé | *(absent)* | Texte secondaire sous le titre — accroche, annonce de suite, etc. Accepte `{"fr": "...", "en": "..."}` pour un texte localisé. |
-| `link_url` | string | *(absent)* | URL ouverte au clic. Si absent, aucun lien n'est affiché |
-| `link_label` | string | *(l'URL brute)* | Texte affiché sur le lien. Si absent, l'URL s'affiche directement |
-| `glitch` | bool | `false` | Active l'effet glitch : scramble de texte sur le titre + scanlines animées + flicker |
-| `show_stats` | bool | `false` | Affiche le nombre de messages échangés pendant la session |
-
-### Effet glitch
-
-Quand `"glitch": true`, trois effets se combinent :
-
-- **Scramble de texte** — les caractères du titre sont périodiquement remplacés par du bruit, puis se restituent (même algorithme que le titre du menu principal)
-- **Scanlines animées** — des bandes horizontales lumineuses dérivent lentement sur l'écran
-- **Flicker** — l'écran clignote aléatoirement à faible intensité
-
-### Édition via le Story Editor
-
-Le panneau **Contacts** du Story Editor expose une section **Écran de fin** avec tous les champs configurables directement — aucun fichier JSON à ouvrir.
