@@ -13,7 +13,9 @@ Le principe : un auteur doit uniquement fournir des fichiers JSON bien formés, 
 
 ## Table des matières
 
-🟢 Débutant — à lire en premier &nbsp;&nbsp; 🟡 Intermédiaire — quand vous avez besoin de plus &nbsp;&nbsp; 🔴 Avancé — peut être ignoré pour les histoires simples
+🟢 Débutant — à lire en premier
+🟡 Intermédiaire — quand vous avez besoin de plus
+🔴 Avancé — peut être ignoré pour les histoires simples
 
 - [Votre première scène — tutoriel minimal](#votre-première-scène--tutoriel-minimal)
 - [1. Principe général](#1-principe-général) 🟢

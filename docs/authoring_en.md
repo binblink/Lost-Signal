@@ -13,7 +13,9 @@ The idea: an author only needs to provide well-formed JSON files — no code cha
 
 ## Table of Contents
 
-🟢 Beginner — read first &nbsp;&nbsp; 🟡 Intermediate — when you need more &nbsp;&nbsp; 🔴 Advanced — can be skipped for simple stories
+🟢 Beginner — read first
+🟡 Intermediate — when you need more
+🔴 Advanced — can be skipped for simple stories
 
 - [Minimal tutorial — your first scene](#minimal-tutorial--your-first-scene)
 - [1. Overview](#1-overview) 🟢
