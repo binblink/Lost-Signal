@@ -54,8 +54,8 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
 - **🗗 button**: opens the Story Editor in a separate window — handy on a second screen. A second click brings the existing window to the front instead of opening a new one. The window can be maximized.
 - **Contact filter**: dropdown listing all project contacts. Selecting a contact dims all scenes belonging to other contacts to 20% opacity — connections remain visible to keep global context. Choosing "All" restores normal display. The filter is preserved after a Refresh.
-- **Search field**: type any text and press Enter to search first by scene ID (exact → prefix → substring), then inside message and choice text. Search is case-insensitive. When multiple results match, **←** and **→** buttons appear to navigate between them; the status label shows `2 / 5 : scene_id`. Escape clears the field and hides the navigation buttons.
-- **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
+- **Search field**: type any text and press Enter to search first by scene ID (exact → prefix → substring), then inside message and choice text. Search is case-insensitive. When multiple results match, the **←** / **→** buttons (or the arrow keys while the field is focused) navigate between them; the status label shows `2 / 5 : scene_id`. Escape clears the field. **Ctrl+F** from anywhere in the panel focuses this field.
+- **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag. A **minimap** in the bottom-right corner gives an overview of the full graph. Node positions are **saved automatically** and restored on every open.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
 ---
@@ -197,13 +197,13 @@ Clicking a "Disconnect" entry removes the corresponding `next` from the JSON (th
 
 ### Duplicate a Scene
 
-**Right-click on the node** → **Duplicate this scene**.
+**Right-click on the node** → **Duplicate this scene** — or **Ctrl+D** with the node selected.
 
 The scene is copied into the same JSON file with a new ID (`{id}_copy`, then `{id}_copy2`… on collision). All messages, choices, and text are copied; outgoing links (`next`, `trigger_after_scene`, `resume_after_flag`, `resume_after_delay`, `choices[].next`) are cleared to avoid duplicate connections. The operation is undoable with **Ctrl+Z**.
 
 ### Delete a Scene
 
-**Right-click on the node** → **Delete this scene** → confirmation dialog.
+**Right-click on the node** → **Delete this scene** — or **Del** with the node selected — → confirmation dialog.
 
 On confirmation:
 - The scene is removed from its JSON file.
@@ -212,16 +212,20 @@ On confirmation:
 
 > Deletion can be undone with **Ctrl+Z**.
 
-### Undo / Redo
+### Keyboard Shortcuts
 
-All editing actions from the graph and the detail panel support Godot's native undo and redo.
+| Shortcut | Condition | Action |
+|---|---|---|
+| **Ctrl+Z** | — | Undo the last change |
+| **Ctrl+Y** | — | Redo the last undone change |
+| **Ctrl+F** | — | Focus the search field |
+| **F** | No text field focused | Fit and re-center the graph view |
+| **Del** | Node selected, no text field focused | Open the delete confirmation dialog |
+| **Ctrl+D** | Node selected, no text field focused | Duplicate the selected scene |
+| **← →** | Search field focused, ≥ 2 results | Previous / next result |
+| **Esc** | Search field focused | Clear the search and release focus |
 
-| Shortcut | Action |
-|---|---|
-| **Ctrl+Z** | Undo the last change |
-| **Ctrl+Y** | Redo the last undone change |
-
-Covered actions: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat**, contact rename, all edits in the Contacts panel.
+Covered actions for undo: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat**, contact rename, all edits in the Contacts panel.
 
 **Exception**: adding and removing languages (Languages section of the Contacts panel) are not undoable — those operations modify `ui.csv` and trigger a Godot reimport.
 

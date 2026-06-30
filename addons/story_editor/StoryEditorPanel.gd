@@ -14,6 +14,8 @@ const COLOR_RESUME  := Color(0.7, 0.3, 1.0)
 const H_SPACING := 480.0
 const V_SPACING := 280.0
 
+const POSITIONS_PATH := "res://addons/story_editor/.node_positions.json"
+
 @onready var _status_label:    Label         = %StatusLabel
 @onready var _refresh_button:  Button        = %RefreshButton
 @onready var _reformat_button: Button        = %ReformatButton
@@ -49,6 +51,9 @@ var _settings_win:  Window = null
 var _flags_win:     Window = null
 var _analysis_win:  Window = null
 var _analysis_btn:  Button = null
+
+var _saved_positions: Dictionary = {}
+var _pos_save_timer:  Timer      = null
 
 var undo_redo_manager: EditorUndoRedoManager = null
 var _in_mutation:       bool       = false
@@ -219,6 +224,19 @@ func _ready() -> void:
 			_search_next_btn.visible = false
 			_status_label.text = ""
 			_search_field.release_focus())
+	# ← → : navigate between results when multiple results exist
+	_search_field.gui_input.connect(func(event: InputEvent) -> void:
+		if not (event is InputEventKey) or not (event as InputEventKey).pressed:
+			return
+		if _search_results.size() <= 1:
+			return
+		var ke := event as InputEventKey
+		if ke.keycode == KEY_LEFT and not ke.ctrl_pressed:
+			_navigate_search(-1)
+			_search_field.get_viewport().set_input_as_handled()
+		elif ke.keycode == KEY_RIGHT and not ke.ctrl_pressed:
+			_navigate_search(1)
+			_search_field.get_viewport().set_input_as_handled())
 	_refresh_button.get_parent().add_child(_search_field)
 
 	_search_prev_btn = Button.new()
@@ -253,6 +271,17 @@ func _ready() -> void:
 	_detail_panel.make_stripe      = func(i: int) -> VBoxContainer: return _make_stripe(i)
 	_detail_panel.translate        = func(fr: String, en: String) -> String: return _t(fr, en)
 	_detail_panel.add_popup        = func(n: Node) -> void: add_child(n)
+
+	_graph.minimap_enabled = true
+	_graph.minimap_size    = Vector2(200, 150)
+
+	_load_saved_positions()
+
+	_pos_save_timer = Timer.new()
+	_pos_save_timer.one_shot    = true
+	_pos_save_timer.wait_time   = 1.0
+	_pos_save_timer.timeout.connect(_save_positions_now)
+	add_child(_pos_save_timer)
 
 	_fit_on_next_refresh = true
 	_on_refresh_pressed()
@@ -371,6 +400,79 @@ func _on_analysis_pressed() -> void:
 	panel_a.call("refresh")
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible or not (event is InputEventKey):
+		return
+	var ke := event as InputEventKey
+	if not ke.pressed:
+		return
+
+	# Ctrl+F — focus search (always, even when a text field is active)
+	if ke.ctrl_pressed and not ke.shift_pressed and not ke.alt_pressed and ke.keycode == KEY_F:
+		_search_field.grab_focus()
+		_search_field.select_all()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Remaining shortcuts are suppressed when a text field has focus
+	var focused: Control = get_viewport().gui_get_focus_owner()
+	if focused is LineEdit or focused is TextEdit:
+		return
+
+	# F — fit / recentrer la vue
+	if not ke.ctrl_pressed and not ke.shift_pressed and not ke.alt_pressed and ke.keycode == KEY_F:
+		_fit_graph_view()
+		get_viewport().set_input_as_handled()
+		return
+
+	if _selected_scene_id.is_empty():
+		return
+
+	# Suppr — supprimer la scène sélectionnée
+	if not ke.ctrl_pressed and not ke.shift_pressed and ke.keycode == KEY_DELETE:
+		_on_delete_nodes_request([StringName(_selected_scene_id)])
+		get_viewport().set_input_as_handled()
+		return
+
+	# Ctrl+D — dupliquer la scène sélectionnée
+	if ke.ctrl_pressed and not ke.shift_pressed and not ke.alt_pressed and ke.keycode == KEY_D:
+		_duplicate_scene(_selected_scene_id)
+		get_viewport().set_input_as_handled()
+
+
+func _fit_graph_view() -> void:
+	var positions: Dictionary = {}
+	for child in _graph.get_children():
+		if child is GraphNode:
+			positions[child.name] = (child as GraphNode).position_offset
+	_fit_on_next_refresh = true
+	_fit_view(positions)
+
+
+func _load_saved_positions() -> void:
+	if not FileAccess.file_exists(POSITIONS_PATH):
+		return
+	var file := FileAccess.open(POSITIONS_PATH, FileAccess.READ)
+	if file == null:
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		_saved_positions = parsed
+
+
+func _save_positions_now() -> void:
+	var data: Dictionary = {}
+	for child in _graph.get_children():
+		if child is GraphNode:
+			var gn := child as GraphNode
+			var pos: Vector2 = gn.position_offset
+			data[gn.name] = [pos.x, pos.y]
+	_saved_positions = data
+	var file := FileAccess.open(POSITIONS_PATH, FileAccess.WRITE)
+	if file != null:
+		file.store_string(JSON.stringify(data, "\t"))
+
+
 func _on_undo_pressed() -> void:
 	if undo_redo_manager != null:
 		undo_redo_manager.get_history_undo_redo(EditorUndoRedoManager.GLOBAL_HISTORY).undo()
@@ -478,7 +580,16 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 	_graph.clear_connections()
 
 	var outgoing := _build_outgoing(scenes)
-	var positions := _compute_layout(scenes, outgoing)
+	var bfs_positions := _compute_layout(scenes, outgoing)
+
+	# Merge BFS layout with saved positions (saved wins when available)
+	var positions: Dictionary = {}
+	for sid: String in scenes:
+		var saved: Variant = _saved_positions.get(sid, null)
+		if saved is Array and (saved as Array).size() >= 2:
+			positions[sid] = Vector2(float((saved as Array)[0]), float((saved as Array)[1]))
+		else:
+			positions[sid] = bfs_positions.get(sid, Vector2.ZERO)
 
 	# Scènes qui ont au moins une connexion entrante
 	var has_incoming: Dictionary = {}
@@ -497,6 +608,10 @@ func _rebuild_graph(scenes: Dictionary) -> void:
 		_graph.add_child(node)
 		_apply_contact_color(node, str(scene.get("contact_id", "")))
 		node.position_offset = positions.get(scene_id, Vector2.ZERO)
+		# Connect after setting initial position so the initial placement doesn't trigger a save
+		node.position_offset_changed.connect(func() -> void:
+			if _pos_save_timer != null:
+				_pos_save_timer.start())
 
 	for scene_id in outgoing:
 		var conns: Array = outgoing[scene_id]

@@ -16,8 +16,8 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 
 ```
 +--------------------------------------------------------------------------------------+
-| [Refresh] [Reformater] [Contacts] [Paramètres] [↩] [↪]   2/5 : scene_03            |
-| [🚩 Flags] [📊 Analyser] [🗗]  [fr v]  [Tous v]  [Chercher...________] [<-] [->]   |
+| [Refresh] [Reformater] [Contacts] [Paramètres] [↩] [↪]   2/5 : scene_03             |
+| [🚩 Flags] [📊 Analyser] [🗗]  [fr v]  [Tous v]  [Chercher...________] [<-] [->]    |
 +-------------------------------------------+------------------------------------------+
 |                                           |  scene_04                                |
 |  [> ch1_intro] --> [scene_01] -------->   |  Contact  [Maeve              v]         |
@@ -26,8 +26,8 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 |                                           |                                          |
 |  [~ scene_03] - - - trigger - - - ->      |   Bonjour !                   [x]        |
 |                                           |   +-------------------------+            |
-|                                           |   | Je t'ecris depuis le   |            |
-|                                           |   | train.                 |            |
+|                                           |   | Je t'ecris depuis le   |             |
+|                                           |   | train.                 |             |
 |                                           |   +-------------------------+            |
 |                                           |   pause    [medium  v]                   |
 |                                           |   requires [--      v]                   |
@@ -54,8 +54,8 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
 - **Bouton 🗗** : ouvre le Story Editor dans une fenêtre séparée — pratique sur un second écran. Un deuxième clic ramène la fenêtre existante au lieu d'en ouvrir une nouvelle. La fenêtre peut être mise en plein écran.
 - **Filtre contact** : dropdown listant tous les contacts du projet. Sélectionner un contact grise toutes les scènes des autres contacts à 20 % d'opacité — les connexions restent visibles pour garder le contexte global. Choisir « Tous » rétablit l'affichage normal. Le filtre est conservé après un Refresh.
-- **Champ de recherche** : saisir un texte et appuyer sur Entrée cherche d'abord dans les IDs de scène (exact → préfixe → sous-chaîne), puis dans le texte des messages et des choix. La recherche est insensible à la casse. Si plusieurs résultats correspondent, les boutons **←** et **→** permettent de naviguer entre eux ; le label de statut affiche `2 / 5 : scene_id`. Échap efface le champ et masque les boutons.
-- **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
+- **Champ de recherche** : saisir un texte et appuyer sur Entrée cherche d'abord dans les IDs de scène (exact → préfixe → sous-chaîne), puis dans le texte des messages et des choix. La recherche est insensible à la casse. Si plusieurs résultats correspondent, les boutons **←** et **→** (ou les touches fléchées **←** / **→** depuis le champ) permettent de naviguer entre eux ; le label de statut affiche `2 / 5 : scene_id`. Échap efface le champ et masque les boutons. **Ctrl+F** depuis n'importe où dans le panneau remet le focus sur ce champ.
+- **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser. Une **minimap** en bas à droite donne une vue d'ensemble du graphe. Les positions des nœuds sont **sauvegardées automatiquement** et restaurées à chaque ouverture.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 
 ---
@@ -197,13 +197,13 @@ Cliquer sur une entrée "Déconnecter" supprime le `next` correspondant dans le 
 
 ### Dupliquer une scène
 
-**Clic droit sur le nœud** → **Dupliquer cette scène**.
+**Clic droit sur le nœud** → **Dupliquer cette scène** — ou **Ctrl+D** avec le nœud sélectionné.
 
 La scène est copiée dans le même fichier JSON avec un nouvel ID (`{id}_copy`, puis `{id}_copy2`… en cas de collision). Les messages, les choix et tous les textes sont copiés ; les liens sortants (`next`, `trigger_after_scene`, `resume_after_flag`, `resume_after_delay`, `choices[].next`) sont effacés pour éviter les connexions dupliquées. L'opération est annulable avec **Ctrl+Z**.
 
 ### Supprimer une scène
 
-**Clic droit sur le nœud** → **Supprimer cette scène** → dialog de confirmation.
+**Clic droit sur le nœud** → **Supprimer cette scène** — ou **Suppr** avec le nœud sélectionné — → dialog de confirmation.
 
 Sur confirmation :
 - La scène est retirée du fichier JSON qui la contient.
@@ -212,16 +212,20 @@ Sur confirmation :
 
 > La suppression peut être annulée avec **Ctrl+Z**.
 
-### Annuler / Rétablir
+### Raccourcis clavier
 
-Toutes les actions d'édition depuis le graphe et depuis le panneau de détail prennent en charge l'annulation et le rétablissement natifs de Godot.
+| Raccourci | Condition | Action |
+|---|---|---|
+| **Ctrl+Z** | — | Annule la dernière modification |
+| **Ctrl+Y** | — | Rétablit la dernière modification annulée |
+| **Ctrl+F** | — | Focus sur le champ de recherche |
+| **F** | Aucun champ texte en focus | Recentre et ajuste le zoom sur l'ensemble du graphe |
+| **Suppr** | Nœud sélectionné, aucun champ texte en focus | Ouvre la confirmation de suppression |
+| **Ctrl+D** | Nœud sélectionné, aucun champ texte en focus | Duplique la scène sélectionnée |
+| **← →** | Champ de recherche en focus, ≥ 2 résultats | Résultat précédent / suivant |
+| **Échap** | Champ de recherche en focus | Efface la recherche et relâche le focus |
 
-| Raccourci | Action |
-|---|---|
-| **Ctrl+Z** | Annule la dernière modification |
-| **Ctrl+Y** | Rétablit la dernière modification annulée |
-
-Les actions couvertes : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater**, renommage de contact, toutes les modifications dans le panneau Contacts.
+Les actions couvertes par l'annulation : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater**, renommage de contact, toutes les modifications dans le panneau Contacts.
 
 **Exception** : l'ajout et la suppression de langues (section Langues du panneau Contacts) ne sont pas annulables — ces opérations modifient `ui.csv` et déclenchent un réimport Godot.
 
