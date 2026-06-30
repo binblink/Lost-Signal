@@ -23,9 +23,13 @@ const V_SPACING := 280.0
 @onready var _redo_button:     Button        = %RedoButton
 @onready var _graph:           GraphEdit     = %GraphEdit
 
-var _locale_option:  OptionButton = null
-var _contact_filter: OptionButton = null
-var _search_field:   LineEdit     = null
+var _locale_option:    OptionButton = null
+var _contact_filter:   OptionButton = null
+var _search_field:     LineEdit     = null
+var _search_results:   Array[String] = []
+var _search_index:     int           = 0
+var _search_prev_btn:  Button        = null
+var _search_next_btn:  Button        = null
 var _ui_locale: String = OS.get_locale_language()
 @onready var _detail_content:  VBoxContainer = %DetailContent
 
@@ -189,18 +193,40 @@ func _ready() -> void:
 	_refresh_button.get_parent().add_child(_contact_filter)
 
 	_search_field = LineEdit.new()
-	_search_field.placeholder_text = _t("Chercher une scène…", "Find scene…")
+	_search_field.placeholder_text = _t("Chercher ID ou texte…", "Find by ID or text…")
 	_search_field.custom_minimum_size = Vector2(180, 0)
 	_search_field.clear_button_enabled = true
 	_search_field.tooltip_text = _t(
-		"Entrée : centre le graphe sur la scène trouvée.\nEsc : efface le champ.",
-		"Enter: centers the graph on the matching scene.\nEsc: clears the field.")
+		"Entrée : cherche dans les IDs et le texte des messages/choix.\n← → : naviguer entre les résultats.\nEsc : efface le champ.",
+		"Enter: searches scene IDs and message/choice text.\n← →: navigate between results.\nEsc: clears the field.")
 	_search_field.text_submitted.connect(_on_search_submitted)
 	_search_field.gui_input.connect(func(event: InputEvent) -> void:
 		if event is InputEventKey and (event as InputEventKey).keycode == KEY_ESCAPE:
 			_search_field.text = ""
+			_search_results = []
+			_search_prev_btn.visible = false
+			_search_next_btn.visible = false
+			_status_label.text = ""
 			_search_field.release_focus())
 	_refresh_button.get_parent().add_child(_search_field)
+
+	_search_prev_btn = Button.new()
+	_search_prev_btn.text = "←"
+	_search_prev_btn.flat = true
+	_search_prev_btn.custom_minimum_size = Vector2(28, 0)
+	_search_prev_btn.tooltip_text = _t("Résultat précédent", "Previous result")
+	_search_prev_btn.visible = false
+	_search_prev_btn.pressed.connect(func() -> void: _navigate_search(-1))
+	_refresh_button.get_parent().add_child(_search_prev_btn)
+
+	_search_next_btn = Button.new()
+	_search_next_btn.text = "→"
+	_search_next_btn.flat = true
+	_search_next_btn.custom_minimum_size = Vector2(28, 0)
+	_search_next_btn.tooltip_text = _t("Résultat suivant", "Next result")
+	_search_next_btn.visible = false
+	_search_next_btn.pressed.connect(func() -> void: _navigate_search(1))
+	_refresh_button.get_parent().add_child(_search_next_btn)
 
 	_detail_panel = SceneDetailPanel.new()
 	_detail_panel.detail_content  = _detail_content
@@ -1162,28 +1188,89 @@ func _apply_contact_filter() -> void:
 func _on_search_submitted(query: String) -> void:
 	query = query.strip_edges()
 	if query.is_empty():
+		_search_results = []
+		_search_index = 0
+		_search_prev_btn.visible = false
+		_search_next_btn.visible = false
 		return
-	var target_id := _find_scene_id(query)
-	if target_id.is_empty():
-		_status_label.text = _t("Scène introuvable : " + query, "Scene not found: " + query)
+	_search_results = _search_scenes(query)
+	_search_index = 0
+	if _search_results.is_empty():
+		_status_label.text = _t("Introuvable : " + query, "Not found: " + query)
+		_search_prev_btn.visible = false
+		_search_next_btn.visible = false
 		return
-	_focus_scene(target_id)
+	var show_nav: bool = _search_results.size() > 1
+	_search_prev_btn.visible = show_nav
+	_search_next_btn.visible = show_nav
+	_focus_search_result()
 
 
-# Retourne l'ID de scène correspondant à la requête.
-# Ordre de priorité : correspondance exacte → préfixe → sous-chaîne (insensible à la casse).
-func _find_scene_id(query: String) -> String:
+func _navigate_search(delta: int) -> void:
+	if _search_results.is_empty():
+		return
+	_search_index = (_search_index + delta + _search_results.size()) % _search_results.size()
+	_focus_search_result()
+
+
+func _focus_search_result() -> void:
+	var scene_id: String = _search_results[_search_index]
+	_status_label.text = "%d / %d : %s" % [_search_index + 1, _search_results.size(), scene_id]
+	_focus_scene(scene_id)
+
+
+# IDs first (exact → prefix → substring), then content matches. Results within each group are sorted.
+func _search_scenes(query: String) -> Array[String]:
 	var q := query.to_lower()
+	var exact:     Array[String] = []
+	var prefix:    Array[String] = []
+	var substring: Array[String] = []
+	var content:   Array[String] = []
 	for sid: String in _scenes:
-		if sid.to_lower() == q:
-			return sid
-	for sid: String in _scenes:
-		if sid.to_lower().begins_with(q):
-			return sid
-	for sid: String in _scenes:
-		if q in sid.to_lower():
-			return sid
-	return ""
+		var sl := sid.to_lower()
+		if sl == q:
+			exact.append(sid)
+		elif sl.begins_with(q):
+			prefix.append(sid)
+		elif q in sl:
+			substring.append(sid)
+		elif q in _extract_scene_text(_scenes[sid]):
+			content.append(sid)
+	prefix.sort()
+	substring.sort()
+	content.sort()
+	var result: Array[String] = []
+	result.append_array(exact)
+	result.append_array(prefix)
+	result.append_array(substring)
+	result.append_array(content)
+	return result
+
+
+# Extracts all searchable text from a scene into a single lowercase string.
+func _extract_scene_text(scene: Dictionary) -> String:
+	var parts: Array[String] = []
+	for msg: Variant in (scene.get("messages_in", []) as Array):
+		var text: Variant = (msg as Dictionary).get("text", "")
+		if text is String:
+			parts.append(text as String)
+		elif text is Array:
+			for elem: Variant in (text as Array):
+				if elem is String:
+					parts.append(elem as String)
+				elif elem is Dictionary:
+					parts.append(str((elem as Dictionary).get("text", "")))
+	for ch: Variant in (scene.get("choices", []) as Array):
+		var cd := ch as Dictionary
+		parts.append(str(cd.get("text", "")))
+		var msg: Variant = cd.get("message", null)
+		if msg is String:
+			parts.append(msg as String)
+		elif msg is Array:
+			for b: Variant in (msg as Array):
+				if b is String:
+					parts.append(b as String)
+	return "\n".join(parts).to_lower()
 
 
 # Centre le graphe sur le nœud correspondant à scene_id, le sélectionne et ouvre son panneau de détail.

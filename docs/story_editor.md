@@ -50,7 +50,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 - **Boutons ↩ / ↪** : annuler / rétablir la dernière action (équivalents à Ctrl+Z / Ctrl+Y).
 - **Bouton 🗗** : ouvre le Story Editor dans une fenêtre séparée — pratique sur un second écran. Un deuxième clic ramène la fenêtre existante au lieu d'en ouvrir une nouvelle. La fenêtre peut être mise en plein écran.
 - **Filtre contact** : dropdown listant tous les contacts du projet. Sélectionner un contact grise toutes les scènes des autres contacts à 20 % d'opacité — les connexions restent visibles pour garder le contexte global. Choisir « Tous » rétablit l'affichage normal. Le filtre est conservé après un Refresh.
-- **Champ de recherche** : saisir un ID de scène (ou un fragment) et appuyer sur Entrée centre le graphe sur la scène correspondante et ouvre son panneau de détail. La recherche est insensible à la casse et suit l'ordre de priorité : correspondance exacte → préfixe → sous-chaîne. Échap efface le champ.
+- **Champ de recherche** : saisir un texte et appuyer sur Entrée cherche d'abord dans les IDs de scène (exact → préfixe → sous-chaîne), puis dans le texte des messages et des choix. La recherche est insensible à la casse. Si plusieurs résultats correspondent, les boutons **←** et **→** permettent de naviguer entre eux ; le label de statut affiche `2 / 5 : scene_id`. Échap efface le champ et masque les boutons.
 - **Graphe** (zone principale) : nœuds déplaçables, zoomables à la molette, navigables en maintenant le clic molette ou en maintenant Espace + glisser.
 - **Panneau de détail** (droite) : cliquer sur un nœud affiche son contenu complet. Les textes des messages et des choix sont éditables directement.
 

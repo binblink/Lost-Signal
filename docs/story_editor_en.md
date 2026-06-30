@@ -50,7 +50,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 - **↩ / ↪ buttons**: undo / redo the last action (same as Ctrl+Z / Ctrl+Y).
 - **🗗 button**: opens the Story Editor in a separate window — handy on a second screen. A second click brings the existing window to the front instead of opening a new one. The window can be maximized.
 - **Contact filter**: dropdown listing all project contacts. Selecting a contact dims all scenes belonging to other contacts to 20% opacity — connections remain visible to keep global context. Choosing "All" restores normal display. The filter is preserved after a Refresh.
-- **Search field**: type a scene ID (or a fragment) and press Enter to center the graph on the matching scene and open its detail panel. Search is case-insensitive and follows priority order: exact match → prefix → substring. Escape clears the field.
+- **Search field**: type any text and press Enter to search first by scene ID (exact → prefix → substring), then inside message and choice text. Search is case-insensitive. When multiple results match, **←** and **→** buttons appear to navigate between them; the status label shows `2 / 5 : scene_id`. Escape clears the field and hides the navigation buttons.
 - **Graph** (main area): nodes are draggable, zoomable with the mouse wheel, and navigable by holding middle-click or Space + drag.
 - **Detail panel** (right): clicking a node displays its full content. Message and choice text fields are directly editable.
 
