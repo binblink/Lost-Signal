@@ -12,6 +12,19 @@ Le Story Editor est un plugin Godot intégré au projet. Il affiche un **graphe 
 
 ---
 
+## Prise en main
+
+Une fois activé, voici les quatre actions de base pour démarrer :
+
+1. **Cliquez sur Refresh** — le graphe charge toutes les scènes des fichiers JSON du projet
+2. **Cliquez sur un nœud** — son contenu s'affiche dans le panneau de détail à droite ; les champs sont éditables directement
+3. **Clic droit sur le fond du graphe** — crée une nouvelle scène (ID, contact, fichier cible)
+4. **Glissez un port de sortie vers un port d'entrée** — connecte deux scènes (`next`)
+
+Tout ce qui suit dans ce document détaille ces actions et les fonctionnalités avancées.
+
+---
+
 ## Interface
 
 ```
@@ -394,9 +407,13 @@ Le plugin lit les fichiers de dialogue en appliquant la même logique de locale 
 - Il préfère `acte1.fr.json` si la langue système est `fr`, sinon `acte1.json`
 - La langue lue correspond au réglage de la langue système de l'OS, pas au réglage dans le jeu
 
+**Prévisualiser une autre langue** : le dropdown de locale dans la toolbar (`[fr v]` dans l'ASCII ci-dessus) permet de forcer la locale du plugin indépendamment de la langue système. Sélectionner `en` charge `acte1.en.json` à la place de `acte1.json` — pratique pour vérifier la version anglaise depuis un OS configuré en français. Le choix est perdu au redémarrage de Godot.
+
 ---
 
-## Architecture (pour les développeurs)
+## Architecture
+
+> Cette section s'adresse aux développeurs qui souhaitent modifier ou étendre le plugin. Elle n'est pas nécessaire pour écrire du contenu narratif.
 
 Le plugin est dans `addons/story_editor/` et ne touche à aucun fichier existant du projet hors des actions d'édition explicites.
 

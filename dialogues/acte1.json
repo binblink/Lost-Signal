@@ -44,7 +44,7 @@
 			]
 		},
 		{
-			"_notes": "Pas de next sur les choix — la suite arrive via scene_intro_05 (trigger_after_scene: scene_12). Maman met du temps à répondre.",
+			"_notes": "Pas de next sur les choix, la suite arrive via scene_intro_05 (trigger_after_scene: scene_12). Maman met du temps à répondre.",
 			"id": "scene_intro_04",
 			"contact_id": "mom",
 			"trigger_after_scene": "scene_intro_03",
@@ -71,7 +71,7 @@
 			]
 		},
 		{
-			"_notes": "Joue quand le joueur ouvre la conversation de Maman après scene_intro_05. Le message se supprime après 3s — fonctionne car la scène joue en mode principal (animé).",
+			"_notes": "Joue quand le joueur ouvre la conversation de Maman après scene_intro_05. Le message se supprime après 3s, fonctionne car la scène joue en mode principal (animé).",
 			"id": "scene_intro_06",
 			"contact_id": "mom",
 			"trigger_after_scene": "scene_intro_05",
@@ -81,7 +81,7 @@
 			]
 		},
 		{
-			"_notes": "Scène d'ouverture — Maeve cherche du contact",
+			"_notes": "Scène d'ouverture durant laquelle Maeve cherche du contact",
 			"id": "scene_01",
 			"trigger_after_scene": "scene_intro_04",
 			"messages_in": [
@@ -385,7 +385,7 @@
 				{"text": ["La porte est ouverte!!", "Je vais enfin pouvoir sortir de la pièce !"]}
 			],
 			"choices": [
-				{"text": "Génial!", "message": ["Génial!", "Je suis super content pour toi Maeve!!", "Mais c'est que le début!", "Prochain objectif : sortir du bâtiment", "On va y arriver!"]}
+				{"text": "Génial!", "message": ["Génial!", "On va pouvoir avancer!!", "Mais c'est que le début!", "Prochain objectif : sortir du bâtiment", "On va y arriver Maeve!"]}
 			],
 			"end": true,
 			"glitch": true

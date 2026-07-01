@@ -156,6 +156,10 @@ func _ready() -> void:
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_undo_button.pressed.connect(_on_undo_pressed)
 	_redo_button.pressed.connect(_on_redo_pressed)
+	_reformat_button.text         = _t("Reformater", "Reformat")
+	_settings_button.text         = _t("Paramètres", "Settings")
+	_undo_button.tooltip_text     = _t("Annuler  Ctrl+Z", "Undo  Ctrl+Z")
+	_redo_button.tooltip_text     = _t("Rétablir  Ctrl+Y", "Redo  Ctrl+Y")
 	_graph.node_selected.connect(_on_node_selected)
 	_graph.gui_input.connect(_on_graph_gui_input)
 	_graph.connection_request.connect(_on_connection_request)
@@ -194,7 +198,11 @@ func _ready() -> void:
 		var loc: String = _locale_option.get_item_text(idx)
 		_parser.locale_override = loc
 		_ui_locale = loc
-		_analysis_btn.text = "📊 " + _t("Analyser", "Analyse")
+		_analysis_btn.text    = "📊 " + _t("Analyser", "Analyse")
+		_reformat_button.text = _t("Reformater", "Reformat")
+		_settings_button.text = _t("Paramètres", "Settings")
+		_undo_button.tooltip_text = _t("Annuler  Ctrl+Z", "Undo  Ctrl+Z")
+		_redo_button.tooltip_text = _t("Rétablir  Ctrl+Y", "Redo  Ctrl+Y")
 		_on_refresh_pressed()
 		if not _selected_scene_id.is_empty():
 			_detail_panel.populate(_selected_scene_id)
