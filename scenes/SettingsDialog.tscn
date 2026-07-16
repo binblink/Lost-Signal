@@ -76,6 +76,20 @@ max_value = 100.0
 value = 100.0
 step = 1.0
 
+[node name="MusicVolLabel" type="Label" parent="MarginContainer/VBoxContainer/Grid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)
+text = "SETTINGS_MUSIC_VOLUME"
+size_flags_vertical = 4
+
+[node name="MusicVolSlider" type="HSlider" parent="MarginContainer/VBoxContainer/Grid"]
+layout_mode = 2
+custom_minimum_size = Vector2(150, 0)
+size_flags_vertical = 4
+max_value = 100.0
+value = 100.0
+step = 1.0
+
 [node name="ResolutionLabel" type="Label" parent="MarginContainer/VBoxContainer/Grid"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.5254902, 0.5882353, 0.627451, 1)

@@ -14,10 +14,11 @@ const RESOLUTIONS := [
 ]
 const WINDOW_MODES := ["DISPLAY_WINDOWED", "DISPLAY_BORDERLESS", "DISPLAY_FULLSCREEN"]
 
-var language:     String = "en"
-var volume:       float  = 1.0
-var resolution:   int    = 3  # 1080p
-var window_mode:  int    = 0  # windowed
+var language:      String = "en"
+var volume:        float  = 1.0
+var music_volume:  float  = 1.0
+var resolution:    int    = 3  # 1080p
+var window_mode:   int    = 0  # windowed
 
 const UI_CSV_PATH = "res://translations/ui.csv"
 
@@ -38,6 +39,7 @@ func _load_translations() -> void:
 
 func apply_and_save() -> void:
 	_apply()
+	AudioManager.apply_music_volume()
 	_save()
 
 func _apply() -> void:
@@ -63,10 +65,11 @@ func _save() -> void:
 		push_error("SettingsManager: cannot write settings (code %d)." % FileAccess.get_open_error())
 		return
 	file.store_string(JSON.stringify({
-		"language":    language,
-		"volume":      volume,
-		"resolution":  resolution,
-		"window_mode": window_mode,
+		"language":     language,
+		"volume":       volume,
+		"music_volume": music_volume,
+		"resolution":   resolution,
+		"window_mode":  window_mode,
 	}))
 	file.close()
 
@@ -81,10 +84,11 @@ func _load() -> void:
 	var json := JSON.new()
 	if json.parse(file.get_as_text()) == OK:
 		var d = json.get_data()
-		language    = d.get("language", "fr")
-		volume      = float(d.get("volume", 1.0))
-		resolution  = int(d.get("resolution", 3))
-		window_mode = int(d.get("window_mode", 0))
+		language     = d.get("language", "fr")
+		volume       = float(d.get("volume", 1.0))
+		music_volume = float(d.get("music_volume", 1.0))
+		resolution   = int(d.get("resolution", 3))
+		window_mode  = int(d.get("window_mode", 0))
 		# Migrate from display_mode (1280/1920/fullscreen)
 		if d.has("display_mode") and not d.has("resolution"):
 			var dm := int(d["display_mode"])

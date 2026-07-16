@@ -86,7 +86,7 @@ func _write_story(data: Dictionary, label: String = "") -> void:
 
 
 func _ordered_story(data: Dictionary) -> Dictionary:
-	const KEYS := ["title", "start_scene", "start_contact", "contacts"]
+	const KEYS := ["title", "menu_music", "start_scene", "start_contact", "contacts"]
 	var result := {}
 	for k in KEYS:
 		if data.has(k):

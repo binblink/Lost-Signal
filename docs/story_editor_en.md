@@ -255,6 +255,7 @@ Click the **Settings** button in the toolbar to open a floating window for globa
 | Field | Interface |
 |---|---|
 | `title` | Text field — displayed in menus and the window title bar |
+| `menu_music` | Text field + **…** button — opens Godot's file browser filtered to `.ogg`, `.mp3`, `.wav`. Path to the audio file looped in the main menu. Leave empty for no music. |
 | `start_scene` | Scene dropdown — first scene played on a new game |
 | `start_contact` | Contact dropdown — contact whose conversation is shown on screen at launch; if empty, the main contact is used |
 

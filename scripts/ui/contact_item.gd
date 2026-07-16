@@ -1,6 +1,7 @@
 extends Button
 
 const MAX_PREVIEW_LENGTH = 80
+const CIRCLE_SHADER = preload("res://shaders/circle_clip.gdshader")
 
 @onready var initial_label   = %InitialLabel
 @onready var contact_name    = %ContactName
@@ -70,7 +71,9 @@ func setup(contact: Dictionary, last_message: Dictionary, unread: bool) -> void:
 			texture_rect.texture = tex
 			texture_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			texture_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-			texture_rect.clip_contents = true
 			texture_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var mat := ShaderMaterial.new()
+			mat.shader = CIRCLE_SHADER
+			texture_rect.material = mat
 			panel.add_child(texture_rect)
 			initial_label.visible = false

@@ -1,11 +1,12 @@
 extends Node
 
-const NOTIFICATION_VOL_DB = -8.0
-const TYPING_VOL_DB       = -20.0
-const MUSIC_VOL_DB        = 0.0
-const MUSIC_DUCK_DB       = -18.0
-const MUSIC_FADE_DURATION = 0.8
-const MUSIC_DUCK_DURATION = 0.4
+const NOTIFICATION_VOL_DB  = -8.0
+const TYPING_VOL_DB        = -20.0
+const MUSIC_DUCK_OFFSET_DB = -18.0
+const MUSIC_FADE_DURATION  = 0.8
+const MUSIC_DUCK_DURATION  = 0.4
+
+var _music_volume_db: float = 0.0
 
 var _notif_player:  AudioStreamPlayer
 var _typing_player: AudioStreamPlayer
@@ -26,9 +27,9 @@ func _ready() -> void:
 	add_child(_typing_player)
 
 	_music_player = AudioStreamPlayer.new()
-	_music_player.volume_db = MUSIC_VOL_DB
 	_music_player.finished.connect(_on_music_finished)
 	add_child(_music_player)
+	apply_music_volume()
 
 	_notif_player.stream = _make_notification_beep()
 	_typing_player.stream = _make_typing_click()
@@ -43,6 +44,19 @@ func play_typing_click() -> void:
 	_typing_player.play()
 
 
+func is_music_playing() -> bool:
+	return _music_player.playing
+
+
+func apply_music_volume() -> void:
+	var v: float = SettingsManager.music_volume
+	_music_volume_db = -80.0 if v <= 0.0 else linear_to_db(v)
+	if _music_player.playing:
+		_fade_music_to(_music_volume_db, MUSIC_DUCK_DURATION, false)
+	else:
+		_music_player.volume_db = _music_volume_db
+
+
 func play_music(path: String) -> void:
 	if path == _current_music_path and _music_player.playing:
 		return
@@ -53,7 +67,7 @@ func play_music(path: String) -> void:
 		return
 	_kill_tween()
 	_music_player.stream = stream
-	_music_player.volume_db = MUSIC_VOL_DB
+	_music_player.volume_db = _music_volume_db
 	_music_player.play()
 
 
@@ -63,11 +77,11 @@ func stop_music() -> void:
 
 
 func duck_music() -> void:
-	_fade_music_to(MUSIC_DUCK_DB, MUSIC_DUCK_DURATION, false)
+	_fade_music_to(_music_volume_db + MUSIC_DUCK_OFFSET_DB, MUSIC_DUCK_DURATION, false)
 
 
 func unduck_music() -> void:
-	_fade_music_to(MUSIC_VOL_DB, MUSIC_DUCK_DURATION, false)
+	_fade_music_to(_music_volume_db, MUSIC_DUCK_DURATION, false)
 
 
 func _on_music_finished() -> void:

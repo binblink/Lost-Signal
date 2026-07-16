@@ -109,6 +109,7 @@ Un fichier de dialogue contient toujours un objet racine avec une clé `scenes`.
 
 - `start_scene` : ID de la première scène que le moteur joue au démarrage d'une nouvelle partie. C'est toujours la scène d'ouverture du contact principal.
 - `start_contact` : ID du contact dont la conversation est affichée à l'écran au lancement. Par défaut, le jeu s'ouvre sur le contact principal. Utilisez ce champ si vous voulez que le joueur démarre dans la conversation d'un autre contact — le contact principal n'apparaîtra pas du tout dans la liste avant qu'il écrive. Requiert que la première scène du contact principal utilise `resume_after_flag` (pour qu'elle attende un flag avant de démarrer, plutôt que de s'exécuter pendant que le joueur regarde une autre conversation).
+- `menu_music` : chemin Godot vers le fichier audio joué en boucle dans le **menu principal** (ex : `"res://assets/music/menu.ogg"`). Absent ou chaîne vide = aucune musique dans le menu. Modifiable via le bouton **Paramètres** du Story Editor (champ "Musique menu" avec bouton `…`).
 - `contacts` : tableau de contacts.
   - `id` : identifiant unique du contact.
   - `name` : texte affiché dans le bandeau. Utilisé comme valeur par défaut si aucune traduction n'est définie pour la langue active.
@@ -378,7 +379,7 @@ Chaque fichier contient :
   - **`null`** : coupe la musique en cours avec un fondu.
 - `end` : `true` pour terminer le jeu après cette scène. Le moteur émet le signal `game_ended` au lieu de chercher une scène suivante. Voir [Écran de fin](#18-écran-de-fin).
 
-La musique baisse automatiquement (ducking) quand le joueur lance un message vocal, puis remonte à la fin de la lecture.
+La musique baisse automatiquement (ducking) quand le joueur lance un message vocal, puis remonte à la fin de la lecture. Le joueur peut régler le volume de la musique indépendamment dans les paramètres du jeu (curseur **Volume musique**).
 
 ## 4. Messages entrants (`messages_in`) 🟢
 

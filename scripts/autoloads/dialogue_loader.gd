@@ -8,6 +8,7 @@ var _contacts:       Array      = []
 var _start_scene:    String     = "scene_01"
 var _start_contact:  String     = ""
 var _title:          String     = ""
+var _menu_music:     String     = ""
 var _triggers:       Dictionary = {}
 var validation_errors:   Array = []
 var validation_warnings: Array = []
@@ -51,6 +52,7 @@ func _load_story() -> void:
 	if data.has("title"):         _title         = data["title"]
 	if data.has("start_scene"):   _start_scene   = data["start_scene"]
 	if data.has("start_contact"): _start_contact = data["start_contact"]
+	if data.has("menu_music"):    _menu_music    = data["menu_music"]
 	if data.has("contacts"):
 		_contacts = data["contacts"]
 		_resolve_contact_names()
@@ -174,6 +176,9 @@ func _parse_json(path: String) -> Dictionary:
 
 func get_title() -> String:
 	return _title
+
+func get_menu_music() -> String:
+	return _menu_music
 
 func get_start_scene() -> String:
 	return _start_scene

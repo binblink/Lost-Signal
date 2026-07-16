@@ -1,5 +1,7 @@
 extends Node
 
+const CIRCLE_SHADER = preload("res://shaders/circle_clip.gdshader")
+
 var name_label:    Label
 var status_dot:    Node
 var status_text:   Label
@@ -45,8 +47,10 @@ func _apply_avatar(contact_id: String, contact_names: Dictionary) -> void:
 			_avatar_texture.texture = tex
 			_avatar_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			_avatar_texture.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-			_avatar_texture.clip_contents = true
 			_avatar_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var mat := ShaderMaterial.new()
+			mat.shader = CIRCLE_SHADER
+			_avatar_texture.material = mat
 			avatar_node.add_child(_avatar_texture)
 			_avatar_initial.visible = false
 

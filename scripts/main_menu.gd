@@ -15,6 +15,9 @@ const GLITCH_CHARS := "!@#$%&*?|▓█░▒╔╗╚╝║═▌▐▀▄01~^;:
 
 func _ready() -> void:
 	TITLE_TEXT = DialogueLoader.get_title()
+	var menu_music: String = DialogueLoader.get_menu_music()
+	if not menu_music.is_empty():
+		AudioManager.play_music(menu_music)
 	_background.color = ThemeManager.background_color.lerp(ThemeManager.accent_color, 0.04)
 	var _bg_fx := preload("res://scripts/ui/main_menu_background.gd").new()
 	add_child(_bg_fx)
@@ -207,11 +210,20 @@ func _rand_glitch_char() -> String:
 
 
 func _on_continue() -> void:
-	get_tree().change_scene_to_file("res://scenes/Main.tscn")
+	await _leave_menu()
 
 
 func _on_new_game() -> void:
 	SaveManager.delete_save()
+	await _leave_menu()
+
+
+func _leave_menu() -> void:
+	_btn_continue.disabled = true
+	_btn_new_game.disabled = true
+	if AudioManager.is_music_playing():
+		AudioManager.stop_music()
+		await get_tree().create_timer(AudioManager.MUSIC_FADE_DURATION).timeout
 	get_tree().change_scene_to_file("res://scenes/Main.tscn")
 
 func _on_settings_pressed() -> void:

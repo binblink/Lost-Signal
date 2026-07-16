@@ -41,6 +41,45 @@ func _build_global(data: Dictionary) -> void:
 		_t("Première scène jouée au lancement d'une nouvelle partie.",
 			"First scene played when starting a new game."))
 
+	var music_row := HBoxContainer.new()
+	_label(music_row, _t("Musique menu", "Menu music"), 110)
+	var music_edit := LineEdit.new()
+	music_edit.text = str(data.get("menu_music", ""))
+	music_edit.placeholder_text = "res://assets/music/…"
+	music_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	music_edit.tooltip_text = _t(
+		"Chemin vers le fichier audio joué en boucle dans le menu principal.\nLaisser vide pour aucune musique.",
+		"Path to the audio file looped in the main menu.\nLeave empty for no music.")
+	var save_music: Callable = func(val: String) -> void:
+		var d := _read_story()
+		if val.is_empty(): d.erase("menu_music") else: d["menu_music"] = val
+		_write_story(d)
+	music_edit.focus_exited.connect(func() -> void:
+		save_music.call(music_edit.text.strip_edges()))
+	music_row.add_child(music_edit)
+	var pick_music_btn := Button.new()
+	pick_music_btn.text = "…"
+	pick_music_btn.custom_minimum_size = Vector2(28, 28)
+	pick_music_btn.tooltip_text = _t("Choisir un fichier audio…", "Browse for audio file…")
+	pick_music_btn.pressed.connect(func() -> void:
+		var dialog := EditorFileDialog.new()
+		dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+		dialog.access = EditorFileDialog.ACCESS_RESOURCES
+		dialog.filters = PackedStringArray(["*.ogg,*.mp3,*.wav ; Audio"])
+		if DirAccess.dir_exists_absolute("res://assets/music"):
+			dialog.current_dir = "res://assets/music"
+		elif DirAccess.dir_exists_absolute("res://assets"):
+			dialog.current_dir = "res://assets"
+		get_tree().get_root().add_child(dialog)
+		dialog.file_selected.connect(func(path: String) -> void:
+			music_edit.text = path
+			save_music.call(path)
+			dialog.queue_free())
+		dialog.canceled.connect(func() -> void: dialog.queue_free())
+		dialog.popup_centered(Vector2i(900, 600)))
+	music_row.add_child(pick_music_btn)
+	_content.add_child(music_row)
+
 	var cids: Array = []
 	for c in data.get("contacts", []):
 		cids.append(c.get("id", ""))

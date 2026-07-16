@@ -109,6 +109,7 @@ A dialogue file always contains a root object with a `scenes` key.
 
 - `start_scene`: ID of the first scene the engine plays when a new game starts. This is always the main contact's opening scene.
 - `start_contact`: ID of the contact whose conversation is shown on screen at launch. Defaults to the main contact. Set this to a secondary contact if you want the player to start in someone else's chat — the main contact won't appear in the list at all until they write. Requires the main contact's first scene to use `resume_after_flag` (so it waits for a flag before starting, rather than trying to play while the player is looking at another conversation).
+- `menu_music`: Godot path to the audio file looped in the **main menu** (e.g. `"res://assets/music/menu.ogg"`). Absent or empty string = no music on the main menu. Editable from the **Settings** panel in the Story Editor ("Menu music" field with a `…` browse button).
 - `contacts`: array of contacts.
   - `id`: unique identifier for the contact.
   - `name`: text displayed in the top bar. Used as the fallback if no translation is defined for the active language.
@@ -378,7 +379,7 @@ Each file contains:
   - **`null`**: fades out and stops the current music.
 - `end`: `true` to end the game after this scene. The engine emits the `game_ended` signal instead of looking for a next scene. See [End Screen](#18-end-screen).
 
-Music automatically ducks when the player plays an audio message, then fades back up when playback ends.
+Music automatically ducks when the player plays an audio message, then fades back up when playback ends. The player can adjust music volume independently in the game settings (**Music volume** slider).
 
 ## 4. Incoming Messages (`messages_in`) 🟢
 

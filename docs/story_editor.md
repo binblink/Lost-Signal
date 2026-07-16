@@ -255,6 +255,7 @@ Cliquer sur le bouton **Paramètres** dans la toolbar ouvre une fenêtre flottan
 | Champ | Interface |
 |---|---|
 | `title` | Texte libre — affiché dans les menus et la barre de titre de la fenêtre |
+| `menu_music` | Champ texte + bouton **…** — ouvre l'explorateur de fichiers Godot filtré sur `.ogg`, `.mp3`, `.wav`. Chemin vers le fichier audio joué en boucle dans le menu principal. Laisser vide pour aucune musique. |
 | `start_scene` | Dropdown de scènes — première scène jouée au lancement d'une nouvelle partie |
 | `start_contact` | Dropdown de contacts — contact dont la conversation est affichée à l'écran au lancement ; si vide, le contact principal est utilisé |
 

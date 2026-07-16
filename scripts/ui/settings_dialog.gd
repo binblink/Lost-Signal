@@ -6,10 +6,11 @@ signal cancelled
 const LANGUAGES     = ["fr", "en"]
 const LANG_LABELS   = ["Français", "English"]
 
-@onready var _lang_option       = $MarginContainer/VBoxContainer/Grid/LangOption
-@onready var _vol_slider        = $MarginContainer/VBoxContainer/Grid/VolSlider
-@onready var _resolution_option = $MarginContainer/VBoxContainer/Grid/ResolutionOption
-@onready var _display_option    = $MarginContainer/VBoxContainer/Grid/DisplayOption
+@onready var _lang_option        = $MarginContainer/VBoxContainer/Grid/LangOption
+@onready var _vol_slider         = $MarginContainer/VBoxContainer/Grid/VolSlider
+@onready var _music_vol_slider   = $MarginContainer/VBoxContainer/Grid/MusicVolSlider
+@onready var _resolution_option  = $MarginContainer/VBoxContainer/Grid/ResolutionOption
+@onready var _display_option     = $MarginContainer/VBoxContainer/Grid/DisplayOption
 @onready var _btn_cancel        = $MarginContainer/VBoxContainer/Buttons/Cancel
 @onready var _btn_accept        = $MarginContainer/VBoxContainer/Buttons/Accept
 
@@ -30,9 +31,10 @@ func _on_display_mode_changed(index: int) -> void:
 
 func open() -> void:
 	var lang_idx := LANGUAGES.find(SettingsManager.language)
-	_lang_option.selected       = max(0, lang_idx)
-	_vol_slider.value           = SettingsManager.volume * 100.0
-	_resolution_option.selected = SettingsManager.resolution
+	_lang_option.selected        = max(0, lang_idx)
+	_vol_slider.value            = SettingsManager.volume * 100.0
+	_music_vol_slider.value      = SettingsManager.music_volume * 100.0
+	_resolution_option.selected  = SettingsManager.resolution
 	_display_option.selected    = SettingsManager.window_mode
 	_on_display_mode_changed(SettingsManager.window_mode)
 	visible = true
@@ -43,10 +45,11 @@ func _on_cancel() -> void:
 
 func _on_accept() -> void:
 	var prev_lang := SettingsManager.language
-	SettingsManager.language    = LANGUAGES[_lang_option.selected]
-	SettingsManager.volume      = _vol_slider.value / 100.0
-	SettingsManager.resolution  = _resolution_option.selected
-	SettingsManager.window_mode = _display_option.selected
+	SettingsManager.language     = LANGUAGES[_lang_option.selected]
+	SettingsManager.volume       = _vol_slider.value / 100.0
+	SettingsManager.music_volume = _music_vol_slider.value / 100.0
+	SettingsManager.resolution   = _resolution_option.selected
+	SettingsManager.window_mode  = _display_option.selected
 	SettingsManager.apply_and_save()
 	visible = false
 	accepted.emit(SettingsManager.language != prev_lang)

@@ -1,5 +1,6 @@
 {
 	"title": "Maeve // Lost Signal",
+	"menu_music": "res://assets/music/leberch-history-ambient-375201.mp3",
 	"start_scene": "scene_intro_01",
 	"start_contact": "salesman",
 	"contacts": [
@@ -7,14 +8,14 @@
 			"id": "maeve",
 			"name": "+33 6 23 11 47 05 25",
 			"is_main": true,
-			"avatar": "res://assets/avatars/6889375.png",
+			"avatar": "res://assets/avatars/maeve.png",
 			"status": "online"
 		},
 		{
 			"id": "salesman",
 			"name": "+445 828 828 555",
 			"is_main": false,
-			"avatar": "res://assets/avatars/3135715.png",
+			"avatar": "res://assets/avatars/salesman.png",
 			"status": "online",
 			"history": [
 				{"text": {"fr": "IMPORTANT\n\nAprès analyse de votre consommation d'eau, votre foyer fait partie des bénéficiaires potentiels du dispositif national ROBINETS ÉCONOMIQUES HAUTE PERFORMANCE.\nInstallation offerte pour les personnes réactives.\nAppelez sans attendre le 09 83 67 12 55 et communiquez le code AQUA-777.\nCette offre est réservée aux logements présentant un fort potentiel hydrique.\n\nPour ne plus recevoir d'offre, répondez STOP.", "en": "IMPORTANT\n\nFollowing an analysis of your water consumption, your household has been identified as a potential beneficiary of the national HIGH-PERFORMANCE ECO FAUCETS program.\nFree installation for prompt respondents.\nCall 09 83 67 12 55 now and quote code AQUA-777.\nThis offer is reserved for homes with high water potential.\n\nTo stop receiving offers, reply STOP."}, "time": "00:00", "out": false},
@@ -29,7 +30,7 @@
 				"fr": "Maman",
 				"en": "Mom"
 			},
-			"avatar": "res://assets/avatars/560219.png",
+			"avatar": "res://assets/avatars/mom.png",
 			"status": "online",
 			"history": [
 				{"text": {"fr": "C'est Maman! Tu as pensé à nourrir le chat? Bises. Maman", "en": "It's Mum! Did you remember to feed the cat? Love, Mum"}, "time": "00:00", "out": false},

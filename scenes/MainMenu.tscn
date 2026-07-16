@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dqx0mainmen1a"]
 
-[ext_resource type="Script" path="res://scripts/main_menu.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://bqcy5y4y7rjxp" path="res://scripts/main_menu.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dstngsdlg001a" path="res://scenes/SettingsDialog.tscn" id="2_stngd"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1981806689]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -12,7 +12,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_script")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=202561029]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -21,7 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=803277263]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -29,42 +29,42 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
-layout_mode = 2
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=669035176]
 custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="GameTitle" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="GameTitle" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1773060629]
 unique_name_in_owner = true
 layout_mode = 2
 text = "LOST SIGNAL"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
-layout_mode = 2
+[node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer" unique_id=701107843]
 custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
 
-[node name="BtnContinue" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="BtnContinue" type="Button" parent="CenterContainer/VBoxContainer" unique_id=728577662]
 unique_name_in_owner = true
 layout_mode = 2
 text = "MENU_CONTINUE"
 
-[node name="BtnNewGame" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="BtnNewGame" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1779577121]
 unique_name_in_owner = true
 layout_mode = 2
 text = "MENU_NEW_GAME"
 
-[node name="BtnSettings" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="BtnSettings" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1291836185]
 unique_name_in_owner = true
 layout_mode = 2
 text = "BTN_SETTINGS"
 
-[node name="BtnQuit" type="Button" parent="CenterContainer/VBoxContainer"]
+[node name="BtnQuit" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1979965288]
 unique_name_in_owner = true
 layout_mode = 2
 text = "BTN_QUIT"
 
-[node name="Overlay" type="ColorRect" parent="."]
+[node name="Overlay" type="ColorRect" parent="." unique_id=1770312683]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -76,7 +76,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.588)
 
-[node name="SettingsDialog" parent="." unique_id=2233445566 instance=ExtResource("2_stngd")]
+[node name="SettingsDialog" parent="." unique_id=-2061521730 instance=ExtResource("2_stngd")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
