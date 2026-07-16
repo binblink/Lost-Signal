@@ -83,12 +83,13 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	if not DialogueLoader.has_scene(scene_id):
 		push_error("[play_scene] scene not found: " + scene_id)
 		return
+	var scene_data: Dictionary = DialogueLoader.get_scene(scene_id)
+	var scene_contact: String = str(scene_data.get("contact_id", DialogueLoader.get_main_contact().get("id", "maeve")))
+
 	if current_scene.get("id", "") != scene_id:
 		current_message_index = 0
-	current_scene = DialogueLoader.get_scene(scene_id)
-	var scene_contact = current_scene.get("contact_id", DialogueLoader.get_main_contact().get("id", "maeve"))
 
-	var resume_delay = current_scene.get("resume_after_delay", null)
+	var resume_delay = scene_data.get("resume_after_delay", null)
 	if resume_delay != null and not _skip_delay:
 		if not scheduled_scenes.has(scene_id):
 			var delay_secs := _parse_delay(resume_delay)
@@ -97,15 +98,17 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 			save_requested.emit(false)
 		return
 
-	var resume_flag = current_scene.get("resume_after_flag", null)
+	var resume_flag = scene_data.get("resume_after_flag", null)
 	if resume_flag != null and not flags.get(resume_flag, false):
 		deferred_scenes[resume_flag] = scene_id
 		return
 
 	if scene_contact != active_contact_id:
-		_play_secondary_scene(current_scene)
+		_play_secondary_scene(scene_data)
 		_trigger_next_scenes(scene_id)
 		return
+
+	current_scene = scene_data
 
 	_handle_music(current_scene)
 	var _gen := _play_generation
