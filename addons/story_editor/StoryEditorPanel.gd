@@ -157,7 +157,10 @@ func _ready() -> void:
 	_settings_button.pressed.connect(_on_settings_pressed)
 	_undo_button.pressed.connect(_on_undo_pressed)
 	_redo_button.pressed.connect(_on_redo_pressed)
-	_reformat_button.text         = _t("Reformater", "Reformat")
+	_reformat_button.text         = _t("Reformater…", "Reformat…")
+	_reformat_button.tooltip_text = _t(
+		"Choisir précisément les fichiers JSON à reformater.",
+		"Choose exactly which JSON files to reformat.")
 	_settings_button.text         = _t("Paramètres", "Settings")
 	_undo_button.tooltip_text     = _t("Annuler  Ctrl+Z", "Undo  Ctrl+Z")
 	_redo_button.tooltip_text     = _t("Rétablir  Ctrl+Y", "Redo  Ctrl+Y")
@@ -200,7 +203,7 @@ func _ready() -> void:
 		_parser.locale_override = loc
 		_ui_locale = loc
 		_analysis_btn.text    = "📊 " + _t("Analyser", "Analyse")
-		_reformat_button.text = _t("Reformater", "Reformat")
+		_reformat_button.text = _t("Reformater…", "Reformat…")
 		_settings_button.text = _t("Paramètres", "Settings")
 		_undo_button.tooltip_text = _t("Annuler  Ctrl+Z", "Undo  Ctrl+Z")
 		_redo_button.tooltip_text = _t("Rétablir  Ctrl+Y", "Redo  Ctrl+Y")
@@ -492,6 +495,7 @@ func _all_dialogue_json_files() -> Array[String]:
 	for f: String in DirAccess.get_files_at("res://dialogues/"):
 		if f.ends_with(".json"):
 			result.append(f)
+	result.sort()
 	return result
 
 
@@ -543,14 +547,221 @@ func _on_reformat_pressed() -> void:
 	if _parser.chosen_files.is_empty():
 		_status_label.text = _t("Cliquez d'abord sur Refresh", "Click Refresh first")
 		return
-	_begin_mutation(_t("Reformater", "Reformat"))
-	for fname in _parser.chosen_files.values():
-		var path: String = "res://dialogues/" + str(fname)
+	var active_locale := _parser.locale_override
+	if active_locale.is_empty():
+		active_locale = _parser._read_locale()
+	var entries := _build_reformat_entries(
+		_all_dialogue_json_files(),
+		_parser.chosen_files,
+		active_locale,
+		SceneParser._read_base_locale()
+	)
+	_show_reformat_dialog(entries, active_locale)
+
+
+func _build_reformat_entries(
+		all_files: Array[String],
+		chosen_files: Dictionary,
+		active_locale: String,
+		base_locale: String
+	) -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	var chosen_names: Array = chosen_files.values()
+	for file_name: String in all_files:
+		var basename := file_name.get_basename()
+		var parts := basename.split(".")
+		var locale := str(parts[1]) if parts.size() == 2 else base_locale
+		var selected := file_name in chosen_names
+		var is_fallback := selected and parts.size() == 1 and active_locale != base_locale
+		var role := _t("Langue %s" % locale, "Language %s" % locale)
+		var detail := role
+		if parts.size() == 1:
+			role = _t("Défaut %s" % base_locale, "Default %s" % base_locale)
+			detail = _t("Fichier de la langue par défaut", "Default-language file")
+		if is_fallback:
+			role = _t("Fallback %s" % active_locale, "Fallback %s" % active_locale)
+			detail = _t(
+				"Fallback — aucun %s.%s.json" % [basename, active_locale],
+				"Fallback — no %s.%s.json" % [basename, active_locale]
+			)
+		entries.append({
+			"file_name": file_name,
+			"selected": selected,
+			"fallback": is_fallback,
+			"locale": locale,
+			"role": role,
+			"detail": detail,
+		})
+	return entries
+
+
+func _show_reformat_dialog(entries: Array[Dictionary], active_locale: String) -> void:
+	var metrics := _reformat_dialog_metrics(entries.size(), get_viewport_rect().size)
+	var dialog := ConfirmationDialog.new()
+	dialog.title = _t("Reformater les fichiers JSON", "Reformat JSON files")
+	dialog.min_size = metrics["min_size"]
+	dialog.max_size = metrics["popup_size"]
+	dialog.unresizable = true
+	add_child(dialog)
+	# Native dialog buttons can end up outside the visible custom layout in the
+	# editor dock. Actions live inside our content so they are always reachable.
+	dialog.get_ok_button().hide()
+	dialog.get_cancel_button().hide()
+
+	var content := VBoxContainer.new()
+	content.add_theme_constant_override("separation", 10)
+	dialog.add_child(content)
+
+	var description := Label.new()
+	description.text = _t(
+		"Langue active : %s\nSélectionnez les fichiers à reformater." % active_locale,
+		"Active language: %s\nSelect the files to reformat." % active_locale
+	)
+	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	content.add_child(description)
+
+	var selection_buttons := HBoxContainer.new()
+	var select_current := Button.new()
+	select_current.text = _t("Langue active", "Active language")
+	selection_buttons.add_child(select_current)
+	var select_all := Button.new()
+	select_all.text = _t("Tous les fichiers", "All files")
+	selection_buttons.add_child(select_all)
+	content.add_child(selection_buttons)
+
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(0, metrics["list_height"])
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	content.add_child(scroll)
+	var files_box := VBoxContainer.new()
+	files_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	files_box.add_theme_constant_override("separation", 5)
+	scroll.add_child(files_box)
+
+	var checkboxes: Dictionary = {}
+	for entry: Dictionary in entries:
+		var file_name: String = entry["file_name"]
+		var checkbox := CheckBox.new()
+		checkbox.text = "%s  —  %s" % [file_name, entry["role"]]
+		checkbox.button_pressed = entry["selected"]
+		checkbox.clip_text = true
+		checkbox.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		checkbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		checkbox.tooltip_text = "res://dialogues/%s\n%s" % [file_name, entry.get("detail", entry["role"])]
+		if entry["fallback"]:
+			checkbox.add_theme_color_override("font_color", Color(1.0, 0.68, 0.25))
+		files_box.add_child(checkbox)
+		checkboxes[file_name] = checkbox
+
+	var safety_note := Label.new()
+	safety_note.text = _t(
+		"Seuls l'indentation et l'ordre des clés changent. Une copie de récupération est conservée.",
+		"Only indentation and key order change. A recovery copy is kept."
+	)
+	safety_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	safety_note.add_theme_color_override("font_color", Color(0.65, 0.72, 0.76))
+	content.add_child(safety_note)
+
+	var separator := HSeparator.new()
+	content.add_child(separator)
+	var action_row := HBoxContainer.new()
+	action_row.alignment = BoxContainer.ALIGNMENT_END
+	action_row.add_theme_constant_override("separation", 8)
+	var cancel_button := Button.new()
+	cancel_button.name = "CancelReformatButton"
+	cancel_button.text = _t("Annuler", "Cancel")
+	cancel_button.custom_minimum_size = Vector2(100, 36)
+	action_row.add_child(cancel_button)
+	var confirm_button := Button.new()
+	confirm_button.name = "ConfirmReformatButton"
+	confirm_button.custom_minimum_size = Vector2(190, 36)
+	action_row.add_child(confirm_button)
+	content.add_child(action_row)
+
+	var update_confirmation: Callable = func() -> void:
+		var count := 0
+		for checkbox: CheckBox in checkboxes.values():
+			if checkbox.button_pressed:
+				count += 1
+		confirm_button.disabled = count == 0
+		confirm_button.text = _t(
+			"Reformater %d fichier%s" % [count, "" if count == 1 else "s"],
+			"Reformat %d file%s" % [count, "" if count == 1 else "s"]
+		)
+
+	for checkbox: CheckBox in checkboxes.values():
+		checkbox.toggled.connect(func(_pressed: bool) -> void: update_confirmation.call())
+	select_current.pressed.connect(func() -> void:
+		for entry: Dictionary in entries:
+			(checkboxes[entry["file_name"]] as CheckBox).button_pressed = entry["selected"]
+		update_confirmation.call()
+	)
+	select_all.pressed.connect(func() -> void:
+		for checkbox: CheckBox in checkboxes.values():
+			checkbox.button_pressed = true
+		update_confirmation.call()
+	)
+	var submit: Callable = func() -> void:
+		var selected_files: Array[String] = []
+		for file_name: String in checkboxes:
+			if (checkboxes[file_name] as CheckBox).button_pressed:
+				selected_files.append(file_name)
+		selected_files.sort()
+		dialog.queue_free()
+		_reformat_files(selected_files)
+	confirm_button.pressed.connect(submit)
+	dialog.confirmed.connect(submit)
+	cancel_button.pressed.connect(func() -> void: dialog.queue_free())
+	dialog.canceled.connect(func() -> void: dialog.queue_free())
+	update_confirmation.call()
+	dialog.popup_centered(metrics["popup_size"])
+
+
+func _reformat_dialog_metrics(file_count: int, viewport_size: Vector2) -> Dictionary:
+	var list_height := clampi(file_count * 32 + 8, 96, 220)
+	var max_width := maxi(360, int(viewport_size.x * 0.85))
+	var max_height := maxi(320, int(viewport_size.y * 0.82))
+	var popup_size := Vector2i(
+		mini(560, max_width),
+		mini(300 + list_height, max_height)
+	)
+	return {
+		"list_height": list_height,
+		"popup_size": popup_size,
+		"min_size": Vector2i(mini(420, popup_size.x), mini(320, popup_size.y)),
+	}
+
+
+func _reformat_files(file_names: Array[String]) -> void:
+	if file_names.is_empty():
+		return
+	_begin_mutation(_t("Reformater %d fichier(s)" % file_names.size(), "Reformat %d file(s)" % file_names.size()))
+	var reformatted: Array[String] = []
+	var failed: Array[String] = []
+	for file_name: String in file_names:
+		var path: String = "res://dialogues/" + file_name
 		var data := _read_json_document(path)
-		if data.has("scenes"):
-			_write_json(path, data)
+		if data.has("scenes") and _write_json(path, data):
+			reformatted.append(file_name)
+		else:
+			failed.append(file_name)
 	await _on_refresh_pressed()
 	_end_mutation()
+	if failed.is_empty():
+		_status_label.text = _t(
+			"%d fichier(s) reformaté(s)" % reformatted.size(),
+			"%d file(s) reformatted" % reformatted.size()
+		)
+	else:
+		_status_label.text = _t(
+			"Échec du reformatage : %s" % ", ".join(failed),
+			"Reformat failed: %s" % ", ".join(failed)
+		)
+	_status_label.tooltip_text = _t(
+		"Reformatés : %s" % ", ".join(reformatted),
+		"Reformatted: %s" % ", ".join(reformatted)
+	)
 
 
 func _on_refresh_pressed() -> void:

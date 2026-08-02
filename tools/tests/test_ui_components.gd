@@ -5,6 +5,7 @@ const ChoicesManager = preload("res://scripts/ui/choices_manager.gd")
 const NarrativeController = preload("res://scripts/narrative_controller.gd")
 const AudioBubble = preload("res://scripts/ui/audio_bubble.gd")
 const SettingsDialogScene = preload("res://scenes/SettingsDialog.tscn")
+const StoryEditorPanelScene = preload("res://addons/story_editor/StoryEditorPanel.tscn")
 const Assert = preload("res://tools/tests/test_assertions.gd")
 
 
@@ -18,6 +19,7 @@ func run_tests() -> Array:
 
 	_test_message_helpers(display, results)
 	await _test_settings_language_options(results)
+	await _test_reformat_dialog_actions(results)
 	await _test_history_rendering(display, results)
 	var choices = await _test_choices(display, results)
 	await _test_pending_choice_restore(choices, results)
@@ -26,6 +28,39 @@ func run_tests() -> Array:
 	scroll.queue_free()
 	await get_tree().process_frame
 	return results
+
+
+func _test_reformat_dialog_actions(results: Array) -> void:
+	var panel := StoryEditorPanelScene.instantiate()
+	add_child(panel)
+	await get_tree().process_frame
+	var entries: Array[Dictionary] = [
+		{
+			"file_name": "acte1.json",
+			"selected": true,
+			"fallback": false,
+			"locale": "fr",
+			"role": "Default language",
+		},
+	]
+	panel._show_reformat_dialog(entries, "fr")
+	await get_tree().process_frame
+	var dialog: ConfirmationDialog = null
+	for child: Node in panel.get_children():
+		if child is ConfirmationDialog:
+			dialog = child
+			break
+	Assert.check(results, "json reformat dialog: confirmation window is created", dialog != null)
+	if dialog != null:
+		var confirm_button := dialog.find_child("ConfirmReformatButton", true, false) as Button
+		var cancel_button := dialog.find_child("CancelReformatButton", true, false) as Button
+		Assert.check(results, "json reformat dialog: confirm action is visible", confirm_button != null and confirm_button.is_visible_in_tree())
+		Assert.check(results, "json reformat dialog: cancel action is visible", cancel_button != null and cancel_button.is_visible_in_tree())
+		Assert.check(results, "json reformat dialog: window width stays compact", dialog.size.x <= 560, "width was %d px" % dialog.size.x)
+		Assert.check(results, "json reformat dialog: window height stays compact", dialog.size.y <= 520, "height was %d px" % dialog.size.y)
+		dialog.queue_free()
+	panel.queue_free()
+	await get_tree().process_frame
 
 
 func _test_settings_language_options(results: Array) -> void:

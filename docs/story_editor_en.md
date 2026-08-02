@@ -29,7 +29,7 @@ Everything that follows in this document details these actions and the advanced 
 
 ```
 +--------------------------------------------------------------------------------------+
-| [Refresh] [Reformat] [Contacts] [Settings] [↩] [↪]   2/5 : scene_03                |
+| [Refresh] [Reformat…] [Contacts] [Settings] [↩] [↪]   2/5 : scene_03               |
 | [🚩 Flags] [📊 Analyse] [🗗]  [fr v]  [All v]  [Find by ID or text...____] [<-][->] |
 +-------------------------------------------+------------------------------------------+
 |                                           |  scene_04                                |
@@ -59,7 +59,7 @@ Legend: `[> id]` = start scene · `[! id]` = orphan · `[X id]` = dead end · `[
 ![Story Editor — scene graph](screenshots/editor_graph.png)
 
 - **Refresh button**: re-reads the JSON files and rebuilds the graph. Use it after editing any dialogue file manually. Edits made from the graph trigger an automatic refresh.
-- **Reformat button**: rewrites all JSON files with the canonical semantic key order, without changing any content. Useful for cleaning up a manually edited file or migrating an existing file to the standard format.
+- **Reformat… button**: opens a selection dialog before anything is written. It shows exactly which files under `dialogues/` will be reformatted, including any fallbacks used by the active language. See [Reformatting JSON files](#reformatting-json-files).
 - **Contacts button**: opens the [Contacts panel](#contacts-panel) — a floating window for managing the character list.
 - **Settings button**: opens the [Settings panel](#settings-panel) — a floating window for global settings, languages, and the end screen.
 - **🚩 Flags button**: opens the [Flags panel](#flags-panel) — a floating window listing all project flags with the scenes that set or use them.
@@ -238,9 +238,9 @@ On confirmation:
 | **← →** | Search field focused, ≥ 2 results | Previous / next result |
 | **Esc** | Search field focused | Clear the search and release focus |
 
-Covered actions for undo: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat**, contact rename, all edits in the Contacts panel.
+Covered actions for undo: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat…**, contact rename, all edits in the Contacts panel.
 
-**Exception**: adding and removing languages (Languages section of the Contacts panel) are not undoable — those operations modify `ui.csv` and trigger a Godot reimport.
+**Exception**: adding and removing languages (Languages section of the Settings panel) are not undoable — those operations modify `ui.csv` and trigger a Godot reimport.
 
 > The undo history is scoped to the current editor session.
 
@@ -373,7 +373,7 @@ The editor covers the vast majority of scenarios. The following features still r
 | `time` (message appearance delay) | Advanced, rarely needed |
 | `music` | Advanced, rarely needed |
 
-After any JSON edit, use the **Reformat** button to restore canonical key ordering.
+After a manual JSON edit, use **Reformat…** to restore the selected files to the canonical format described below.
 
 ---
 
@@ -396,9 +396,21 @@ text → edit → effects → media → pause → requires_flag → condition
 text → message → flag → requires_flag → condition → next → effects
 ```
 
-Messages and choices stay compact (one line per element). Indentation uses tabs.
+Messages, choices, and text arrays are fully expanded: every object and every text item has its own line. Indentation uses tabs.
 
-The **Reformat** button applies this ordering to all existing files without changing any content — useful after a manual edit or migration.
+### Reformatting JSON files
+
+The **Reformat…** button does not write anything immediately. It first opens a compact dialog listing, in alphabetical order, every `.json` file under `dialogues/`.
+
+1. The language currently being edited is shown at the top of the dialog.
+2. The files actually used for that language are preselected.
+3. When a localized file does not exist, the default-language file used in its place is marked as a highlighted **Fallback**. Reformatting does not create the missing localized variant.
+4. **Active language** restores this initial selection; **All files** selects the entire list. Files can also be checked or unchecked individually.
+5. The confirmation button displays the number of affected files and remains disabled while the selection is empty.
+
+Only the files checked when the action is confirmed are written. Reformatting changes document presentation only — indentation, line breaks, and canonical key ordering — without changing values or narrative logic. Every write uses the engine's safe-write mechanism and keeps a recovery copy. The operation can also be reverted with **Ctrl+Z** in the Story Editor.
+
+When many languages or files exist, only the file list scrolls vertically: selection, confirmation, and cancellation actions remain visible. Each file's full path and fallback details are available in its tooltip.
 
 ---
 

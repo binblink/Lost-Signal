@@ -29,7 +29,7 @@ Tout ce qui suit dans ce document détaille ces actions et les fonctionnalités 
 
 ```
 +--------------------------------------------------------------------------------------+
-| [Refresh] [Reformater] [Contacts] [Paramètres] [↩] [↪]   2/5 : scene_03             |
+| [Refresh] [Reformater…] [Contacts] [Paramètres] [↩] [↪]   2/5 : scene_03            |
 | [🚩 Flags] [📊 Analyser] [🗗]  [fr v]  [Tous v]  [Chercher...________] [<-] [->]    |
 +-------------------------------------------+------------------------------------------+
 |                                           |  scene_04                                |
@@ -59,7 +59,7 @@ Légende du graphe : `[> id]` = scène de départ · `[! id]` = isolée · `[X i
 ![Story Editor — graphe des scènes](screenshots/editor_graph.png)
 
 - **Bouton Refresh** : relit les fichiers JSON et reconstruit le graphe. À utiliser après chaque modification manuelle des fichiers de dialogue. Les actions d'édition depuis le graphe déclenchent un Refresh automatique.
-- **Bouton Reformater** : réécrit tous les fichiers JSON avec l'ordre sémantique des clés, sans modifier aucun contenu. Utile pour harmoniser un fichier édité à la main ou migrer un fichier existant vers le format canonique.
+- **Bouton Reformater…** : ouvre une fenêtre de sélection avant toute écriture. Elle indique précisément quels fichiers de `dialogues/` seront reformattés, y compris les éventuels fallbacks de la langue active. Voir [Reformater des fichiers JSON](#reformater-des-fichiers-json).
 - **Bouton Contacts** : ouvre le [panneau Contacts](#panneau-contacts) — une fenêtre flottante pour gérer la liste des personnages.
 - **Bouton Paramètres** : ouvre le [panneau Paramètres](#panneau-paramètres) — une fenêtre flottante pour les réglages globaux, les langues et l'écran de fin.
 - **Bouton 🚩 Flags** : ouvre le [panneau Flags](#panneau-flags) — une fenêtre flottante listant tous les flags du projet avec leurs scènes d'origine et d'utilisation.
@@ -238,9 +238,9 @@ Sur confirmation :
 | **← →** | Champ de recherche en focus, ≥ 2 résultats | Résultat précédent / suivant |
 | **Échap** | Champ de recherche en focus | Efface la recherche et relâche le focus |
 
-Les actions couvertes par l'annulation : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater**, renommage de contact, toutes les modifications dans le panneau Contacts.
+Les actions couvertes par l'annulation : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater…**, renommage de contact, toutes les modifications dans le panneau Contacts.
 
-**Exception** : l'ajout et la suppression de langues (section Langues du panneau Contacts) ne sont pas annulables — ces opérations modifient `ui.csv` et déclenchent un réimport Godot.
+**Exception** : l'ajout et la suppression de langues (section Langues du panneau Paramètres) ne sont pas annulables — ces opérations modifient `ui.csv` et déclenchent un réimport Godot.
 
 > L'historique d'annulation est limité à la session courante de l'éditeur.
 
@@ -373,7 +373,7 @@ L'éditeur couvre la grande majorité des scénarios. Les fonctionnalités suiva
 | `time` (délai d'apparition d'un message) | Cas avancé rare |
 | `music` | Cas avancé rare |
 
-Pour toute édition JSON, utiliser le bouton **Reformater** ensuite pour remettre les clés dans l'ordre canonique.
+Après une édition manuelle, le bouton **Reformater…** permet de remettre les fichiers voulus dans le format canonique décrit ci-dessous.
 
 ---
 
@@ -396,9 +396,21 @@ text → edit → effects → media → pause → requires_flag → condition
 text → message → flag → requires_flag → condition → next → effects
 ```
 
-Les messages et les choix restent compacts (une ligne par élément). L'indentation utilise des tabulations.
+Les messages, choix et tableaux de texte sont entièrement développés : chaque objet et chaque texte possède sa propre ligne. L'indentation utilise des tabulations.
 
-Le bouton **Reformater** applique cet ordre à tous les fichiers existants sans modifier aucun contenu — pratique après une édition manuelle ou une migration.
+### Reformater des fichiers JSON
+
+Le bouton **Reformater…** n'écrit rien immédiatement. Il ouvre d'abord une fenêtre compacte qui liste, par ordre alphabétique, tous les fichiers `.json` présents dans `dialogues/`.
+
+1. La langue actuellement éditée est indiquée en haut de la fenêtre.
+2. Les fichiers réellement utilisés pour cette langue sont présélectionnés.
+3. Lorsqu'un fichier localisé n'existe pas, le fichier de la langue par défaut utilisé à sa place est signalé comme **Fallback** et mis en évidence. Le reformatage ne crée pas de variante localisée manquante.
+4. **Langue active** rétablit cette présélection ; **Tous les fichiers** sélectionne toute la liste. Chaque fichier peut aussi être coché ou décoché individuellement.
+5. Le bouton de confirmation indique le nombre de fichiers concernés et reste désactivé tant que la sélection est vide.
+
+Seuls les fichiers cochés au moment de la confirmation sont écrits. Le reformatage modifie uniquement la présentation du document — indentation, retours à la ligne et ordre canonique des clés — sans modifier les valeurs ni la logique narrative. Chaque écriture utilise le mécanisme sécurisé du moteur et conserve une copie de récupération. L'opération peut également être annulée avec **Ctrl+Z** dans le Story Editor.
+
+Avec un grand nombre de langues ou de fichiers, seule la liste défile verticalement : les actions de sélection, de confirmation et d'annulation restent visibles. Le chemin complet et le détail d'un fallback sont disponibles dans l'infobulle de chaque fichier.
 
 ---
 

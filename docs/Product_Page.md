@@ -150,7 +150,7 @@ Tous les dropdowns sont remplis depuis votre projet réel. Les changements sauve
 
 **Panneau Contacts** (bouton dans la barre d'outils) : gérez tout dans `story.json` sans ouvrir le fichier — ajout/renommage/suppression de contacts, avatars, historiques, scène de départ, configuration de l'écran de fin. Renommer un ID de contact propage le changement dans tous les fichiers de dialogue automatiquement.
 
-**Bouton Reformater** : réécrit tous les fichiers de dialogue avec l'ordre de clés canonique sans toucher au contenu.
+**Bouton Reformater…** : affiche avant toute écriture la liste exacte des fichiers de dialogue concernés. Les fichiers de la langue active sont présélectionnés, les fallbacks sont clairement signalés et la sélection reste modifiable fichier par fichier. Seuls les fichiers confirmés sont remis au format canonique, via une écriture sécurisée avec copie de récupération, sans toucher au contenu narratif.
 
 > Le graphe et les fichiers JSON sont toujours synchronisés — le graphe est une vue en direct de vos fichiers.
 

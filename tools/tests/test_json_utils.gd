@@ -1,6 +1,7 @@
 extends Node
 
 const JsonUtils = preload("res://addons/story_editor/json_utils.gd")
+const StoryEditorPanel = preload("res://addons/story_editor/StoryEditorPanel.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
 
 
@@ -50,4 +51,27 @@ func run_tests() -> Array:
 	Assert.equal(results, "json order: standalone message", message.keys(), ["text", "media", "condition", "extra"])
 	var choice: Dictionary = JsonUtils.ordered_choice({"effects": [], "flag": "f", "text": "x", "message": "y", "extra": 2})
 	Assert.equal(results, "json order: standalone choice", choice.keys(), ["text", "message", "flag", "effects", "extra"])
+
+	var editor_panel = StoryEditorPanel.new()
+	var reformat_entries: Array[Dictionary] = editor_panel._build_reformat_entries(
+		["acte1.en.json", "acte1.json", "acte2.json"],
+		{"acte1": "acte1.en.json", "acte2": "acte2.json"},
+		"en",
+		"fr"
+	)
+	var selected_files: Array[String] = []
+	var fallback_files: Array[String] = []
+	for entry: Dictionary in reformat_entries:
+		if entry["selected"]:
+			selected_files.append(entry["file_name"])
+		if entry["fallback"]:
+			fallback_files.append(entry["file_name"])
+	Assert.equal(results, "json reformat scope: active locale files are preselected", selected_files, ["acte1.en.json", "acte2.json"])
+	Assert.equal(results, "json reformat scope: fallback files are identified", fallback_files, ["acte2.json"])
+	var compact_dialog: Dictionary = editor_panel._reformat_dialog_metrics(3, Vector2(1400, 900))
+	Assert.equal(results, "json reformat dialog: short file lists stay compact", compact_dialog["popup_size"], Vector2i(560, 404))
+	var long_dialog: Dictionary = editor_panel._reformat_dialog_metrics(30, Vector2(800, 600))
+	Assert.check(results, "json reformat dialog: long file lists are height-capped", (long_dialog["popup_size"] as Vector2i).y <= 492)
+	Assert.equal(results, "json reformat dialog: long file lists use a bounded scroll area", long_dialog["list_height"], 220)
+	editor_panel.free()
 	return results
