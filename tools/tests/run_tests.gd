@@ -30,6 +30,10 @@ func _run_tests() -> void:
         load("res://tools/tests/test_dialogue_loader.gd"),
         load("res://tools/tests/test_save_manager.gd"),
         load("res://tools/tests/test_settings_manager.gd"),
+        load("res://tools/tests/test_json_utils.gd"),
+        load("res://tools/tests/test_scene_parser.gd"),
+        load("res://tools/tests/test_analysis_panel.gd"),
+        load("res://tools/tests/test_ui_components.gd"),
     ]
 
     for s in suites:

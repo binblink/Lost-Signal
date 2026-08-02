@@ -5,8 +5,9 @@ signal choice_selected(index: int)
 # References injected by main.gd before _ready
 var message_display: VBoxContainer = null
 var input_bar: Control = null
+var buttons_container: VBoxContainer = null
 
-@onready var _buttons_container = %ButtonsContainer
+@onready var _buttons_container: VBoxContainer = buttons_container if buttons_container != null else %ButtonsContainer
 
 var _choice_buttons: Array = []
 var _spacer: Control = null

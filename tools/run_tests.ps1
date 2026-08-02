@@ -9,17 +9,34 @@ if (-not $godot) {
 
 if (-not $godot) {
 	$documents = [Environment]::GetFolderPath('MyDocuments')
-	$candidate = Get-ChildItem -Path $documents -Filter 'Godot_v*-stable_win64.exe' -ErrorAction SilentlyContinue |
+	# The console build blocks until Godot exits and propagates its exit code.
+	# The GUI build may detach immediately when launched from PowerShell.
+	$candidate = Get-ChildItem -Path $documents -Filter 'Godot_v*-stable_win64_console.exe' -File -Recurse -ErrorAction SilentlyContinue |
 		Sort-Object Name -Descending |
 		Select-Object -First 1
+	if (-not $candidate) {
+		$candidate = Get-ChildItem -Path $documents -Filter 'Godot_v*-stable_win64.exe' -ErrorAction SilentlyContinue |
+			Sort-Object Name -Descending |
+			Select-Object -First 1
+	}
 	if ($candidate) {
 		if ($candidate.PSIsContainer) {
+			$consoleName = $candidate.Name -replace '\.exe$', '_console.exe'
+			$innerConsole = Join-Path $candidate.FullName $consoleName
 			$inner = Join-Path $candidate.FullName $candidate.Name
-			if (Test-Path -LiteralPath $inner -PathType Leaf) { $godot = $inner }
+			if (Test-Path -LiteralPath $innerConsole -PathType Leaf) { $godot = $innerConsole }
+			elseif (Test-Path -LiteralPath $inner -PathType Leaf) { $godot = $inner }
 		} else {
 			$godot = $candidate.FullName
 		}
 	}
+}
+
+# GODOT_BIN may also point at the GUI executable. Prefer its console sibling
+# when present so the runner cannot report success before tests have finished.
+if ($godot -and $godot -notmatch '_console\.exe$') {
+	$consoleSibling = $godot -replace '\.exe$', '_console.exe'
+	if (Test-Path -LiteralPath $consoleSibling -PathType Leaf) { $godot = $consoleSibling }
 }
 
 if (-not $godot -or -not (Test-Path -LiteralPath $godot -PathType Leaf)) {

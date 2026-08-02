@@ -2,51 +2,56 @@ extends RefCounted
 
 var start_scene: String = ""
 var contacts: Array = []
-var chosen_files: Dictionary = {}   # base_name → file_name (relatif à dialogues/)
+var chosen_files: Dictionary = {}   # base_name -> file_name, relative to dialogues_dir
 var error_message: String = ""
-var locale_override: String = ""    # si non vide, utilisé à la place de settings.json
+var locale_override: String = ""
+
+# Injectable paths keep editor parsing isolated and testable.
+var story_path: String = "res://story.json"
+var dialogues_dir: String = "res://dialogues"
+var settings_path: String = "user://settings.json"
 
 
-static func detect_locales() -> Array[String]:
-	var dir := DirAccess.open("res://dialogues")
+static func detect_locales(dialogues_path: String = "res://dialogues", source_story_path: String = "res://story.json") -> Array[String]:
+	var dir := DirAccess.open(dialogues_path)
 	if dir == null:
 		return []
 	var locales: Array[String] = []
 	var has_base := false
 	dir.list_dir_begin()
-	var f := dir.get_next()
-	while f != "":
-		if not dir.current_is_dir() and f.ends_with(".json"):
-			var base: String = f.get_basename()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".json"):
+			var base: String = file_name.get_basename()
 			var parts := base.split(".")
 			if parts.size() == 2:
-				var loc: String = parts[1]
-				if loc not in locales:
-					locales.append(loc)
+				var locale: String = parts[1]
+				if locale not in locales:
+					locales.append(locale)
 			elif parts.size() == 1:
 				has_base = true
-		f = dir.get_next()
+		file_name = dir.get_next()
 	dir.list_dir_end()
 	locales.sort()
 	if has_base:
-		var base_locale: String = _read_base_locale()
+		var base_locale: String = _read_base_locale(source_story_path)
 		if base_locale not in locales:
 			locales.insert(0, base_locale)
 	return locales
 
 
-static func _read_base_locale() -> String:
-	if not FileAccess.file_exists("res://story.json"):
+static func _read_base_locale(source_story_path: String = "res://story.json") -> String:
+	if not FileAccess.file_exists(source_story_path):
 		return "fr"
-	var sf := FileAccess.open("res://story.json", FileAccess.READ)
-	if sf == null:
+	var story_file := FileAccess.open(source_story_path, FileAccess.READ)
+	if story_file == null:
 		return "fr"
-	var parsed: Variant = JSON.parse_string(sf.get_as_text())
-	sf.close()
+	var parsed: Variant = JSON.parse_string(story_file.get_as_text())
+	story_file.close()
 	if parsed is Dictionary:
 		var settings: Dictionary = parsed.get("settings", {})
-		var lang: String = settings.get("default_language", "fr")
-		return lang
+		var language: String = settings.get("default_language", "fr")
+		return language
 	return "fr"
 
 
@@ -54,9 +59,10 @@ func parse_all() -> Dictionary:
 	error_message = ""
 	start_scene = ""
 	contacts = []
-	var scenes := {}
+	chosen_files = {}
+	var scenes: Dictionary = {}
 
-	var story := _read_json("res://story.json")
+	var story := _read_json(story_path)
 	if story.is_empty():
 		error_message = "story.json introuvable ou invalide"
 		return scenes
@@ -64,72 +70,77 @@ func parse_all() -> Dictionary:
 	start_scene = story.get("start_scene", "")
 	contacts = story.get("contacts", [])
 
-	var dir := DirAccess.open("res://dialogues")
+	var dir := DirAccess.open(dialogues_dir)
 	if dir == null:
 		error_message = "Dossier dialogues/ introuvable"
 		return scenes
 
-	var locale := _read_locale()
-
-	# Même logique que dialogue_loader.gd :
-	# pour chaque base (ex: "acte1"), préférer base.locale.json, fallback sur base.json
 	var all_files: Array[String] = []
 	dir.list_dir_begin()
-	var f := dir.get_next()
-	while f != "":
-		if not dir.current_is_dir() and f.ends_with(".json"):
-			all_files.append(f)
-		f = dir.get_next()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".json"):
+			all_files.append(file_name)
+		file_name = dir.get_next()
 	dir.list_dir_end()
-
-	var chosen: Dictionary = {}
-	for file_name in all_files:
-		var base: String = file_name.get_basename()
-		var parts: PackedStringArray = base.split(".")
-		if parts.size() == 2:
-			if parts[1] == locale:
-				chosen[parts[0]] = file_name
-		elif parts.size() == 1:
-			if not chosen.has(base):
-				chosen[base] = file_name
-	chosen_files = chosen
+	all_files.sort()
+	chosen_files = _choose_dialogue_files(all_files, _read_locale())
 
 	var main_contact_id := ""
-	for c in contacts:
-		if c.get("is_main", false):
-			main_contact_id = c.get("id", "")
+	for contact in contacts:
+		if contact.get("is_main", false):
+			main_contact_id = contact.get("id", "")
 			break
 
-	for file_name in chosen.values():
-		var path: String = "res://dialogues/" + str(file_name)
-		if not FileAccess.file_exists(path):
-			continue
+	for chosen_file: String in chosen_files.values():
+		var path: String = dialogues_dir.path_join(chosen_file)
 		var raw_file := FileAccess.open(path, FileAccess.READ)
 		if raw_file == null:
 			continue
 		var raw_text: String = raw_file.get_as_text()
 		raw_file.close()
-		var parsed: Variant = JSON.parse_string(raw_text)
-		if parsed == null:
-			error_message = str(file_name) + " : JSON invalide"
+		var json := JSON.new()
+		if json.parse(raw_text) != OK:
+			error_message = chosen_file + " : JSON invalide"
 			return scenes
-		if not parsed is Dictionary or not (parsed as Dictionary).has("scenes"):
+		var parsed: Variant = json.data
+		if not parsed is Dictionary or not (parsed as Dictionary).get("scenes") is Array:
 			continue
 		for scene: Variant in ((parsed as Dictionary)["scenes"] as Array):
-			var sd: Dictionary = scene as Dictionary
-			if sd.has("id"):
-				if not sd.has("contact_id"):
-					sd["contact_id"] = main_contact_id
-				sd["_editor_file"] = file_name
-				scenes[sd["id"]] = sd
+			if not scene is Dictionary:
+				continue
+			var scene_data: Dictionary = scene as Dictionary
+			if not scene_data.has("id"):
+				continue
+			var scene_id: String = str(scene_data["id"])
+			if scenes.has(scene_id):
+				error_message = "%s : ID de scène dupliqué '%s'" % [chosen_file, scene_id]
+				return scenes
+			if not scene_data.has("contact_id"):
+				scene_data["contact_id"] = main_contact_id
+			scene_data["_editor_file"] = chosen_file
+			scenes[scene_id] = scene_data
 
 	return scenes
+
+
+func _choose_dialogue_files(all_files: Array[String], locale: String) -> Dictionary:
+	var chosen: Dictionary = {}
+	for file_name: String in all_files:
+		var base: String = file_name.get_basename()
+		var parts: PackedStringArray = base.split(".")
+		if parts.size() == 2:
+			if parts[1] == locale:
+				chosen[parts[0]] = file_name
+		elif parts.size() == 1 and not chosen.has(base):
+			chosen[base] = file_name
+	return chosen
 
 
 func _read_locale() -> String:
 	if locale_override != "":
 		return locale_override
-	var settings := _read_json("user://settings.json")
+	var settings := _read_json(settings_path)
 	return settings.get("language", "fr")
 
 
@@ -139,8 +150,12 @@ func _read_json(path: String) -> Dictionary:
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
 		return {}
-	var parsed = JSON.parse_string(file.get_as_text())
+	var json := JSON.new()
+	var error := json.parse(file.get_as_text())
 	file.close()
+	if error != OK:
+		return {}
+	var parsed: Variant = json.data
 	if parsed is Dictionary:
 		return parsed
 	return {}
