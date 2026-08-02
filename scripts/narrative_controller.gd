@@ -54,6 +54,7 @@ var _is_player_typing: bool = false
 var _waiting_for_free_input: bool = false
 var _pending_resumes: Array = []
 var _visible_choices: Array = []
+var _choice_scene_id: String = ""
 var _abort: bool = false
 var _play_generation: int = 0
 
@@ -70,6 +71,8 @@ func abort_current() -> void:
 	_is_player_typing = false
 	_waiting_for_free_input = false
 	waiting_for_choice = false
+	_choice_scene_id = ""
+	_visible_choices.clear()
 	choices_layer.hide_choices()
 	input_bar.visible = true
 	_play_generation += 1
@@ -107,7 +110,7 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 
 	if scene_contact != active_contact_id:
 		_play_secondary_scene(scene_data)
-		_trigger_next_scenes(scene_id)
+		await _trigger_next_scenes(scene_id)
 		return
 
 	current_scene = scene_data
@@ -193,25 +196,35 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 		await message_display.type_message(submitted_text)
 		_is_player_typing = false
 		save_requested.emit(true)
-		_trigger_next_scenes(scene_id)
-		var fi_next = current_scene.get("next", null)
+		await _trigger_next_scenes(scene_id)
+		if _play_generation != _gen:
+			return
+		var fi_next = scene_data.get("next", null)
 		if fi_next != null:
 			await play_scene(fi_next)
 		return
 
-	waiting_for_choice = true
-	save_requested.emit(false)
-
-	if current_scene.has("choices"):
-		_visible_choices = _filter_choices(current_scene["choices"])
+	if scene_data.has("choices"):
+		_visible_choices = _filter_choices(scene_data["choices"])
+		if _visible_choices.is_empty():
+			waiting_for_choice = false
+			save_requested.emit(false)
+			await _trigger_next_scenes(scene_id)
+			return
+		waiting_for_choice = true
+		_choice_scene_id = scene_id
+		save_requested.emit(false)
 		await choices_layer.show_choices(
 			_visible_choices.map(func(c): return c["text"])
 		)
 		await choice_made
-		if _abort:
+		if _play_generation != _gen:
 			return
+		return
 
-	_trigger_next_scenes(scene_id)
+	waiting_for_choice = false
+	save_requested.emit(false)
+	await _trigger_next_scenes(scene_id)
 
 
 func handle_choice(index: int) -> void:
@@ -220,6 +233,13 @@ func handle_choice(index: int) -> void:
 	if index < 0 or index >= _visible_choices.size():
 		return
 	var choice = _visible_choices[index]
+	var source_scene_id: String = _choice_scene_id
+	if source_scene_id.is_empty():
+		source_scene_id = current_scene.get("id", "")
+	# Secondary scenes run their triggers when they arrive in the background.
+	# Restoring their pending choice later must not run those triggers twice.
+	var source_triggers_already_processed := source_scene_id in played_secondary_scenes
+	var _gen := _play_generation
 	waiting_for_choice = false
 	_apply_effects(choice)
 	choices_layer.hide_choices()
@@ -243,15 +263,24 @@ func handle_choice(index: int) -> void:
 	if next_scene_id != "" and DialogueLoader.has_scene(next_scene_id):
 		current_message_index = 0
 		current_scene = DialogueLoader.get_scene(next_scene_id)
-		current_scene["contact_id"] = active_contact_id
 	else:
 		# No next scene — clear current_scene so a save here records scene_id = ""
 		# and reload won't replay the finished scene from scratch.
 		current_scene = {}
+	_choice_scene_id = ""
+	_visible_choices.clear()
 	save_requested.emit(true)
 	choice_made.emit()
+	if _play_generation != _gen:
+		return
+	if source_scene_id != "" and not source_triggers_already_processed:
+		await _trigger_next_scenes(source_scene_id)
+		if _play_generation != _gen:
+			return
 	if next_scene_id != "":
 		await play_scene(next_scene_id)
+		if _play_generation != _gen:
+			return
 	var resumes = _pending_resumes.duplicate()
 	_pending_resumes.clear()
 	for resume_id in resumes:
@@ -270,6 +299,7 @@ func restore_pending_choice_for(contact_id: String) -> void:
 				waiting_for_choice = true
 				current_scene = pending_scene
 				current_message_index = 0
+				_choice_scene_id = pending_scene.get("id", "")
 				await choices_layer.show_choices(
 					_visible_choices.map(func(c): return c["text"])
 				)
@@ -428,6 +458,10 @@ func rebuild_choices() -> void:
 	if not current_scene.has("choices"):
 		return
 	_visible_choices = _filter_choices(current_scene["choices"])
+	if _visible_choices.is_empty():
+		waiting_for_choice = false
+		return
+	_choice_scene_id = current_scene.get("id", "")
 	await choices_layer.show_choices(_visible_choices.map(func(c): return c["text"]))
 	await choice_made
 

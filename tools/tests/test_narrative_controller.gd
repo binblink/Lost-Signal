@@ -4,6 +4,31 @@ const NarrativeController = preload("res://scripts/narrative_controller.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
 
 
+class StubMessageDisplay:
+	extends VBoxContainer
+
+	func show_typing(_text: String) -> bool:
+		return true
+
+	func receive_message(_text: String, _time: String = "") -> Control:
+		var bubble := Control.new()
+		add_child(bubble)
+		return bubble
+
+	func type_message(_text: String) -> void:
+		pass
+
+
+class StubChoicesLayer:
+	extends Control
+
+	func show_choices(_choices: Array) -> void:
+		visible = true
+
+	func hide_choices() -> void:
+		visible = false
+
+
 func run_tests() -> Array:
 	var results: Array = []
 	_test_conditions_and_helpers(results)
@@ -11,6 +36,7 @@ func run_tests() -> Array:
 	_test_secondary_scene(results)
 	_test_choice_bounds(results)
 	await _test_deferred_scheduled_and_end_transitions(results)
+	await _test_serialized_transitions(results)
 	return results
 
 
@@ -174,3 +200,140 @@ func _test_deferred_scheduled_and_end_transitions(results: Array) -> void:
 	loader.set("_scenes", original_scenes)
 	loader.set("_triggers", original_triggers)
 	loader.set("_contacts", original_contacts)
+
+
+func _test_serialized_transitions(results: Array) -> void:
+	var loader: Node = get_tree().root.get_node("DialogueLoader")
+	var original_scenes: Dictionary = loader.get("_scenes")
+	var original_triggers: Dictionary = loader.get("_triggers")
+	var original_contacts: Array = loader.get("_contacts")
+	loader.set("_contacts", [{"id": "main", "is_main": true}, {"id": "mom"}])
+
+	# A same-contact trigger deliberately suspends for one message. The next
+	# scene must not start until the trigger reaches its second message.
+	loader.set("_scenes", {
+		"choice_source": {
+			"id": "choice_source", "contact_id": "main", "messages_in": [],
+			"choices": [{"text": "Reply", "next": "choice_next"}]
+		},
+		"choice_trigger": {
+			"id": "choice_trigger", "contact_id": "main",
+			"messages_in": [
+				{"text": "wait", "effects": [{"op": "set_status", "contact": "main", "value": "trigger_start"}]},
+				{"effects": [{"op": "set_status", "contact": "main", "value": "trigger_end"}]}
+			]
+		},
+		"choice_next": {
+			"id": "choice_next", "contact_id": "main",
+			"messages_in": [{"effects": [{"op": "set_status", "contact": "main", "value": "choice_next"}]}]
+		}
+	})
+	loader.set("_triggers", {"choice_source": ["choice_trigger"]})
+	var choice_nc: Node = _make_transition_controller()
+	var choice_order: Array = []
+	choice_nc.contact_status_changed.connect(func(_cid: String, status: String) -> void: choice_order.append(status))
+	choice_nc.play_scene("choice_source")
+	await get_tree().process_frame
+	await choice_nc.handle_choice(0)
+	Assert.equal(results, "transitions: same-contact trigger finishes before choice next", choice_order, ["trigger_start", "trigger_end", "choice_next"])
+	choice_nc.queue_free()
+	await get_tree().process_frame
+
+	# A choice may intentionally move to another contact. Playing it must not
+	# mutate the shared scene definition or force it into the active chat.
+	loader.set("_scenes", {
+		"cross_source": {
+			"id": "cross_source", "contact_id": "main", "messages_in": [],
+			"choices": [{"text": "Reply", "next": "mom_next"}]
+		},
+		"mom_next": {
+			"id": "mom_next", "contact_id": "mom", "messages_in": [{"text": "From mom"}]
+		}
+	})
+	loader.set("_triggers", {})
+	var cross_nc: Node = _make_transition_controller()
+	cross_nc.play_scene("cross_source")
+	await get_tree().process_frame
+	await cross_nc.handle_choice(0)
+	Assert.equal(results, "transitions: choice next preserves target contact", loader.get_scene("mom_next").get("contact_id"), "mom")
+	Assert.equal(results, "transitions: cross-contact next is stored in target history", cross_nc.contact_histories.get("mom", [])[0].get("text"), "From mom")
+	cross_nc.queue_free()
+	await get_tree().process_frame
+
+	# A secondary scene processes its triggers on arrival. Answering its pending
+	# choice later must continue to next without replaying the same triggers.
+	loader.set("_scenes", {
+		"secondary_source": {
+			"id": "secondary_source", "contact_id": "mom", "messages_in": [],
+			"choices": [{"text": "Reply", "next": "secondary_next"}]
+		},
+		"arrival_trigger": {
+			"id": "arrival_trigger", "contact_id": "main",
+			"messages_in": [{"effects": [{"op": "add", "var": "trigger_count", "value": 1}]}]
+		},
+		"secondary_next": {
+			"id": "secondary_next", "contact_id": "mom", "messages_in": []
+		}
+	})
+	loader.set("_triggers", {"secondary_source": ["arrival_trigger"]})
+	var restored_nc: Node = _make_transition_controller()
+	restored_nc.vars = {"trigger_count": 0}
+	await restored_nc.play_scene("secondary_source")
+	Assert.equal(results, "transitions: secondary trigger runs once on arrival", restored_nc.vars.get("trigger_count"), 1)
+	restored_nc.active_contact_id = "mom"
+	await restored_nc.restore_pending_choice_for("mom")
+	await restored_nc.handle_choice(0)
+	Assert.equal(results, "transitions: restored secondary choice does not replay triggers", restored_nc.vars.get("trigger_count"), 1)
+	Assert.equal(results, "transitions: restored secondary choice still follows next", restored_nc.current_scene.get("id"), "secondary_next")
+	restored_nc.queue_free()
+	await get_tree().process_frame
+
+	# Free-input scenes use the same ordering guarantee as choices.
+	loader.set("_scenes", {
+		"input_source": {
+			"id": "input_source", "contact_id": "main", "messages_in": [],
+			"free_input": "answer", "next": "input_next"
+		},
+		"input_trigger": {
+			"id": "input_trigger", "contact_id": "main",
+			"messages_in": [
+				{"text": "wait", "effects": [{"op": "set_status", "contact": "main", "value": "input_trigger_start"}]},
+				{"effects": [{"op": "set_status", "contact": "main", "value": "input_trigger_end"}]}
+			]
+		},
+		"input_next": {
+			"id": "input_next", "contact_id": "main",
+			"messages_in": [{"effects": [{"op": "set_status", "contact": "main", "value": "input_next"}]}]
+		}
+	})
+	loader.set("_triggers", {"input_source": ["input_trigger"]})
+	var input_nc: Node = _make_transition_controller()
+	var input_order: Array = []
+	input_nc.contact_status_changed.connect(func(_cid: String, status: String) -> void: input_order.append(status))
+	input_nc.play_scene("input_source")
+	await get_tree().process_frame
+	input_nc.submit_free_input("answer")
+	await get_tree().create_timer(0.7).timeout
+	Assert.equal(results, "transitions: same-contact trigger finishes before free-input next", input_order, ["input_trigger_start", "input_trigger_end", "input_next"])
+	input_nc.queue_free()
+	await get_tree().process_frame
+
+	loader.set("_scenes", original_scenes)
+	loader.set("_triggers", original_triggers)
+	loader.set("_contacts", original_contacts)
+
+
+func _make_transition_controller() -> Node:
+	var nc: Node = NarrativeController.new()
+	add_child(nc)
+	nc.active_contact_id = "main"
+	var display := StubMessageDisplay.new()
+	var choices := StubChoicesLayer.new()
+	var input := Control.new()
+	nc.add_child(display)
+	nc.add_child(choices)
+	nc.add_child(input)
+	nc.message_display = display
+	nc.choices_layer = choices
+	nc.input_bar = input
+	return nc
