@@ -56,8 +56,12 @@ func _test_history_rendering(display, results: Array) -> void:
 		{"text": null, "time": "2000-01-02 03:07", "out": false, "media": {"type": "image", "path": "res://assets/images/maeve_pic_1.jpg"}},
 		{"text": null, "time": "2000-01-02 03:08", "out": false, "media": {"type": "audio", "path": "res://assets/sounds/Splorch.mp3"}}
 	]
+	var history_start_frame := Engine.get_process_frames()
 	await display.render_history(history)
+	var history_render_frames := Engine.get_process_frames() - history_start_frame
 	Assert.equal(results, "messages: text, outgoing, corrupted, image and audio history render", display.get_child_count(), 5)
+	Assert.check(results, "messages: history uses one batched final scroll", history_render_frames <= 3, "render took %d process frames" % history_render_frames)
+	Assert.equal(results, "messages: history is visible after batched render", display.modulate.a, 1.0)
 	Assert.equal(results, "messages: rendered history round trips without data loss", display.collect_messages_data(), history)
 	Assert.equal(results, "messages: rendering an outgoing message clears stale input", line_edit.text, "")
 	var incoming_label: Label = display.get_child(0).get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
@@ -65,6 +69,10 @@ func _test_history_rendering(display, results: Array) -> void:
 	Assert.check(results, "messages: corrupted bubble retains its marker", display.get_child(2).get_meta("msg_data").get("corrupted", false))
 	Assert.equal(results, "messages: image bubble retains media type", display.get_child(3).get_meta("msg_data").get("media", {}).get("type"), "image")
 	Assert.equal(results, "messages: audio bubble retains media type", display.get_child(4).get_meta("msg_data").get("media", {}).get("type"), "audio")
+	var live_start_frame := Engine.get_process_frames()
+	await display.receive_message("Live message", "10:00")
+	var live_render_frames := Engine.get_process_frames() - live_start_frame
+	Assert.check(results, "messages: live messages keep automatic scrolling", live_render_frames >= 2)
 
 	display.clear_messages()
 	await get_tree().process_frame

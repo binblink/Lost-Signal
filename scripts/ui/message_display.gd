@@ -9,6 +9,7 @@ const AudioBubbleIn  = preload("res://scenes/MessageBubbleAudioIn.tscn")
 const TypingIndicator = preload("res://scenes/TypingIndicator.tscn")
 
 var line_edit: LineEdit = null
+var _rendering_history: bool = false
 
 func _apply_emoticons(text: String) -> String:
 	return text \
@@ -143,7 +144,8 @@ func receive_message(text: String, time: String) -> MarginContainer:
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message").text = _apply_emoticons(text)
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
 	bubble.set_meta("msg_data", { "text": text, "time": raw, "out": false })
-	await scroll_to_bottom()
+	if not _rendering_history:
+		await scroll_to_bottom()
 	return bubble
 
 func receive_image_message(path: String, time: String) -> MarginContainer:
@@ -167,7 +169,8 @@ func receive_image_message(path: String, time: String) -> MarginContainer:
 			image_clicked.emit(path)
 	)
 	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "media": { "type": "image", "path": path } })
-	await scroll_to_bottom()
+	if not _rendering_history:
+		await scroll_to_bottom()
 	return bubble
 
 func receive_audio_message(path: String, time: String) -> MarginContainer:
@@ -176,7 +179,8 @@ func receive_audio_message(path: String, time: String) -> MarginContainer:
 	var raw := time if time != "" else get_current_datetime()
 	bubble.setup(path, _format_time_display(raw))
 	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "media": { "type": "audio", "path": path } })
-	await scroll_to_bottom()
+	if not _rendering_history:
+		await scroll_to_bottom()
 	return bubble
 
 func send_message(text: String, time: String = "") -> void:
@@ -188,7 +192,8 @@ func send_message(text: String, time: String = "") -> void:
 	bubble.set_meta("msg_data", { "text": text, "time": raw, "out": true })
 	if line_edit:
 		line_edit.text = ""
-	await scroll_to_bottom()
+	if not _rendering_history:
+		await scroll_to_bottom()
 
 func show_typing(text: String) -> bool:
 	var indicator = TypingIndicator.instantiate()
@@ -233,7 +238,8 @@ func receive_corrupted_message(time: String) -> MarginContainer:
 	label.add_theme_color_override("font_color", Color(0.85, 0.2, 0.2))
 	bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/TimeAndStatus").text = _format_time_display(raw)
 	bubble.set_meta("msg_data", { "text": null, "time": raw, "out": false, "corrupted": true })
-	await scroll_to_bottom()
+	if not _rendering_history:
+		await scroll_to_bottom()
 	return bubble
 
 func scroll_to_bottom() -> void:
@@ -265,6 +271,9 @@ func _format_time_display(raw: String) -> String:
 	return raw
 
 func render_history(history: Array) -> void:
+	_rendering_history = true
+	var previous_alpha := modulate.a
+	modulate.a = 0.0
 	for msg in history:
 		if msg.get("out", false):
 			await send_message(msg["text"], msg.get("time", ""))
@@ -276,6 +285,9 @@ func render_history(history: Array) -> void:
 				"audio": await receive_audio_message(msg["media"]["path"], msg.get("time", ""))
 		else:
 			await receive_message(msg["text"], msg.get("time", ""))
+	_rendering_history = false
+	await scroll_to_bottom()
+	modulate.a = previous_alpha
 
 func clear_messages() -> void:
 	for child in get_children():

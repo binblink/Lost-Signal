@@ -176,7 +176,6 @@ func _start_game() -> void:
 			message_display.clear_messages()
 			await get_tree().process_frame
 			await message_display.render_history(_narrative.contact_histories.get(start_cid, []))
-			await message_display.scroll_to_bottom()
 			await _narrative.restore_pending_choice_for(start_cid)
 
 
@@ -264,7 +263,6 @@ func _on_contact_selected(contact_id: String, unread_count: int) -> void:
 	message_display.clear_messages()
 	await get_tree().process_frame
 	await message_display.render_history(_narrative.contact_histories.get(contact_id, []))
-	await message_display.scroll_to_bottom()
 	input_bar.visible = true
 	await _narrative.restore_pending_choice_for(contact_id)
 	await _narrative.notify_contact_opened(contact_id)
@@ -323,7 +321,6 @@ func load_game() -> void:
 	message_display.clear_messages()
 	await get_tree().process_frame
 	await message_display.render_history(_narrative.contact_histories.get(_narrative.active_contact_id, []))
-	await message_display.scroll_to_bottom()
 	for cid in _narrative.contact_histories:
 		_contact_panel.update_history(cid, _narrative.contact_histories.get(cid, []))
 	for cid: String in _narrative.contact_names:
