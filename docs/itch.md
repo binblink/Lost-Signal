@@ -108,7 +108,7 @@ Deux messages arrivent. Le joueur choisit une réponse. Un flag est posé. L'his
 
 ## Ce qui est inclus
 
-- Projet Godot 4.6+ complet — ouvrir et lancer immédiatement
+- Projet Godot 4.7.1+ complet — ouvrir et lancer immédiatement
 - Interface de messagerie complète : indicateur de saisie animé, bulles image et audio, avatars, statuts des contacts, panneau multi-contacts avec badges non-lus
 - Story Editor visuel : graphe de scènes interactif, édition dans le panneau de détail, panneau Contacts, annuler/rétablir sur chaque action
 - Overlay de debug (F9) — sauter à n'importe quelle scène, poser des flags, injecter des variables. Sans rejouer depuis le début.
@@ -128,4 +128,4 @@ Les fonctionnalités avancées (conditions `and`/`or` structurées, images dans 
 
 ---
 
-**Prérequis :** Godot 4.6 ou supérieur · Gratuit · [godotengine.org](https://godotengine.org) · Aucune dépendance externe
+**Prérequis :** Godot 4.7.1 ou supérieur · Gratuit · [godotengine.org](https://godotengine.org) · Aucune dépendance externe

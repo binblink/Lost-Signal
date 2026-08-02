@@ -1,6 +1,7 @@
 extends Node
 
 const SETTINGS_PATH = "user://settings.json"
+var settings_path: String = SETTINGS_PATH
 
 const SUPPORTED_LANGUAGES := ["fr", "en"]
 
@@ -60,7 +61,7 @@ func _apply() -> void:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 
 func _save() -> void:
-	var file := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	var file := FileAccess.open(settings_path, FileAccess.WRITE)
 	if file == null:
 		push_error("SettingsManager: cannot write settings (code %d)." % FileAccess.get_open_error())
 		return
@@ -74,11 +75,11 @@ func _save() -> void:
 	file.close()
 
 func _load() -> void:
-	if not FileAccess.file_exists(SETTINGS_PATH):
+	if not FileAccess.file_exists(settings_path):
 		var sys_lang := OS.get_locale_language()
 		language = sys_lang if sys_lang in SUPPORTED_LANGUAGES else "en"
 		return
-	var file := FileAccess.open(SETTINGS_PATH, FileAccess.READ)
+	var file := FileAccess.open(settings_path, FileAccess.READ)
 	if file == null:
 		return
 	var json := JSON.new()

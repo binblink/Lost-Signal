@@ -1,6 +1,6 @@
 # Lost Signal
 
-A narrative engine for Godot 4.6 that simulates a real messaging app.
+A narrative engine for Godot 4.7.1 that simulates a real messaging app.
 
 Your story lives entirely in JSON files — contacts, scenes, branching choices, flags, variables, timed messages, images, audio. No code to write. No scripting to learn. Open Godot, press F5.
 
@@ -12,8 +12,9 @@ Includes a visual scene graph editor built directly into Godot.
 
 1. [Documentation](#documentation)
 2. [File Structure](#file-structure)
-3. [Key Concepts](#key-concepts)
-4. [Modifying the Visuals](#modifying-the-visuals)
+3. [Automated Tests](#automated-tests)
+4. [Key Concepts](#key-concepts)
+5. [Modifying the Visuals](#modifying-the-visuals)
 
 ---
 
@@ -33,6 +34,21 @@ Includes a visual scene graph editor built directly into Godot.
 **Validation**: The game automatically validates `story.json` and all `dialogues/*.json` files on launch in Godot. If errors are found, a window appears immediately with a full report.
 
 **Story Editor**: A built-in Godot plugin displays a visual graph of all narrative scenes — see `docs/story_editor_en.md`. Enable it via **Project → Project Settings → Plugins**.
+
+---
+
+## Automated Tests
+
+The suite covers dialogue validation, narrative conditions and effects, scene transitions, saves, and settings migrations.
+
+- **Before every commit**: the Git hook runs the suite automatically and blocks the commit on failure.
+- **On every push and pull request**: GitHub Actions runs the same suite with Godot 4.7.1.
+- **Manually on Windows**: `tools\run_tests.bat`
+- **Manually on Linux/macOS**: `sh tools/run_tests.sh`
+
+After a fresh clone, enable the local hook with `sh scripts/install-hooks.sh`. The runner looks for `godot` or `godot4` on `PATH`; when needed, set the `GODOT_BIN` environment variable to the executable path.
+
+Temporary files created by save and settings tests are isolated and removed afterward; player data is never modified.
 
 ---
 

@@ -1,5 +1,7 @@
 extends Node
 
+const ConditionEvaluator = preload("res://scripts/lib/condition_evaluator.gd")
+
 const DELAY_IMAGE_MIN  := 0.3
 const DELAY_IMAGE_MAX  := 0.8
 const DELAY_AUDIO_MIN  := 0.5
@@ -201,7 +203,7 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 	save_requested.emit(false)
 
 	if current_scene.has("choices"):
-		_visible_choices = current_scene["choices"].filter(func(c): return _eval_condition(c))
+		_visible_choices = _filter_choices(current_scene["choices"])
 		await choices_layer.show_choices(
 			_visible_choices.map(func(c): return c["text"])
 		)
@@ -215,7 +217,7 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 func handle_choice(index: int) -> void:
 	if _visible_choices.is_empty():
 		return
-	if index >= _visible_choices.size():
+	if index < 0 or index >= _visible_choices.size():
 		return
 	var choice = _visible_choices[index]
 	waiting_for_choice = false
@@ -260,7 +262,7 @@ func restore_pending_choice_for(contact_id: String) -> void:
 	if pending_choices.has(contact_id):
 		var pending_scene: Dictionary = DialogueLoader.get_scene(pending_choices[contact_id])
 		if pending_scene.has("choices"):
-			_visible_choices = pending_scene["choices"].filter(func(c): return _eval_condition(c))
+			_visible_choices = _filter_choices(pending_scene["choices"])
 			if _visible_choices.is_empty():
 				pending_choices.erase(contact_id)
 				choices_layer.visible = false
@@ -326,47 +328,16 @@ func _trigger_next_scenes(scene_id: String) -> void:
 
 
 func _eval_condition(msg: Dictionary) -> bool:
-	var req_flag = msg.get("requires_flag", null)
-	if req_flag != null:
-		if req_flag is Array:
-			for f in req_flag:
-				if not flags.get(f, false):
-					return false
-		elif not flags.get(req_flag, false):
-			return false
-	var cond = msg.get("condition", null)
-	if cond != null and not _eval_cond_node(cond):
-		return false
-	return true
+	return ConditionEvaluator.evaluate_message(msg, flags, vars)
+
+
+func _filter_choices(choices: Array) -> Array:
+	return choices.filter(func(choice): return _eval_condition(choice))
 
 
 func _eval_cond_node(cond: Dictionary) -> bool:
-	if cond.has("and"):
-		for sub in cond["and"]:
-			if not _eval_cond_node(sub):
-				return false
-		return true
-	if cond.has("or"):
-		for sub in cond["or"]:
-			if _eval_cond_node(sub):
-				return true
-		return false
-	if cond.has("not"):
-		return not _eval_cond_node(cond["not"])
-	if cond.has("flag"):
-		return flags.get(cond["flag"], false)
-	if cond.has("var"):
-		var val = vars.get(cond["var"], 0)
-		var target = cond["value"]
-		match cond["op"]:
-			"eq":  return val == target
-			"neq": return val != target
-			"gt":  return val > target
-			"gte": return val >= target
-			"lt":  return val < target
-			"lte": return val <= target
-	push_warning("NarrativeController: unknown condition ignored: %s" % str(cond))
-	return false
+	# Delegate to ConditionEvaluator (pure/testable implementation)
+	return ConditionEvaluator.evaluate_node(cond, flags, vars)
 
 
 func set_flag(flag_name: String) -> void:
@@ -439,6 +410,7 @@ func set_state(data: Dictionary) -> void:
 	waiting_for_choice      = data.get("waiting_for_choice", false)
 	played_secondary_scenes = data.get("played_secondary_scenes", [])
 	pending_choices         = data.get("pending_choices", {})
+	active_contact_id       = data.get("active_contact_id", active_contact_id)
 	# "messages" is the legacy key — kept for backward compatibility with existing saves
 	contact_histories       = data.get("contact_histories", data.get("messages", {}))
 	current_music_path      = data.get("current_music_path", "")
@@ -455,7 +427,7 @@ func set_state(data: Dictionary) -> void:
 func rebuild_choices() -> void:
 	if not current_scene.has("choices"):
 		return
-	_visible_choices = current_scene["choices"].filter(func(c): return _eval_condition(c))
+	_visible_choices = _filter_choices(current_scene["choices"])
 	await choices_layer.show_choices(_visible_choices.map(func(c): return c["text"]))
 	await choice_made
 

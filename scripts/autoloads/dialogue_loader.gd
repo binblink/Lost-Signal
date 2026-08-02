@@ -81,8 +81,13 @@ func _load_dialogues_dir() -> void:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 
-	# For each base name, prefer the locale-specific file (base.locale.json)
-	# and fall back to the unlocalized file (base.json).
+	for f: String in _choose_dialogue_files(all_files, locale):
+		_load_scenes_from(DIALOGUES_DIR + f)
+
+
+# For each base name, prefer the locale-specific file (base.locale.json)
+# and fall back to the unlocalized file (base.json).
+func _choose_dialogue_files(all_files: Array[String], locale: String) -> Array[String]:
 	var chosen: Dictionary = {}  # base_name -> file_name
 	for f: String in all_files:
 		var base: String = f.get_basename()  # e.g. "acte1.en" or "acte1"
@@ -94,12 +99,14 @@ func _load_dialogues_dir() -> void:
 		elif parts.size() == 1:
 			if not chosen.has(base):
 				chosen[base] = f       # fallback if no locale file yet
+	var result: Array[String] = []
+	for chosen_file: String in chosen.values():
+		result.append(chosen_file)
+	result.sort()
+	return result
 
-	for f in chosen.values():
-		_load_scenes_from(DIALOGUES_DIR + f)
-
-func _load_scenes_from(path: String) -> void:
-	var data = _parse_json(path)
+func _load_scenes_from(path: String, log_errors: bool = true) -> void:
+	var data = _parse_json(path, log_errors)
 	if data.is_empty() or not data.has("scenes"):
 		return
 	if data.has("start_scene"):
@@ -110,11 +117,12 @@ func _load_scenes_from(path: String) -> void:
 		if scene.has("messages_in"):
 			var expanded: Array = []
 			for m in scene["messages_in"]:
-				expanded.append_array(_normalize_message(m))
+				expanded.append_array(_normalize_message(m, log_errors))
 			scene["messages_in"] = expanded
 		if _scenes.has(scene["id"]):
 			var _dup_msg: String = "Duplicate scene ID '%s' found in %s — first occurrence kept." % [scene["id"], path]
-			push_error("DialogueLoader: " + _dup_msg)
+			if log_errors:
+				push_error("DialogueLoader: " + _dup_msg)
 			_load_errors.append(_dup_msg)
 			continue
 		_scenes[scene["id"]] = scene
@@ -124,14 +132,14 @@ func _load_scenes_from(path: String) -> void:
 				_triggers[trigger] = []
 			_triggers[trigger].append(scene["id"])
 
-func _normalize_message(m) -> Array:
+func _normalize_message(m, log_warnings: bool = true) -> Array:
 	if m is String:
 		return [{ "text": m }]
 	if not m is Dictionary:
 		return []
 	if not m.get("text", null) is Array:
 		return [m]
-	if m.has("edit"):
+	if m.has("edit") and log_warnings:
 		push_warning("DialogueLoader: 'edit' on a multi-bubble message (text array) is not supported and will be ignored.")
 	var texts: Array = m["text"]
 	var result: Array = []
@@ -156,21 +164,29 @@ func _normalize_message(m) -> Array:
 	return result
 
 
-func _parse_json(path: String) -> Dictionary:
+func _parse_json(path: String, log_errors: bool = true) -> Dictionary:
 	if not FileAccess.file_exists(path):
-		push_error("DialogueLoader: file not found — " + path)
+		if log_errors:
+			push_error("DialogueLoader: file not found — " + path)
 		return {}
 	var file = FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		push_error("DialogueLoader: cannot open %s (code %d)." % [path, FileAccess.get_open_error()])
+		if log_errors:
+			push_error("DialogueLoader: cannot open %s (code %d)." % [path, FileAccess.get_open_error()])
 		return {}
 	var json  = JSON.new()
 	var err   = json.parse(file.get_as_text())
 	file.close()
 	if err != OK:
-		push_error("DialogueLoader: JSON error in %s line %d: %s" % [path, json.get_error_line(), json.get_error_message()])
+		if log_errors:
+			push_error("DialogueLoader: JSON error in %s line %d: %s" % [path, json.get_error_line(), json.get_error_message()])
 		return {}
-	return json.get_data()
+	var data = json.get_data()
+	if not data is Dictionary:
+		if log_errors:
+			push_error("DialogueLoader: JSON root must be an object — " + path)
+		return {}
+	return data
 
 # --- Public API ---
 
@@ -269,7 +285,7 @@ func get_all_flags() -> Array:
 # Validation
 # ---------------------------------------------------------------------------
 
-func _validate() -> void:
+func _validate(log_issues: bool = true) -> void:
 	var errors:   Array = _load_errors.duplicate()
 	var warnings: Array = []
 
@@ -350,15 +366,17 @@ func _validate() -> void:
 	validation_errors = errors
 	validation_warnings = warnings
 
-	for e in errors:
-		push_error("Validator: " + e)
-	for w in warnings:
-		push_warning("Validator: " + w)
+	if log_issues:
+		for e in errors:
+			push_error("Validator: " + e)
+		for w in warnings:
+			push_warning("Validator: " + w)
 
-	if errors.is_empty() and warnings.is_empty():
-		print("Validator: %d scenes checked — no errors." % _scenes.size())
-	else:
-		print("Validator: %d error(s), %d warning(s)." % [errors.size(), warnings.size()])
+	if log_issues:
+		if errors.is_empty() and warnings.is_empty():
+			print("Validator: %d scenes checked — no errors." % _scenes.size())
+		else:
+			print("Validator: %d error(s), %d warning(s)." % [errors.size(), warnings.size()])
 
 
 func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, contact_ids: Array, errors: Array, warnings: Array) -> void:
@@ -382,7 +400,11 @@ func _check_message(msg: Dictionary, ctx: String, i: int, flags_set: Array, cont
 			warnings.append("%s silent message with no effects or pause (will be skipped)." % label)
 
 	var req_flag = msg.get("requires_flag", null)
-	if req_flag != null and not req_flag in flags_set:
+	if req_flag is Array:
+		for required_flag in req_flag:
+			if not required_flag in flags_set:
+				warnings.append("%s requires_flag '%s' is never set by any choice." % [label, required_flag])
+	elif req_flag != null and not req_flag in flags_set:
 		warnings.append("%s requires_flag '%s' is never set by any choice." % [label, req_flag])
 
 	var cond = msg.get("condition", null)
@@ -403,7 +425,11 @@ func _check_choice(choice: Dictionary, ctx: String, j: int, flags_set: Array, co
 	if not choice.has("text") or choice["text"] == null:
 		errors.append("%s missing 'text'." % label)
 	var req_flag = choice.get("requires_flag", null)
-	if req_flag != null and not req_flag in flags_set:
+	if req_flag is Array:
+		for required_flag in req_flag:
+			if not required_flag in flags_set:
+				warnings.append("%s requires_flag '%s' is never set by any choice." % [label, required_flag])
+	elif req_flag != null and not req_flag in flags_set:
 		warnings.append("%s requires_flag '%s' is never set by any choice." % [label, req_flag])
 	if not choice.has("next") and not is_end_scene:
 		warnings.append("%s no 'next' (terminal choice)." % label)

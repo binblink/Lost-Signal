@@ -19,7 +19,7 @@ Une scène dans le fichier JSON = un nœud dans le graphe. Les deux termes sont 
 
 ## Prérequis
 
-- **Godot 4.6** ou supérieur ([godotengine.org](https://godotengine.org))
+- **Godot 4.7.1** ou supérieur ([godotengine.org](https://godotengine.org))
 - Aucune connaissance en GDScript requise — votre histoire se construit depuis le Story Editor et est stockée dans des fichiers JSON
 
 ---

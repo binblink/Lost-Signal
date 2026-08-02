@@ -1,6 +1,6 @@
 ﻿# Lost Signal
 
-Un moteur narratif pour Godot 4.6 qui simule une vraie application de messagerie.
+Un moteur narratif pour Godot 4.7.1 qui simule une vraie application de messagerie.
 
 Votre histoire vit entièrement dans des fichiers JSON — contacts, scènes, choix multiples, flags, variables, messages différés, images, audio. Aucun code à écrire. Aucun script à apprendre. Ouvrez Godot, appuyez sur F5.
 
@@ -12,8 +12,9 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 
 1. [Documentation](#documentation)
 2. [Organisation des fichiers](#organisation-des-fichiers)
-3. [Concepts clés](#concepts-clés)
-4. [Modifier le visuel](#modifier-le-visuel)
+3. [Tests automatiques](#tests-automatiques)
+4. [Concepts clés](#concepts-clés)
+5. [Modifier le visuel](#modifier-le-visuel)
 
 ---
 
@@ -33,6 +34,21 @@ Inclut un éditeur visuel de graphe de scènes directement dans Godot.
 **Validation** : Le jeu valide automatiquement `story.json` et les fichiers `dialogues/*.json` au lancement dans Godot. Si des erreurs existent, une fenêtre s'affiche immédiatement.
 
 **Story Editor** : Un plugin Godot intégré affiche un graphe visuel de toutes les scènes narratives — voir `docs/story_editor.md`. À activer via **Projet → Paramètres du projet → Plugins**.
+
+---
+
+## Tests automatiques
+
+La suite vérifie la validation des dialogues, les conditions et effets narratifs, les transitions de scènes, les sauvegardes et les migrations de paramètres.
+
+- **Avant chaque commit** : le hook Git lance automatiquement la suite et bloque le commit en cas d'échec.
+- **À chaque push et pull request** : GitHub Actions relance la même suite avec Godot 4.7.1.
+- **Manuellement sous Windows** : `tools\run_tests.bat`
+- **Manuellement sous Linux/macOS** : `sh tools/run_tests.sh`
+
+Après un nouveau clone, activez le hook local avec `sh scripts/install-hooks.sh`. Le lanceur cherche `godot` ou `godot4` dans le `PATH`. Si nécessaire, indiquez explicitement l'exécutable avec la variable d'environnement `GODOT_BIN`.
+
+Les fichiers temporaires utilisés par les tests de sauvegarde et de paramètres sont isolés puis supprimés ; les données du joueur ne sont pas modifiées.
 
 ---
 

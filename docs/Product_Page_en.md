@@ -1,4 +1,4 @@
-# 💬 Lost Signal — Real-Time Narrative Messaging Engine (Godot 4.6)
+# 💬 Lost Signal — Real-Time Narrative Messaging Engine (Godot 4.7.1)
 
 > Build interactive story games through a real-time messaging interface — the kind players recognize from Discord, WhatsApp, and modern chat apps.
 > **No programming required. Build visually with the Story Editor, or write JSON directly.**
@@ -252,7 +252,7 @@ Lost Signal gives you all of it on day one.
 
 ## 📦 What's included
 
-- Full Godot 4.6 project — open and run immediately
+- Full Godot 4.7.1 project — open and run immediately
 - Complete messaging UI (typing indicators, media bubbles, contact panel, avatars)
 - Visual Story Editor — scene graph with full detail editing and Contacts panel
 - JSON narrative engine — conditions, variables, flags, effects, free input, templates
@@ -284,5 +284,5 @@ Lost Signal gives you all of it on day one.
 
 ## ⚠️ Requirements
 
-- Godot 4.6 or higher
+- Godot 4.7.1 or higher
 - No external dependencies or plugins

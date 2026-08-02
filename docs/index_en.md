@@ -1,6 +1,6 @@
 # Lost Signal
 
-A narrative engine for Godot 4.6 that simulates a real messaging app.
+A narrative engine for Godot 4.7.1 that simulates a real messaging app.
 
 Your story lives entirely in JSON files — contacts, scenes, branching choices, flags, variables, timed messages, images, audio. No code to write. No scripting to learn. Open Godot, press F5.
 

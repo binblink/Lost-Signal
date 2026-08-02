@@ -19,7 +19,7 @@ A scene in the JSON file = a node in the graph. Both terms are used interchangea
 
 ## Requirements
 
-- **Godot 4.6** or higher ([godotengine.org](https://godotengine.org))
+- **Godot 4.7.1** or higher ([godotengine.org](https://godotengine.org))
 - No GDScript knowledge needed — your story is built from the Story Editor and stored in JSON files
 
 ---

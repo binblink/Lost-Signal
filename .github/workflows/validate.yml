@@ -1,0 +1,21 @@
+name: Automated tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Run Godot tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        uses: firebelley/godot-ci@v2
+        with:
+          godot-version: '4.7.1'
+
+      - name: Run automated tests
+        run: sh tools/run_tests.sh

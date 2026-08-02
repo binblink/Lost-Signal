@@ -1,0 +1,23 @@
+#!/bin/sh
+# Run the complete fast test suite before accepting a local commit.
+
+set -e
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+echo "Running Lost Signal tests..."
+
+if [ -n "${GODOT_BIN:-}" ]; then
+  sh tools/run_tests.sh
+elif command -v godot >/dev/null 2>&1; then
+  sh tools/run_tests.sh
+elif command -v godot4 >/dev/null 2>&1; then
+  sh tools/run_tests.sh
+elif command -v powershell.exe >/dev/null 2>&1; then
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/run_tests.ps1
+else
+  echo "Godot was not found. Set GODOT_BIN or add godot/godot4 to PATH." >&2
+  echo "Commit aborted because the automated tests could not run." >&2
+  exit 1
+fi

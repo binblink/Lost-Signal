@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Maeve — Lost Signal** is a narrative game built with Godot 4.6 (GDScript). It simulates a messaging app: the player exchanges messages with characters driven entirely by JSON data files. No compilation step — open the project in Godot 4.6 and press F5 (or run via the Godot editor).
+**Maeve — Lost Signal** is a narrative game built with Godot 4.7.1 (GDScript). It simulates a messaging app: the player exchanges messages with characters driven entirely by JSON data files. No compilation step — open the project in Godot 4.7.1 and press F5 (or run via the Godot editor).
 
-There are no automated tests. Validation runs automatically at launch: if `story.json` or any `dialogues/*.json` file has errors, a blocking dialog appears in-game, and errors are logged to the Godot console.
+Automated tests live in `tools/tests/`. Run them with `tools\run_tests.bat` on Windows or `sh tools/run_tests.sh` on Linux/macOS. The same runner includes dialogue validation, runs from the local pre-commit hook in `.githooks/pre-commit`, and runs in GitHub Actions on every push and pull request. After a fresh clone, enable the hook with `sh scripts/install-hooks.sh`; set `GODOT_BIN` if Godot is not available as `godot` or `godot4` on `PATH`.
+
+Validation also runs automatically at game launch: if `story.json` or any `dialogues/*.json` file has errors, a blocking dialog appears in-game, and errors are logged to the Godot console.
 
 **Debug overlay**: press **F9** in-game (debug builds only) to jump to any scene, set flags, and inject variables without replaying from the start.
 

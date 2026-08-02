@@ -1468,11 +1468,10 @@
 						"Mais c'est que le début!",
 						"Prochain objectif : sortir du bâtiment",
 						"On va y arriver Maeve!"
-					]
+					],
+					"next": "a2_01"
 				}
-			],
-			"end": true,
-			"glitch": true
+			]
 		}
 	]
 }

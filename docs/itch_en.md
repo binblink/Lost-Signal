@@ -108,7 +108,7 @@ Two messages arrive. Player picks a response. A flag is set. Story continues. No
 
 ## What's included
 
-- Full Godot 4.6+ project — open and run immediately
+- Full Godot 4.7.1+ project — open and run immediately
 - Complete messaging UI: animated typing indicator, image and audio bubbles, avatars, contact statuses, multi-contact panel with unread badges
 - Visual Story Editor: interactive scene graph, detail panel editing, Contacts panel, undo/redo on every action
 - Debug overlay (F9) — jump to any scene, set flags, inject variables. No replay needed.
@@ -128,4 +128,4 @@ Advanced features (structured `and`/`or` conditions, images in bubbles, scene mu
 
 ---
 
-**Requirements:** Godot 4.6 or higher · Free · [godotengine.org](https://godotengine.org) · No external dependencies
+**Requirements:** Godot 4.7.1 or higher · Free · [godotengine.org](https://godotengine.org) · No external dependencies

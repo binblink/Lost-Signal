@@ -1,6 +1,6 @@
 # Lost Signal
 
-Un moteur narratif pour Godot 4.6 qui simule une vraie application de messagerie.
+Un moteur narratif pour Godot 4.7.1 qui simule une vraie application de messagerie.
 
 Votre histoire vit entièrement dans des fichiers JSON — contacts, scènes, choix multiples, flags, variables, messages différés, images, audio. Aucun code à écrire. Aucun script à apprendre. Ouvrez Godot, appuyez sur F5.
 

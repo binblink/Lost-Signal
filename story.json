@@ -40,6 +40,30 @@
 				{"text": {"fr": "C'est Maman! Tu as appelé mamie pour lui souhaiter sa fête? Bises. Maman", "en": "It's Mum! Did you call grandma to wish her a happy name day? Love, Mum"}, "time": "00:00", "out": false},
 				{"text": {"fr": "Oui maman", "en": "Yes mum"}, "time": "00:00", "out": true}
 			]
+		},
+		{
+			"id": "nadia",
+			"name": "07 71 04 88 26",
+			"avatar": "res://assets/avatars/560219.png",
+			"status": "online"
+		},
+		{
+			"id": "nox",
+			"names": {
+				"fr": "NOX // canal 09",
+				"en": "NOX // channel 09"
+			},
+			"avatar": null,
+			"status": "network_issue"
+		},
+		{
+			"id": "security",
+			"names": {
+				"fr": "LARK // SÉCURITÉ",
+				"en": "LARK // SECURITY"
+			},
+			"avatar": null,
+			"status": "online"
 		}
 	],
 	"end_screen": {
@@ -50,7 +74,7 @@
 		"glitch": true,
 		"text": {
 			"en": "Thank you for playing!\n\nMaeve just stepped through that door... but her story is only beginning.\n\nIn the full game, you'll continue following her adventures and discover what really happened to her. You'll also witness the return of a particularly insufferable character.\n\nMaeve // Lost Signal — coming in 2026.",
-			"fr": "Merci d'avoir joué !\n\nMaeve vient de franchir cette porte... mais son histoire ne fait que commencer.\n\nDans le jeu complet, vous continuerez à suivre ses aventures et à découvrir ce qui lui est vraiment arrivé. Vous assisterez aussi au retour d'un personnage particulièrement pénible.\n\nMaeve // Lost Signal sortira courant 2026."
+			"fr": "Merci d'avoir joué !\n\nQuatre mois. Sept chambres. Une nuit.\nEt une voiture garée contre une haie.\n\nCe que Maeve emporte de ce bâtiment — des preuves, quelqu'un d'autre, ou seulement elle-même — ne dépendait que de vous.\nL'acte 3 repartira exactement de là.\n\nMaeve // Lost Signal sortira courant 2026."
 		}
 	}
 }

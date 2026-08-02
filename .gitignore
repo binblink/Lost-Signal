@@ -22,3 +22,10 @@ exports/
 *.log
 *.old
 *.pdf
+
+# Brouillons et dialogues locaux
+drafts/
+dialogues/*
+!dialogues/acte1.json
+!dialogues/acte1.en.json
+!dialogues/acte1.old
