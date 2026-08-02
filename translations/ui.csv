@@ -1,47 +1,48 @@
-keys,en,fr
-STATUS_ONLINE,online,en ligne
-STATUS_AWAY,away,absent
-STATUS_OFFLINE,offline,hors ligne
-STATUS_NETWORK_ISSUE,network issue,problème réseau
-INPUT_PLACEHOLDER,Type your message…,Tapez votre message…
-BTN_CANCEL,Cancel,Annuler
-BTN_RESTART,Restart,Recommencer
-BTN_ACCEPT,Accept,Accepter
-BTN_OK,OK,OK
-CONFIRM_NEWGAME_TITLE,New game,Nouvelle partie
-MENU_CONTINUE,Continue,Continuer
-MENU_NEW_GAME,New game,Nouvelle partie
-"CONFIRM_NEWGAME_BODY","You will lose all your progress.
+keys,en,fr,de
+STATUS_ONLINE,online,en ligne,online
+STATUS_AWAY,away,absent,away
+STATUS_OFFLINE,offline,hors ligne,offline
+STATUS_NETWORK_ISSUE,network issue,problème réseau,network issue
+INPUT_PLACEHOLDER,Type your message…,Tapez votre message…,Type your message…
+BTN_CANCEL,Cancel,Annuler,Cancel
+BTN_RESTART,Restart,Recommencer,Restart
+BTN_ACCEPT,Accept,Accepter,Accept
+BTN_OK,OK,OK,OK
+CONFIRM_NEWGAME_TITLE,New game,Nouvelle partie,New game
+MENU_CONTINUE,Continue,Continuer,Continue
+MENU_NEW_GAME,New game,Nouvelle partie,New game
+CONFIRM_NEWGAME_BODY,"You will lose all your progress.
 What if Maeve needed you?","Tu vas perdre toute ta progression.
-Et si Maeve avait besoin de toi ?"
-SETTINGS_TITLE,Settings,Paramètres
-SETTINGS_LANGUAGE,Language,Langue
-SETTINGS_VOLUME,Volume,Volume
-SETTINGS_MUSIC_VOLUME,Music volume,Volume musique
-SETTINGS_RESOLUTION,Resolution,Résolution
-SETTINGS_DISPLAY,Display mode,Mode d'affichage
-DISPLAY_480P,480p  (854 × 480),480p  (854 × 480)
-DISPLAY_720P,720p  (1280 × 720),720p  (1280 × 720)
-DISPLAY_900P,900p  (1600 × 900),900p  (1600 × 900)
-DISPLAY_1080P,1080p (1920 × 1080),1080p (1920 × 1080)
-DISPLAY_1440P,1440p (2560 × 1440),1440p (2560 × 1440)
-DISPLAY_4K,4K    (3840 × 2160),4K    (3840 × 2160)
-DISPLAY_WINDOWED,Windowed,Fenêtré
-DISPLAY_BORDERLESS,Fullscreen windowed,Plein écran fenêtré
-DISPLAY_FULLSCREEN,Fullscreen,Plein écran
-BTN_SETTINGS,Settings,Paramètres
-VALID_OK,Validation: no issues detected,Validation : aucun problème détecté
-VALID_OK_BODY,No format issues detected.,Aucun problème de format détecté.
-VALID_COUNT_ERRORS,%d error(s),%d erreur(s)
-VALID_COUNT_WARNINGS,%d warning(s),%d avertissement(s)
-VALID_COPY,Copy,Copier
-MSG_YOU_PREFIX,You: ,Vous :
-MSG_DELETED,Message deleted,Message supprimé
-MSG_CORRUPTED,Corrupted message,Message corrompu
-EXIT_TITLE,Exit?,Quitter ?
-EXIT_MAIN_MENU,Main menu,Menu principal
-EXIT_DESKTOP,Quit to desktop,Bureau
-BTN_QUIT,Quit,Quitter
-CONFIRM_LANGCHANGE_TITLE,Language change,Changement de langue
-CONFIRM_LANGCHANGE_BODY,Changing the language will reset your progress.,Changer la langue va réinitialiser ta progression.
-END_SCREEN_MSGS,Messages exchanged: %d,Messages échangés : %d
+Et si Maeve avait besoin de toi ?","You will lose all your progress.
+What if Maeve needed you?"
+SETTINGS_TITLE,Settings,Paramètres,Settings
+SETTINGS_LANGUAGE,Language,Langue,Language
+SETTINGS_VOLUME,Volume,Volume,Volume
+SETTINGS_MUSIC_VOLUME,Music volume,Volume musique,Music volume
+SETTINGS_RESOLUTION,Resolution,Résolution,Resolution
+SETTINGS_DISPLAY,Display mode,Mode d'affichage,Display mode
+DISPLAY_480P,480p  (854 × 480),480p  (854 × 480),480p  (854 × 480)
+DISPLAY_720P,720p  (1280 × 720),720p  (1280 × 720),720p  (1280 × 720)
+DISPLAY_900P,900p  (1600 × 900),900p  (1600 × 900),900p  (1600 × 900)
+DISPLAY_1080P,1080p (1920 × 1080),1080p (1920 × 1080),1080p (1920 × 1080)
+DISPLAY_1440P,1440p (2560 × 1440),1440p (2560 × 1440),1440p (2560 × 1440)
+DISPLAY_4K,4K    (3840 × 2160),4K    (3840 × 2160),4K    (3840 × 2160)
+DISPLAY_WINDOWED,Windowed,Fenêtré,Windowed
+DISPLAY_BORDERLESS,Fullscreen windowed,Plein écran fenêtré,Fullscreen windowed
+DISPLAY_FULLSCREEN,Fullscreen,Plein écran,Fullscreen
+BTN_SETTINGS,Settings,Paramètres,Settings
+VALID_OK,Validation: no issues detected,Validation : aucun problème détecté,Validation: no issues detected
+VALID_OK_BODY,No format issues detected.,Aucun problème de format détecté.,No format issues detected.
+VALID_COUNT_ERRORS,%d error(s),%d erreur(s),%d error(s)
+VALID_COUNT_WARNINGS,%d warning(s),%d avertissement(s),%d warning(s)
+VALID_COPY,Copy,Copier,Copy
+MSG_YOU_PREFIX,"You: ",Vous :,"You: "
+MSG_DELETED,Message deleted,Message supprimé,Message deleted
+MSG_CORRUPTED,Corrupted message,Message corrompu,Corrupted message
+EXIT_TITLE,Exit?,Quitter ?,Exit?
+EXIT_MAIN_MENU,Main menu,Menu principal,Main menu
+EXIT_DESKTOP,Quit to desktop,Bureau,Quit to desktop
+BTN_QUIT,Quit,Quitter,Quit
+CONFIRM_LANGCHANGE_TITLE,Language change,Changement de langue,Language change
+CONFIRM_LANGCHANGE_BODY,Changing the language will reset your progress.,Changer la langue va réinitialiser ta progression.,Changing the language will reset your progress.
+END_SCREEN_MSGS,Messages exchanged: %d,Messages échangés : %d,Messages exchanged: %d

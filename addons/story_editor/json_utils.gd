@@ -19,10 +19,9 @@ static func compact(value: Variant) -> String:
 	return JSON.stringify(value)
 
 
-# Expands top-level structure for readability, then falls back to compact past depth 4.
+# Recursively expands dictionaries and arrays. Narrative JSON stays intentionally
+# verbose so every message, choice and text bubble has its own readable line.
 static func expand(value: Variant, indent: String) -> String:
-	if indent.length() >= 4:
-		return compact(value)
 	if value is Dictionary:
 		if (value as Dictionary).is_empty():
 			return "{}"

@@ -50,6 +50,12 @@ After a fresh clone, enable the local hook with `sh scripts/install-hooks.sh`. T
 
 Temporary files created by save and settings tests are isolated and removed afterward; player data is never modified.
 
+### File protection and recovery
+
+Saves, settings, and files modified by the Story Editor use transactional writes: new content is first written to a temporary file, read back and validated, and only then promoted over the current file. Up to three previous versions are kept locally (`.bak`, `.bak.2`, `.bak.3`).
+
+When loading, the engine automatically completes a valid interrupted write or restores the latest recovery copy if the primary file is missing or corrupt. Invalid content is quarantined with a `.corrupt.<date>` suffix so it is never silently destroyed. These technical recovery files are excluded from Git.
+
 ---
 
 ## File Structure

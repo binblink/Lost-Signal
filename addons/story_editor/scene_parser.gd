@@ -1,5 +1,7 @@
 extends RefCounted
 
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
+
 var start_scene: String = ""
 var contacts: Array = []
 var chosen_files: Dictionary = {}   # base_name -> file_name, relative to dialogues_dir
@@ -41,14 +43,9 @@ static func detect_locales(dialogues_path: String = "res://dialogues", source_st
 
 
 static func _read_base_locale(source_story_path: String = "res://story.json") -> String:
-	if not FileAccess.file_exists(source_story_path):
-		return "fr"
-	var story_file := FileAccess.open(source_story_path, FileAccess.READ)
-	if story_file == null:
-		return "fr"
-	var parsed: Variant = JSON.parse_string(story_file.get_as_text())
-	story_file.close()
-	if parsed is Dictionary:
+	var result := SafeFile.read_json(source_story_path)
+	if result.get("ok", false):
+		var parsed: Dictionary = result.get("data", {})
 		var settings: Dictionary = parsed.get("settings", {})
 		var language: String = settings.get("default_language", "fr")
 		return language
@@ -94,19 +91,14 @@ func parse_all() -> Dictionary:
 
 	for chosen_file: String in chosen_files.values():
 		var path: String = dialogues_dir.path_join(chosen_file)
-		var raw_file := FileAccess.open(path, FileAccess.READ)
-		if raw_file == null:
-			continue
-		var raw_text: String = raw_file.get_as_text()
-		raw_file.close()
-		var json := JSON.new()
-		if json.parse(raw_text) != OK:
+		var read_result := SafeFile.read_json(path)
+		if not read_result.get("ok", false):
 			error_message = chosen_file + " : JSON invalide"
 			return scenes
-		var parsed: Variant = json.data
-		if not parsed is Dictionary or not (parsed as Dictionary).get("scenes") is Array:
+		var parsed: Dictionary = read_result.get("data", {})
+		if not parsed.get("scenes") is Array:
 			continue
-		for scene: Variant in ((parsed as Dictionary)["scenes"] as Array):
+		for scene: Variant in (parsed["scenes"] as Array):
 			if not scene is Dictionary:
 				continue
 			var scene_data: Dictionary = scene as Dictionary
@@ -145,17 +137,5 @@ func _read_locale() -> String:
 
 
 func _read_json(path: String) -> Dictionary:
-	if not FileAccess.file_exists(path):
-		return {}
-	var file := FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		return {}
-	var json := JSON.new()
-	var error := json.parse(file.get_as_text())
-	file.close()
-	if error != OK:
-		return {}
-	var parsed: Variant = json.data
-	if parsed is Dictionary:
-		return parsed
-	return {}
+	var result := SafeFile.read_json(path)
+	return result.get("data", {}) if result.get("ok", false) else {}

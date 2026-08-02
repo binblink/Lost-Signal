@@ -1,9 +1,10 @@
 extends Node
 
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 const SETTINGS_PATH = "user://settings.json"
 var settings_path: String = SETTINGS_PATH
 
-const SUPPORTED_LANGUAGES := ["fr", "en"]
+var SUPPORTED_LANGUAGES: Array[String] = ["fr", "en"]
 
 const RESOLUTIONS := [
 	{"label": "DISPLAY_480P",  "size": Vector2i(854,  480)},
@@ -22,26 +23,58 @@ var resolution:    int    = 3  # 1080p
 var window_mode:   int    = 0  # windowed
 
 const UI_CSV_PATH = "res://translations/ui.csv"
+var ui_csv_path: String = UI_CSV_PATH
+
 
 func _ready() -> void:
+	_discover_supported_languages()
 	_load_translations()
 	_load()
 	_apply()
+
 
 func _load_translations() -> void:
 	for locale: String in SUPPORTED_LANGUAGES:
 		var path := "res://translations/ui.%s.translation" % locale
 		if ResourceLoader.exists(path):
-			var t := load(path) as Translation
-			if t != null:
-				TranslationServer.add_translation(t)
+			var translation := load(path) as Translation
+			if translation != null:
+				TranslationServer.add_translation(translation)
 		else:
 			push_warning("SettingsManager: translation file not found — " + path)
+
+
+func _discover_supported_languages() -> void:
+	var result := SafeFile.read_csv(ui_csv_path)
+	var rows: Array = result.get("rows", [])
+	if not result.get("ok", false) or rows.is_empty():
+		return
+	var header: PackedStringArray = rows[0]
+	var discovered: Array[String] = []
+	for column_index: int in range(1, header.size()):
+		var locale := header[column_index].strip_edges()
+		if not locale.is_empty() and locale not in discovered:
+			discovered.append(locale)
+	if not discovered.is_empty():
+		SUPPORTED_LANGUAGES = discovered
+
+
+func get_supported_languages() -> Array[String]:
+	return SUPPORTED_LANGUAGES.duplicate()
+
+
+func _fallback_language() -> String:
+	for preferred: String in ["en", "fr"]:
+		if preferred in SUPPORTED_LANGUAGES:
+			return preferred
+	return SUPPORTED_LANGUAGES[0] if not SUPPORTED_LANGUAGES.is_empty() else "en"
+
 
 func apply_and_save() -> void:
 	_apply()
 	AudioManager.apply_music_volume()
 	_save()
+
 
 func _apply() -> void:
 	TranslationServer.set_locale(language)
@@ -60,45 +93,53 @@ func _apply() -> void:
 		2:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
 
-func _save() -> void:
-	var file := FileAccess.open(settings_path, FileAccess.WRITE)
-	if file == null:
-		push_error("SettingsManager: cannot write settings (code %d)." % FileAccess.get_open_error())
-		return
-	file.store_string(JSON.stringify({
+
+func _save() -> bool:
+	var result := SafeFile.write_json(settings_path, {
 		"language":     language,
 		"volume":       volume,
 		"music_volume": music_volume,
 		"resolution":   resolution,
 		"window_mode":  window_mode,
-	}))
-	file.close()
+	})
+	if not result.get("ok", false):
+		push_error("SettingsManager: " + result.get("error", "Unknown settings write error."))
+	return result.get("ok", false)
 
-func _load() -> void:
-	if not FileAccess.file_exists(settings_path):
-		var sys_lang := OS.get_locale_language()
-		language = sys_lang if sys_lang in SUPPORTED_LANGUAGES else "en"
+
+func _load(log_errors: bool = true) -> void:
+	var result := SafeFile.read_json(settings_path)
+	if not result.get("ok", false) and not result.get("found_invalid", false):
+		var system_language := OS.get_locale_language()
+		language = system_language if system_language in SUPPORTED_LANGUAGES else _fallback_language()
 		return
-	var file := FileAccess.open(settings_path, FileAccess.READ)
-	if file == null:
+	if not result.get("ok", false):
+		if log_errors:
+			push_error("SettingsManager: " + result.get("error", "Invalid settings file."))
 		return
-	var json := JSON.new()
-	if json.parse(file.get_as_text()) == OK:
-		var d = json.get_data()
-		language     = d.get("language", "fr")
-		volume       = float(d.get("volume", 1.0))
-		music_volume = float(d.get("music_volume", 1.0))
-		resolution   = int(d.get("resolution", 3))
-		window_mode  = int(d.get("window_mode", 0))
-		# Migrate from display_mode (1280/1920/fullscreen)
-		if d.has("display_mode") and not d.has("resolution"):
-			var dm := int(d["display_mode"])
-			resolution  = 1 if dm == 0 else 3
-			window_mode = 1 if dm == 2 else 0
-		# Migrate from fullscreen: bool
-		if d.has("fullscreen") and not d.has("window_mode"):
-			window_mode = 1 if d["fullscreen"] else 0
-		# Migrate old AudioManager format: {"muted": bool}
-		if d.has("muted") and not d.has("volume"):
-			volume = 0.0 if d["muted"] else 1.0
-	file.close()
+	if result.get("recovered", false):
+		push_warning("SettingsManager: recovered settings from %s." % result.get("recovery_source", "backup"))
+	var data: Dictionary = result.get("data", {})
+	language     = str(data.get("language", "fr"))
+	volume       = float(data.get("volume", 1.0))
+	music_volume = float(data.get("music_volume", 1.0))
+	resolution   = int(data.get("resolution", 3))
+	window_mode  = int(data.get("window_mode", 0))
+	# Migrate from display_mode (1280/1920/fullscreen).
+	if data.has("display_mode") and not data.has("resolution"):
+		var display_mode := int(data["display_mode"])
+		resolution  = 1 if display_mode == 0 else 3
+		window_mode = 1 if display_mode == 2 else 0
+	# Migrate from fullscreen: bool.
+	if data.has("fullscreen") and not data.has("window_mode"):
+		window_mode = 1 if data["fullscreen"] else 0
+	# Migrate old AudioManager format: {"muted": bool}.
+	if data.has("muted") and not data.has("volume"):
+		volume = 0.0 if data["muted"] else 1.0
+	# Settings are user-editable: syntactically valid JSON can still be unsafe.
+	if language not in SUPPORTED_LANGUAGES:
+		language = _fallback_language()
+	volume = clampf(volume, 0.0, 1.0)
+	music_volume = clampf(music_volume, 0.0, 1.0)
+	resolution = clampi(resolution, 0, RESOLUTIONS.size() - 1)
+	window_mode = clampi(window_mode, 0, WINDOW_MODES.size() - 1)

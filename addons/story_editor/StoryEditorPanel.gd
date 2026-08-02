@@ -6,6 +6,7 @@ signal files_written
 const SceneParser      = preload("res://addons/story_editor/scene_parser.gd")
 const JsonUtils        = preload("res://addons/story_editor/json_utils.gd")
 const SceneDetailPanel = preload("res://addons/story_editor/SceneDetailPanel.gd")
+const SafeFile         = preload("res://scripts/lib/safe_file.gd")
 
 const COLOR_NORMAL  := Color(0.8, 0.8, 0.8)
 const COLOR_TRIGGER := Color(1.0, 0.6, 0.0)
@@ -114,10 +115,10 @@ func _restore_snapshot(files: Dictionary) -> void:
 		var content: String = files[path]
 		if content.is_empty():
 			continue
-		var f := FileAccess.open(path, FileAccess.WRITE)
-		if f != null:
-			f.store_string(content)
-			f.close()
+		var validation := SafeFile.Validation.JSON_DICTIONARY if path.ends_with(".json") else SafeFile.Validation.NONE
+		var result := SafeFile.write_text(path, content, validation)
+		if not result.get("ok", false):
+			push_error("Story Editor undo/redo: " + result.get("error", "Write failed."))
 	files_written.emit()
 	_on_refresh_pressed()
 	if not _selected_scene_id.is_empty():
@@ -458,13 +459,8 @@ func _fit_graph_view() -> void:
 
 
 func _load_saved_positions() -> void:
-	if not FileAccess.file_exists(POSITIONS_PATH):
-		return
-	var file := FileAccess.open(POSITIONS_PATH, FileAccess.READ)
-	if file == null:
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
+	var parsed := _read_json_document(POSITIONS_PATH)
+	if not parsed.is_empty():
 		_saved_positions = parsed
 
 
@@ -476,9 +472,9 @@ func _save_positions_now() -> void:
 			var pos: Vector2 = gn.position_offset
 			data[gn.name] = [pos.x, pos.y]
 	_saved_positions = data
-	var file := FileAccess.open(POSITIONS_PATH, FileAccess.WRITE)
-	if file != null:
-		file.store_string(JSON.stringify(data, "\t"))
+	var result := SafeFile.write_json(POSITIONS_PATH, data, "\t", true)
+	if not result.get("ok", false):
+		push_error("Story Editor positions: " + result.get("error", "Write failed."))
 
 
 func _on_undo_pressed() -> void:
@@ -503,12 +499,8 @@ func _rename_contact_in_dialogues(old_id: String, new_id: String) -> void:
 	_begin_mutation(_t("Renommer contact %s → %s" % [old_id, new_id], "Rename contact %s → %s" % [old_id, new_id]))
 	for fname: String in _all_dialogue_json_files():
 		var path: String = "res://dialogues/" + fname
-		var f := FileAccess.open(path, FileAccess.READ)
-		if f == null:
-			continue
-		var data = JSON.parse_string(f.get_as_text())
-		f.close()
-		if not data is Dictionary or not data.has("scenes"):
+		var data := _read_json_document(path)
+		if not data.has("scenes"):
 			continue
 		var modified := false
 		for scene in (data["scenes"] as Array):
@@ -554,12 +546,8 @@ func _on_reformat_pressed() -> void:
 	_begin_mutation(_t("Reformater", "Reformat"))
 	for fname in _parser.chosen_files.values():
 		var path: String = "res://dialogues/" + str(fname)
-		var f := FileAccess.open(path, FileAccess.READ)
-		if f == null:
-			continue
-		var data = JSON.parse_string(f.get_as_text())
-		f.close()
-		if data is Dictionary and data.has("scenes"):
+		var data := _read_json_document(path)
+		if data.has("scenes"):
 			_write_json(path, data)
 	await _on_refresh_pressed()
 	_end_mutation()
@@ -997,13 +985,9 @@ func _mutate_connection(from_id: String, from_port: int, mutator: Callable) -> v
 				"Read-only connection (trigger/resume)")
 			return
 	var path := "res://dialogues/" + file_name
-	var read_file := FileAccess.open(path, FileAccess.READ)
-	if read_file == null:
+	var data := _read_json_document(path)
+	if not data.has("scenes"):
 		_status_label.text = _t("Erreur lecture : " + file_name, "Read error: " + file_name)
-		return
-	var data = JSON.parse_string(read_file.get_as_text())
-	read_file.close()
-	if not data is Dictionary or not data.has("scenes"):
 		return
 	for scene in (data["scenes"] as Array):
 		if scene.get("id", "") != from_id:
@@ -1025,12 +1009,8 @@ func _delete_scenes(ids: Array[String]) -> void:
 	var files_data: Dictionary = {}
 	for fname: String in _all_dialogue_json_files():
 		var path: String = "res://dialogues/" + fname
-		var f := FileAccess.open(path, FileAccess.READ)
-		if f == null:
-			continue
-		var data = JSON.parse_string(f.get_as_text())
-		f.close()
-		if data is Dictionary and data.has("scenes"):
+		var data := _read_json_document(path)
+		if data.has("scenes"):
 			files_data[fname] = data
 
 	for file_name in files_data:
@@ -1145,17 +1125,8 @@ func _show_create_scene_dialog() -> void:
 func _write_scene_to_file(scene_id: String, contact_id: String, file_name: String) -> void:
 	_begin_mutation(_t("Créer scène : %s" % scene_id, "Create scene: %s" % scene_id))
 	var path := "res://dialogues/" + file_name
-
-	var read_file := FileAccess.open(path, FileAccess.READ)
-	if read_file == null:
-		_status_label.text = _t("Erreur lecture : " + file_name, "Read error: " + file_name)
-		_end_mutation()
-		return
-	var content := read_file.get_as_text()
-	read_file.close()
-
-	var data = JSON.parse_string(content)
-	if not data is Dictionary or not data.has("scenes"):
+	var data := _read_json_document(path)
+	if not data.has("scenes"):
 		_status_label.text = _t("JSON invalide dans " + file_name, "Invalid JSON in " + file_name)
 		_end_mutation()
 		return
@@ -1191,13 +1162,9 @@ func _duplicate_scene(source_id: String) -> void:
 		new_id = base_id + str(n)
 		n += 1
 	var path := "res://dialogues/" + file_name
-	var rf := FileAccess.open(path, FileAccess.READ)
-	if rf == null:
+	var data := _read_json_document(path)
+	if not data.has("scenes"):
 		_status_label.text = _t("Erreur lecture : " + file_name, "Read error: " + file_name)
-		return
-	var data = JSON.parse_string(rf.get_as_text())
-	rf.close()
-	if not data is Dictionary or not data.has("scenes"):
 		return
 	_begin_mutation(_t("Dupliquer scène : %s" % source_id, "Duplicate scene: %s" % source_id))
 	var new_scene: Dictionary = {}
@@ -1232,18 +1199,19 @@ func _write_json(path: String, data: Dictionary) -> bool:
 	for s in (data["scenes"] as Array):
 		ordered_scenes.append(_ordered_scene(s))
 	data["scenes"] = ordered_scenes
-	var tmp_path: String = path + ".tmp"
-	var write_file := FileAccess.open(tmp_path, FileAccess.WRITE)
-	if write_file == null:
-		return false
-	write_file.store_string(_json_stringify_file(data))
-	write_file.close()
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(path)
-	var dir := DirAccess.open(path.get_base_dir())
-	if dir == null:
-		return false
-	return dir.rename(path.get_file() + ".tmp", path.get_file()) == OK
+	var result := SafeFile.write_text(path, _json_stringify_file(data), SafeFile.Validation.JSON_DICTIONARY)
+	if not result.get("ok", false):
+		push_error("Story Editor: " + result.get("error", "Write failed."))
+	return result.get("ok", false)
+
+
+func _read_json_document(path: String) -> Dictionary:
+	var result := SafeFile.read_json(path)
+	if not result.get("ok", false):
+		return {}
+	if result.get("recovered", false):
+		push_warning("Story Editor: recovered %s from %s." % [path, result.get("recovery_source", "backup")])
+	return result.get("data", {})
 
 
 func _json_stringify_file(data: Dictionary) -> String:
@@ -1252,52 +1220,7 @@ func _json_stringify_file(data: Dictionary) -> String:
 
 # Enforces a stable key order so unrelated edits don't produce noisy diffs. _editor_file is stripped — it's runtime-only.
 func _ordered_scene(scene: Dictionary) -> Dictionary:
-	const SCENE_KEYS := ["_notes", "id", "contact_id", "trigger_after_scene",
-		"resume_after_flag", "resume_after_delay", "messages_in",
-		"free_input", "free_input_placeholder", "music", "next", "choices"]
-	var result := {}
-	for key in SCENE_KEYS:
-		if scene.has(key):
-			result[key] = scene[key]
-	for key in scene:
-		if key != "_editor_file" and not result.has(key):
-			result[key] = scene[key]
-	if result.has("messages_in"):
-		var ordered_msgs: Array = []
-		for msg in (result["messages_in"] as Array):
-			ordered_msgs.append(_ordered_message(msg))
-		result["messages_in"] = ordered_msgs
-	if result.has("choices"):
-		var ordered_choices: Array = []
-		for choice in (result["choices"] as Array):
-			ordered_choices.append(_ordered_choice(choice))
-		result["choices"] = ordered_choices
-	return result
-
-
-func _ordered_message(msg: Dictionary) -> Dictionary:
-	const MSG_KEYS := ["text", "edit", "effects", "media", "pause",
-		"requires_flag", "condition", "corrupted", "time"]
-	var result := {}
-	for key in MSG_KEYS:
-		if msg.has(key):
-			result[key] = msg[key]
-	for key in msg:
-		if not result.has(key):
-			result[key] = msg[key]
-	return result
-
-
-func _ordered_choice(choice: Dictionary) -> Dictionary:
-	const CHOICE_KEYS := ["text", "message", "flag", "requires_flag", "condition", "next", "effects"]
-	var result := {}
-	for key in CHOICE_KEYS:
-		if choice.has(key):
-			result[key] = choice[key]
-	for key in choice:
-		if not result.has(key):
-			result[key] = choice[key]
-	return result
+	return JsonUtils.ordered_scene(scene)
 
 
 # ---------------------------------------------------------------------------
@@ -1525,12 +1448,8 @@ func _patch_field(scene_id: String, setter: Callable, label: String = "") -> voi
 	if file_name.is_empty():
 		return
 	var path := "res://dialogues/" + file_name
-	var f := FileAccess.open(path, FileAccess.READ)
-	if f == null:
-		return
-	var data = JSON.parse_string(f.get_as_text())
-	f.close()
-	if not data is Dictionary or not data.has("scenes"):
+	var data := _read_json_document(path)
+	if not data.has("scenes"):
 		return
 	_begin_mutation(label if label != "" else _t("Modifier scène : %s" % scene_id, "Edit scene: %s" % scene_id))
 	for scene in (data["scenes"] as Array):

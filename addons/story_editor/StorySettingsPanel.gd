@@ -145,8 +145,8 @@ func _build_languages() -> void:
 		rm.flat = true
 		rm.disabled = locales.size() <= 1
 		rm.tooltip_text = _t(
-			"Supprimer cette langue de ui.csv (irréversible).\nImpossible de supprimer la dernière langue.",
-			"Remove this language from ui.csv (irreversible).\nCannot remove the last language.")
+			"Supprimer cette langue de ui.csv. Une copie de récupération est conservée.\nImpossible de supprimer la dernière langue.",
+			"Remove this language from ui.csv. A recovery copy is kept.\nCannot remove the last language.")
 		var captured: String = locale
 		rm.pressed.connect(func() -> void:
 			_remove_language_from_csv(captured)
@@ -168,8 +168,8 @@ func _build_languages() -> void:
 	var add_btn := Button.new()
 	add_btn.text = _t("+ Ajouter", "+ Add")
 	add_btn.tooltip_text = _t(
-		"Ajoute une colonne vide pour cette langue dans ui.csv.\nGodot régénère automatiquement le fichier .translation.",
-		"Adds an empty column for this language in ui.csv.\nGodot automatically regenerates the .translation file.")
+		"Ajoute cette langue dans ui.csv avec le texte anglais comme base.\nGodot régénère automatiquement le fichier .translation.",
+		"Adds this language to ui.csv using the English text as a starting point.\nGodot automatically regenerates the .translation file.")
 	add_btn.pressed.connect(func() -> void:
 		var code := locale_edit.text.strip_edges().to_lower()
 		if code.is_empty() or code in locales:
@@ -182,48 +182,26 @@ func _build_languages() -> void:
 
 
 func _add_language_to_csv(locale: String) -> void:
-	if not FileAccess.file_exists(CSV_PATH):
-		push_error("StorySettingsPanel: CSV not found — " + CSV_PATH)
-		return
-	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
-	if file == null:
-		return
-	var rows: Array[PackedStringArray] = []
-	while not file.eof_reached():
-		var row := file.get_csv_line()
-		if row.size() == 1 and row[0].is_empty():
-			continue
-		rows.append(row)
-	file.close()
+	var rows := _read_csv_rows()
 	if rows.is_empty() or locale in rows[0]:
 		return
-	var out := FileAccess.open(CSV_PATH, FileAccess.WRITE)
-	if out == null:
-		return
-	var is_first_row := true
-	for row: PackedStringArray in rows:
+	var fallback_index: int = rows[0].find("en")
+	if fallback_index < 1:
+		fallback_index = 1 if rows[0].size() > 1 else -1
+	var extended_rows: Array[PackedStringArray] = []
+	for row_index: int in range(rows.size()):
+		var row: PackedStringArray = rows[row_index]
 		var extended := PackedStringArray(row)
-		extended.append(locale if is_first_row else "")
-		is_first_row = false
-		out.store_csv_line(extended)
-	out.close()
-	EditorInterface.get_resource_filesystem().reimport_files(
-		PackedStringArray(["res://translations/ui.csv"]))
+		var initial_value := locale if row_index == 0 else ""
+		if row_index > 0 and fallback_index >= 0 and fallback_index < row.size():
+			initial_value = row[fallback_index]
+		extended.append(initial_value)
+		extended_rows.append(extended)
+	_write_csv_rows(extended_rows)
 
 
 func _remove_language_from_csv(locale: String) -> void:
-	if not FileAccess.file_exists(CSV_PATH):
-		return
-	var file := FileAccess.open(CSV_PATH, FileAccess.READ)
-	if file == null:
-		return
-	var rows: Array[PackedStringArray] = []
-	while not file.eof_reached():
-		var row := file.get_csv_line()
-		if row.size() == 1 and row[0].is_empty():
-			continue
-		rows.append(row)
-	file.close()
+	var rows := _read_csv_rows()
 	if rows.is_empty():
 		return
 	var col_index: int = -1
@@ -233,18 +211,48 @@ func _remove_language_from_csv(locale: String) -> void:
 			break
 	if col_index < 0:
 		return
-	var out := FileAccess.open(CSV_PATH, FileAccess.WRITE)
-	if out == null:
-		return
+	var trimmed_rows: Array[PackedStringArray] = []
 	for row: PackedStringArray in rows:
 		var trimmed := PackedStringArray()
 		for i: int in range(row.size()):
 			if i != col_index:
 				trimmed.append(row[i])
-		out.store_csv_line(trimmed)
-	out.close()
+		trimmed_rows.append(trimmed)
+	_write_csv_rows(trimmed_rows)
+
+
+func _read_csv_rows() -> Array[PackedStringArray]:
+	var recovery := SafeFile.read_csv(CSV_PATH)
+	if not recovery.get("ok", false):
+		push_error("StorySettingsPanel: " + recovery.get("error", "Cannot read ui.csv."))
+		return []
+	if recovery.get("recovered", false):
+		push_warning("StorySettingsPanel: recovered ui.csv from %s." % recovery.get("recovery_source", "backup"))
+	var rows: Array[PackedStringArray] = []
+	for row: PackedStringArray in recovery.get("rows", []):
+		rows.append(row)
+	return rows
+
+
+func _write_csv_rows(rows: Array[PackedStringArray]) -> void:
+	var lines: PackedStringArray = []
+	for row: PackedStringArray in rows:
+		var encoded: PackedStringArray = []
+		for field: String in row:
+			encoded.append(_escape_csv_field(field))
+		lines.append(",".join(encoded))
+	var result := SafeFile.write_text(CSV_PATH, "\n".join(lines) + "\n", SafeFile.Validation.TRANSLATION_CSV)
+	if not result.get("ok", false):
+		push_error("StorySettingsPanel: " + result.get("error", "Cannot write ui.csv."))
+		return
 	EditorInterface.get_resource_filesystem().reimport_files(
 		PackedStringArray(["res://translations/ui.csv"]))
+
+
+func _escape_csv_field(value: String) -> String:
+	if value != value.strip_edges() or value.contains(",") or value.contains("\"") or value.contains("\n") or value.contains("\r"):
+		return "\"%s\"" % value.replace("\"", "\"\"")
+	return value
 
 
 # ---------------------------------------------------------------------------

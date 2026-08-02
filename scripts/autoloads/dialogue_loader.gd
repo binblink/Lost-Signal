@@ -1,5 +1,6 @@
 extends Node
 
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 const STORY_PATH    = "res://story.json"
 const DIALOGUES_DIR = "res://dialogues/"
 
@@ -165,28 +166,14 @@ func _normalize_message(m, log_warnings: bool = true) -> Array:
 
 
 func _parse_json(path: String, log_errors: bool = true) -> Dictionary:
-	if not FileAccess.file_exists(path):
+	var result := SafeFile.read_json(path)
+	if not result.get("ok", false):
 		if log_errors:
-			push_error("DialogueLoader: file not found — " + path)
+			push_error("DialogueLoader: " + result.get("error", "Invalid JSON: " + path))
 		return {}
-	var file = FileAccess.open(path, FileAccess.READ)
-	if file == null:
-		if log_errors:
-			push_error("DialogueLoader: cannot open %s (code %d)." % [path, FileAccess.get_open_error()])
-		return {}
-	var json  = JSON.new()
-	var err   = json.parse(file.get_as_text())
-	file.close()
-	if err != OK:
-		if log_errors:
-			push_error("DialogueLoader: JSON error in %s line %d: %s" % [path, json.get_error_line(), json.get_error_message()])
-		return {}
-	var data = json.get_data()
-	if not data is Dictionary:
-		if log_errors:
-			push_error("DialogueLoader: JSON root must be an object — " + path)
-		return {}
-	return data
+	if result.get("recovered", false) and log_errors:
+		push_warning("DialogueLoader: recovered %s from %s." % [path, result.get("recovery_source", "backup")])
+	return result.get("data", {})
 
 # --- Public API ---
 

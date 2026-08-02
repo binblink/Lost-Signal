@@ -4,6 +4,7 @@ const MessageDisplay = preload("res://scripts/ui/message_display.gd")
 const ChoicesManager = preload("res://scripts/ui/choices_manager.gd")
 const NarrativeController = preload("res://scripts/narrative_controller.gd")
 const AudioBubble = preload("res://scripts/ui/audio_bubble.gd")
+const SettingsDialogScene = preload("res://scenes/SettingsDialog.tscn")
 const Assert = preload("res://tools/tests/test_assertions.gd")
 
 
@@ -16,6 +17,7 @@ func run_tests() -> Array:
 	await get_tree().process_frame
 
 	_test_message_helpers(display, results)
+	await _test_settings_language_options(results)
 	await _test_history_rendering(display, results)
 	var choices = await _test_choices(display, results)
 	await _test_pending_choice_restore(choices, results)
@@ -24,6 +26,25 @@ func run_tests() -> Array:
 	scroll.queue_free()
 	await get_tree().process_frame
 	return results
+
+
+func _test_settings_language_options(results: Array) -> void:
+	var original_languages: Array[String] = SettingsManager.get_supported_languages()
+	var original_language: String = SettingsManager.language
+	SettingsManager.SUPPORTED_LANGUAGES = ["en", "de"]
+	SettingsManager.language = "de"
+	var dialog := SettingsDialogScene.instantiate()
+	add_child(dialog)
+	await get_tree().process_frame
+	dialog.open()
+	var option: OptionButton = dialog.get_node("MarginContainer/VBoxContainer/Grid/LangOption")
+	Assert.equal(results, "settings dialog: language options follow discovered locales", option.item_count, 2)
+	Assert.equal(results, "settings dialog: current dynamic locale is selected", option.selected, 1)
+	Assert.equal(results, "settings dialog: locale code remains visible as tooltip", option.get_item_tooltip(1), "de")
+	dialog.queue_free()
+	SettingsManager.SUPPORTED_LANGUAGES = original_languages
+	SettingsManager.language = original_language
+	await get_tree().process_frame
 
 
 func _test_message_helpers(display, results: Array) -> void:

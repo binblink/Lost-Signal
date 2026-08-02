@@ -2,6 +2,7 @@ extends Node
 
 const SceneParser = preload("res://addons/story_editor/scene_parser.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 
 var _test_root: String
 var _dialogues_dir: String
@@ -56,6 +57,11 @@ func run_tests() -> Array:
 	Assert.equal(results, "scene parser: locale read from injected settings", parser._read_locale(), "fr")
 	var unordered_files: Array[String] = ["acte1.en.json", "acte1.json", "acte2.json"]
 	Assert.equal(results, "scene parser: file selection is order independent", parser._choose_dialogue_files(unordered_files, "en"), {"acte1": "acte1.en.json", "acte2": "acte2.json"})
+
+	SafeFile.write_json(_settings_path, {"language": "en"})
+	_write_text(_settings_path, "{broken")
+	Assert.equal(results, "scene parser recovery: corrupt settings restores backup", parser._read_locale(), "fr")
+	Assert.check(results, "scene parser recovery: primary settings file is repaired", SafeFile.read_json(_settings_path).get("ok", false))
 
 	var invalid_story = _new_parser()
 	invalid_story.story_path = _test_root.path_join("missing.json")

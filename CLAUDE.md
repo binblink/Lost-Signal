@@ -24,6 +24,8 @@ Validation also runs automatically at game launch: if `story.json` or any `dialo
 | `SettingsManager` | `scripts/autoloads/settings_manager.gd` | Loads `user://settings.json`; manages language, volume, resolution; loads `translations/ui.csv` into `TranslationServer` |
 | `AudioManager` | `scripts/autoloads/audio_manager.gd` | Procedurally generates notification beep and typing click (no audio file needed); handles music playback with fade/duck |
 
+All mutable JSON and translation CSV files use `scripts/lib/safe_file.gd`. It performs validated transactional writes, rotates three local backups, resumes valid interrupted writes, restores corrupt or missing primaries from backups, and quarantines unrecoverable corrupt files. New persistence code must use this layer instead of opening a destination directly with `FileAccess.WRITE`.
+
 ### Scene flow
 
 `Main.tscn` / `scripts/main.gd` is the root scene. It instantiates `NarrativeController` (not a scene, just a Node added via code), wires up all UI signals, and orchestrates save/load.

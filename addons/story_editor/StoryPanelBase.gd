@@ -19,6 +19,7 @@ const STORY_PATH := "res://story.json"
 const THEME_PATH := "res://theme.json"
 const CSV_PATH   := "res://translations/ui.csv"
 const JsonUtils  = preload("res://addons/story_editor/json_utils.gd")
+const SafeFile   = preload("res://scripts/lib/safe_file.gd")
 
 var _content: VBoxContainer
 
@@ -50,35 +51,19 @@ func refresh() -> void:
 # story.json read / write
 
 func _read_story() -> Dictionary:
-	var f := FileAccess.open(STORY_PATH, FileAccess.READ)
-	if f == null:
-		return {}
-	var parsed = JSON.parse_string(f.get_as_text())
-	f.close()
-	return parsed if parsed is Dictionary else {}
+	return _read_json_document(STORY_PATH)
 
 
 func _write_story(data: Dictionary, label: String = "") -> void:
 	begin_mutation.call(label if label != "" else _t("Modifier story.json", "Edit story.json"))
 	snapshot_file.call(STORY_PATH)
-	var tmp_path: String = STORY_PATH + ".tmp"
-	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
-	if f == null:
-		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
-		end_mutation.call()
-		return
-	f.store_string(JsonUtils.expand(_ordered_story(data), "") + "\n")
-	f.close()
-	if FileAccess.file_exists(STORY_PATH):
-		DirAccess.remove_absolute(STORY_PATH)
-	var dir := DirAccess.open("res://")
-	if dir == null:
-		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
-		end_mutation.call()
-		return
-	var err := dir.rename("story.json.tmp", "story.json")
-	if err != OK:
-		error_occurred.emit(_t("Erreur écriture : story.json", "Write error: story.json"))
+	var result := SafeFile.write_text(
+		STORY_PATH,
+		JsonUtils.expand(_ordered_story(data), "") + "\n",
+		SafeFile.Validation.JSON_DICTIONARY
+	)
+	if not result.get("ok", false):
+		error_occurred.emit(_write_error("story.json", result))
 		end_mutation.call()
 		return
 	end_mutation.call()
@@ -130,29 +115,29 @@ func _ordered_contact(c: Dictionary) -> Dictionary:
 # theme.json read / write
 
 func _read_theme() -> Dictionary:
-	var f := FileAccess.open(THEME_PATH, FileAccess.READ)
-	if f == null:
-		return {}
-	var parsed = JSON.parse_string(f.get_as_text())
-	f.close()
-	return parsed if parsed is Dictionary else {}
+	return _read_json_document(THEME_PATH)
 
 
 func _write_theme(data: Dictionary) -> void:
-	var tmp_path := THEME_PATH + ".tmp"
-	var f := FileAccess.open(tmp_path, FileAccess.WRITE)
-	if f == null:
-		error_occurred.emit(_t("Erreur écriture : theme.json", "Write error: theme.json"))
-		return
-	f.store_string(JSON.stringify(_ordered_theme(data), "\t") + "\n")
-	f.close()
-	if FileAccess.file_exists(THEME_PATH):
-		DirAccess.remove_absolute(THEME_PATH)
-	var dir := DirAccess.open("res://")
-	if dir == null:
-		error_occurred.emit(_t("Erreur écriture : theme.json", "Write error: theme.json"))
-		return
-	dir.rename("theme.json.tmp", "theme.json")
+	var result := SafeFile.write_json(THEME_PATH, _ordered_theme(data), "\t", true)
+	if not result.get("ok", false):
+		error_occurred.emit(_write_error("theme.json", result))
+
+
+func _read_json_document(path: String) -> Dictionary:
+	var result := SafeFile.read_json(path)
+	if not result.get("ok", false):
+		return {}
+	if result.get("recovered", false):
+		push_warning("Story Editor: recovered %s from %s." % [path, result.get("recovery_source", "backup")])
+	return result.get("data", {})
+
+
+func _write_error(file_name: String, result: Dictionary) -> String:
+	return "%s\n%s" % [
+		_t("Erreur écriture : " + file_name, "Write error: " + file_name),
+		result.get("error", ""),
+	]
 
 
 func _ordered_theme(data: Dictionary) -> Dictionary:
@@ -277,6 +262,18 @@ func _checkbox(container: VBoxContainer, label: String, initial: bool, on_change
 
 func _get_supported_locales() -> Array[String]:
 	var result: Array[String] = []
+	var csv := SafeFile.read_csv(CSV_PATH)
+	var rows: Array = csv.get("rows", [])
+	if csv.get("ok", false) and not rows.is_empty():
+		var header: PackedStringArray = rows[0]
+		for column_index: int in range(1, header.size()):
+			var locale := header[column_index].strip_edges()
+			if not locale.is_empty() and locale not in result:
+				result.append(locale)
+		result.sort()
+		return result
+
+	# Imported resources remain a fallback if the source CSV is unavailable.
 	var dir := DirAccess.open("res://translations/")
 	if dir != null:
 		dir.list_dir_begin()
@@ -294,5 +291,3 @@ func _get_supported_locales() -> Array[String]:
 
 func _t(fr: String, en: String) -> String:
 	return fr if ui_locale == "fr" else en
-
-

@@ -1,5 +1,6 @@
 extends Node
 
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 const THEME_PATH = "res://theme.json"
 
 var background_color: Color = Color(0.043137256, 0.05490196, 0.06666667)
@@ -35,21 +36,13 @@ func _setup_emoji_fallback() -> void:
 
 
 func _load() -> void:
-	if not FileAccess.file_exists(THEME_PATH):
-		return
-	var file = FileAccess.open(THEME_PATH, FileAccess.READ)
-	if file == null:
-		push_warning("ThemeManager: cannot open theme.json (code %d) — using defaults." % FileAccess.get_open_error())
-		return
-	var json = JSON.new()
-	var err  = json.parse(file.get_as_text())
-	file.close()
-	if err != OK:
+	var result := SafeFile.read_json(THEME_PATH)
+	if not result.get("ok", false):
 		push_warning("ThemeManager: invalid theme.json — using defaults.")
 		return
-	var data = json.get_data()
-	if not data is Dictionary:
-		return
+	if result.get("recovered", false):
+		push_warning("ThemeManager: recovered theme.json from %s." % result.get("recovery_source", "backup"))
+	var data: Dictionary = result.get("data", {})
 	if data.has("background_color"): background_color = Color(data["background_color"])
 	if data.has("topbar_color"):     topbar_color     = Color(data["topbar_color"])
 	if data.has("bubble_in_color"):  bubble_in_color  = Color(data["bubble_in_color"])

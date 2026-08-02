@@ -6,6 +6,9 @@
 *.uid
 *.import
 *.tmp
+*.bak
+*.bak.[0-9]*
+*.corrupt.*
 *.translation
 
 # Données utilisateur et exports

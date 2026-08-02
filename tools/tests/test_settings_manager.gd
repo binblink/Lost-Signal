@@ -2,6 +2,7 @@ extends Node
 
 const SettingsManagerScript = preload("res://scripts/autoloads/settings_manager.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 
 
 func run_tests() -> Array:
@@ -49,16 +50,54 @@ func run_tests() -> Array:
 	manager._load()
 	Assert.equal(results, "settings migration: legacy muted false maps full volume", manager.volume, 1.0)
 
+	_cleanup(path)
 	manager.language = "fr"
 	_write_text(path, "{broken")
-	manager._load()
+	manager._load(false)
 	Assert.equal(results, "settings: malformed JSON does not overwrite current values", manager.language, "fr")
+
+	_cleanup(path)
+	manager.language = "fr"
+	manager._save()
+	manager.language = "en"
+	manager._save()
+	_write_text(path, "{broken")
+	manager._load()
+	Assert.equal(results, "settings recovery: corrupted primary restores previous settings", manager.language, "fr")
+	Assert.check(results, "settings recovery: primary is repaired", SafeFile.read_json(path).get("ok", false))
+
+	_cleanup(path)
+	_write_json(path, {
+		"language": "unsupported",
+		"volume": 2.0,
+		"music_volume": -1.0,
+		"resolution": 999,
+		"window_mode": 999,
+	})
+	manager._load()
+	Assert.equal(results, "settings validation: unsupported language falls back", manager.language, "en")
+	Assert.equal(results, "settings validation: volumes are clamped", [manager.volume, manager.music_volume], [1.0, 0.0])
+	Assert.equal(results, "settings validation: display indices are clamped", [manager.resolution, manager.window_mode], [5, 2])
+
+	var language_csv_path := path + ".csv"
+	_write_text(language_csv_path, "keys,en,de\nHELLO,Hello,Hallo\n")
+	var dynamic_manager = SettingsManagerScript.new()
+	dynamic_manager.ui_csv_path = language_csv_path
+	dynamic_manager._discover_supported_languages()
+	Assert.equal(results, "settings languages: locales are discovered from CSV", dynamic_manager.get_supported_languages(), ["en", "de"])
+	dynamic_manager.language = "fr"
+	dynamic_manager.settings_path = path
+	dynamic_manager._load(false)
+	Assert.equal(results, "settings languages: removed locale falls back safely", dynamic_manager.language, "en")
+	dynamic_manager.free()
 
 	_cleanup(path)
 	manager._load()
 	Assert.check(results, "settings: missing file selects a supported language", manager.language in manager.SUPPORTED_LANGUAGES)
 	manager.free()
 	_cleanup(path)
+	if FileAccess.file_exists(language_csv_path):
+		DirAccess.remove_absolute(language_csv_path)
 	return results
 
 
@@ -80,5 +119,4 @@ func _read_json(path: String) -> Dictionary:
 
 
 func _cleanup(path: String) -> void:
-	if FileAccess.file_exists(path):
-		DirAccess.remove_absolute(path)
+	SafeFile.delete_with_recovery_files(path)

@@ -50,6 +50,12 @@ Après un nouveau clone, activez le hook local avec `sh scripts/install-hooks.sh
 
 Les fichiers temporaires utilisés par les tests de sauvegarde et de paramètres sont isolés puis supprimés ; les données du joueur ne sont pas modifiées.
 
+### Protection et récupération des fichiers
+
+Les sauvegardes, paramètres et fichiers modifiés par le Story Editor sont écrits de façon transactionnelle : le nouveau contenu est d'abord écrit dans un fichier temporaire, relu et validé, puis seulement substitué au fichier courant. Jusqu'à trois versions précédentes sont conservées localement (`.bak`, `.bak.2`, `.bak.3`).
+
+Au chargement, le moteur termine automatiquement une écriture interrompue valide ou restaure la copie de récupération la plus récente si le fichier principal est absent ou corrompu. Un fichier invalide est mis en quarantaine avec un suffixe `.corrupt.<date>` afin de ne jamais détruire silencieusement son contenu. Ces fichiers techniques sont exclus de Git.
+
 ---
 
 ## Organisation des fichiers

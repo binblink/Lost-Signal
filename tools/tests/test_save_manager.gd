@@ -2,6 +2,7 @@ extends Node
 
 const SaveManagerScript = preload("res://scripts/autoloads/save_manager.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
+const SafeFile = preload("res://scripts/lib/safe_file.gd")
 
 
 func run_tests() -> Array:
@@ -35,9 +36,15 @@ func run_tests() -> Array:
 	Assert.equal(results, "save: existing save numeric value is replaced", loaded_replacement.get("score"), 8.0)
 
 	_write_text(manager.save_path, "{broken")
-	Assert.equal(results, "save: corrupted JSON is ignored", manager.load_save(false), {})
+	var recovered: Dictionary = manager.load_save(false)
+	Assert.equal(results, "save recovery: corrupted primary restores previous scene", recovered.get("scene"), "scene_4")
+	Assert.check(results, "save recovery: primary is repaired", SafeFile.read_json(manager.save_path).get("ok", false))
+
+	_cleanup(manager.save_path)
+	_write_text(manager.save_path, "{broken")
+	Assert.equal(results, "save: corrupted JSON without backup is ignored", manager.load_save(false), {})
 	_write_text(manager.save_path, "[]")
-	Assert.equal(results, "save: non-object JSON is ignored", manager.load_save(false), {})
+	Assert.equal(results, "save: non-object JSON without backup is ignored", manager.load_save(false), {})
 
 	manager.delete_save()
 	Assert.check(results, "save: delete removes save", not manager.has_save())
@@ -54,6 +61,4 @@ func _write_text(path: String, content: String) -> void:
 
 
 func _cleanup(path: String) -> void:
-	for candidate: String in [path, path + ".tmp"]:
-		if FileAccess.file_exists(candidate):
-			DirAccess.remove_absolute(candidate)
+	SafeFile.delete_with_recovery_files(path)

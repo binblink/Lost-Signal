@@ -270,14 +270,14 @@ Configure les délais de saisie dans `theme.json`. Les modifications prennent ef
 
 ### Langues
 
-La section **Langues** liste les langues actives du projet (détectées depuis les fichiers `.translation` générés par Godot dans `translations/`) et permet d'en ajouter de nouvelles.
+La section **Langues** liste les colonnes de langue déclarées dans `translations/ui.csv` et permet d'en ajouter de nouvelles. L'affichage est mis à jour immédiatement, sans attendre la génération des fichiers `.translation` par Godot.
 
 | Élément | Rôle |
 |---|---|
-| Chip par langue + **×** | Chaque langue active est affichée avec un bouton **×**. Cliquer dessus supprime la colonne de `ui.csv` (irréversible — toutes les traductions de cette langue sont perdues). Le **×** est grisé s'il ne reste qu'une seule langue. |
-| Champ + **+ Ajouter** | Saisir un code ISO 639-1 (ex : `de`) et cliquer pour ajouter une colonne vide dans `ui.csv`. Godot régénère automatiquement le fichier `.translation` correspondant. |
+| Chip par langue + **×** | Chaque langue active est affichée avec un bouton **×**. Cliquer dessus supprime la colonne de `ui.csv` et conserve une copie locale de récupération. Le **×** est grisé s'il ne reste qu'une seule langue. |
+| Champ + **+ Ajouter** | Saisir un code ISO 639-1 (ex : `de`) et cliquer pour ajouter une colonne dans `ui.csv`. Elle reprend d'abord le texte anglais afin de rester utilisable jusqu'à sa traduction. Godot régénère automatiquement le fichier `.translation` correspondant. |
 
-> Ajouter ou supprimer une langue ici ne modifie que `ui.csv` (chaînes d'interface). Pour une nouvelle langue, il faut également créer le fichier de dialogue localisé (ex : `acte1.de.json`) et remplir les champs `history` de chaque contact dans l'éditeur.
+> La liste de langues des paramètres du jeu est construite automatiquement depuis `ui.csv` au prochain lancement. Pour une nouvelle langue, remplissez sa colonne afin que Godot génère le `.translation`, créez aussi le fichier de dialogue localisé (ex : `acte1.de.json`) et complétez les champs `history` de chaque contact dans l'éditeur.
 
 ### Écran de fin
 

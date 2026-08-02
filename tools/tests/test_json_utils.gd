@@ -14,8 +14,20 @@ func run_tests() -> Array:
 	var expanded_source: Dictionary = {"scenes": [{"id": "one", "meta": {"deep": [true, false]}}]}
 	var expanded: String = JsonUtils.expand(expanded_source, "")
 	Assert.check(results, "json expand: top level is multiline", "{\n\t\"scenes\"" in expanded)
-	Assert.check(results, "json expand: values past depth limit become compact", "\t\t\t\t\"deep\": [true, false]" in expanded)
+	Assert.check(results, "json expand: deeply nested arrays stay multiline", "\t\t\t\t\"deep\": [\n\t\t\t\t\ttrue,\n\t\t\t\t\tfalse\n\t\t\t\t]" in expanded)
 	Assert.equal(results, "json expand: generated text remains valid JSON", JSON.parse_string(expanded), expanded_source)
+
+	var narrative_source: Dictionary = {
+		"scenes": [{
+			"id": "scene_test",
+			"messages_in": [{"text": ["First", "Second"], "requires_flag": "seen"}],
+			"choices": [{"text": "Answer", "message": ["One", "Two"], "next": "scene_next"}],
+		}]
+	}
+	var narrative_expanded := JsonUtils.expand(narrative_source, "")
+	Assert.check(results, "json expand: message objects stay multiline", "\t\t\t\t{\n\t\t\t\t\t\"text\": [" in narrative_expanded)
+	Assert.check(results, "json expand: every incoming text has its own line", "\t\t\t\t\t\t\"First\",\n\t\t\t\t\t\t\"Second\"" in narrative_expanded)
+	Assert.check(results, "json expand: every choice message has its own line", "\t\t\t\t\t\t\"One\",\n\t\t\t\t\t\t\"Two\"" in narrative_expanded)
 
 	var scene: Dictionary = {
 		"custom": "kept",
