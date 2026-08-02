@@ -240,7 +240,7 @@ Sur confirmation :
 
 Les actions couvertes par l'annulation : connexion / déconnexion de scènes, création / suppression de scènes, édition de n'importe quel champ du panneau de détail, **Reformater…**, renommage de contact, toutes les modifications dans le panneau Contacts.
 
-**Exception** : l'ajout et la suppression de langues (section Langues du panneau Paramètres) ne sont pas annulables — ces opérations modifient `ui.csv` et déclenchent un réimport Godot.
+**Exception** : l'ajout et la suppression de langues (section Langues du panneau Paramètres) ne sont pas annulables — ces opérations peuvent créer plusieurs fichiers, modifier `story.json` et `ui.csv`, puis déclencher un réimport Godot.
 
 > L'historique d'annulation est limité à la session courante de l'éditeur.
 
@@ -270,14 +270,59 @@ Configure les délais de saisie dans `theme.json`. Les modifications prennent ef
 
 ### Langues
 
-La section **Langues** liste les colonnes de langue déclarées dans `translations/ui.csv` et permet d'en ajouter de nouvelles. L'affichage est mis à jour immédiatement, sans attendre la génération des fichiers `.translation` par Godot.
+La section **Langues** liste les colonnes déclarées dans `translations/ui.csv`. L'affichage est mis à jour immédiatement, sans attendre la génération des fichiers `.translation` par Godot.
 
 | Élément | Rôle |
 |---|---|
-| Chip par langue + **×** | Chaque langue active est affichée avec un bouton **×**. Cliquer dessus supprime la colonne de `ui.csv` et conserve une copie locale de récupération. Le **×** est grisé s'il ne reste qu'une seule langue. |
-| Champ + **+ Ajouter** | Saisir un code ISO 639-1 (ex : `de`) et cliquer pour ajouter une colonne dans `ui.csv`. Elle reprend d'abord le texte anglais afin de rester utilisable jusqu'à sa traduction. Godot régénère automatiquement le fichier `.translation` correspondant. |
+| Chip par langue + **×** | Chaque langue active est affichée avec un bouton **×**. Celui-ci ouvre l'assistant de suppression décrit ci-dessous. Le bouton est grisé pour la dernière langue et pour la langue par défaut. |
+| **+ Ajouter une langue…** | Ouvre l'assistant de localisation complet décrit ci-dessous. Aucune écriture n'a lieu avant la confirmation finale. |
 
-> La liste de langues des paramètres du jeu est construite automatiquement depuis `ui.csv` au prochain lancement. Pour une nouvelle langue, remplissez sa colonne afin que Godot génère le `.translation`, créez aussi le fichier de dialogue localisé (ex : `acte1.de.json`) et complétez les champs `history` de chaque contact dans l'éditeur.
+#### Assistant d'ajout de langue
+
+L'assistant se déroule en deux étapes :
+
+1. **Configuration** — saisir un code de langue (`es`, `de`, `pt_BR`…), choisir une langue source, puis décider s'il faut créer les dialogues localisés et préparer les champs localisés de `story.json`.
+2. **Vérification** — contrôler le nombre de textes d'interface, de champs de projet et la liste exacte des fichiers qui seront créés avant de cliquer sur **Ajouter la langue**.
+
+À la confirmation, l'assistant :
+
+- ajoute une colonne à `translations/ui.csv` et la préremplit depuis la langue source choisie ;
+- crée, si demandé, un fichier `nom.{langue}.json` pour chaque dialogue disponible, en utilisant le fichier source localisé ou son fichier de fallback ;
+- prépare, si demandé, les `names` des contacts, les textes de `history` et les champs localisés de l'écran de fin dans `story.json` ;
+- demande à Godot de régénérer les ressources `.translation` ;
+- affiche un bilan et rappelle quels contenus copiés doivent maintenant être traduits.
+
+Les fichiers localisés déjà présents ne sont jamais écrasés, même s'ils apparaissent entre l'aperçu et la confirmation. Les écritures sont transactionnelles et validées. En cas d'échec partiel, la langue n'est pas enregistrée dans `ui.csv` ; les fichiers déjà préparés sont conservés et l'assistant peut être relancé sans perte.
+
+Si la création des dialogues est décochée, le moteur continue d'utiliser automatiquement les fichiers de la langue par défaut. L'assistant ne considère pas les textes copiés comme traduits : ils constituent uniquement une base de travail explicite.
+
+> La liste des langues proposée dans les paramètres du jeu est reconstruite automatiquement depuis `ui.csv` au prochain lancement.
+
+#### Assistant de suppression de langue
+
+Le bouton **×** d'une langue non protégée propose deux portées avant toute écriture :
+
+- **Retirer uniquement du jeu** supprime seulement sa colonne de `translations/ui.csv`. Les dialogues et les valeurs localisées de `story.json` restent intacts afin de pouvoir réactiver la langue plus tard.
+- **Supprimer entièrement la langue** supprime sa colonne de `ui.csv`, ses entrées dans les `names`, `history` et textes localisés de l'écran de fin, ainsi que tous les fichiers `*.{langue}.json` correspondants et la ressource `.translation` générée.
+
+Une seconde étape affiche le nombre de valeurs localisées et la liste exacte des fichiers concernés. La confirmation finale est obligatoire pour appliquer la suppression.
+
+Une suppression complète reste récupérable : chaque fichier retiré est renommé avec un suffixe `.removed.{horodatage}`, avec ses éventuels fichiers temporaires et sauvegardes. Il n'est donc plus détecté par le moteur, mais son contenu reste disponible localement. Ces archives sont exclues de Git. `story.json` utilise l'écriture transactionnelle habituelle et la colonne de `ui.csv` n'est supprimée qu'en dernier. En cas d'échec partiel, l'assistant peut être relancé.
+
+La dernière langue ne peut jamais être supprimée. La langue par défaut est également protégée, car les fichiers JSON sans suffixe utilisent son contenu comme fallback. Pour la remplacer, il faut d'abord définir et préparer une autre langue par défaut.
+
+### Maintenance des fichiers de récupération
+
+La section **Maintenance des fichiers** contient le bouton **Nettoyer les fichiers de récupération…**. Cet assistant permet de supprimer définitivement les anciennes récupérations lorsque le projet a été vérifié et fonctionne correctement.
+
+Deux catégories peuvent être analysées séparément :
+
+- les sauvegardes rotatives `.bak`, `.bak.2` et `.bak.3` créées par les écritures sécurisées ;
+- les archives `.removed.*` conservées après la suppression complète d'une langue.
+
+L'assistant parcourt uniquement les fichiers du projet et affiche leur chemin, leur taille et la liste exacte des éléments sélectionnés. Chaque fichier peut être décoché avant la confirmation finale. Une sauvegarde `.bak` dont le fichier principal est absent ou invalide est automatiquement protégée, car elle peut constituer la dernière copie récupérable.
+
+Le nettoyage est **définitif** et ne crée pas une nouvelle sauvegarde des fichiers supprimés. Les fichiers `.tmp`, les quarantaines `.corrupt.*`, `.git`, `.godot`, les dossiers d'export et les sauvegardes de parties situées dans `user://` sont volontairement exclus.
 
 ### Écran de fin
 

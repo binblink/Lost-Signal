@@ -150,6 +150,10 @@ Tous les dropdowns sont remplis depuis votre projet réel. Les changements sauve
 
 **Panneau Contacts** (bouton dans la barre d'outils) : gérez tout dans `story.json` sans ouvrir le fichier — ajout/renommage/suppression de contacts, avatars, historiques, scène de départ, configuration de l'écran de fin. Renommer un ID de contact propage le changement dans tous les fichiers de dialogue automatiquement.
 
+**Assistants de langue** : choisissez un code et une langue source, prévisualisez les changements, puis préparez en une seule opération l'interface, les fichiers de dialogue, les noms, les historiques et l'écran de fin. Pour supprimer une langue, choisissez entre son simple retrait du jeu et un nettoyage complet, récupérable et confirmé fichier par fichier. Les fichiers existants ne sont jamais écrasés et tous les contenus concernés sont clairement récapitulés.
+
+**Maintenance des récupérations** : visualisez et nettoyez sélectivement les `.bak` et archives de langues supprimées. Les sauvegardes orphelines sont protégées automatiquement et les fichiers de parties ne sont jamais concernés.
+
 **Bouton Reformater…** : affiche avant toute écriture la liste exacte des fichiers de dialogue concernés. Les fichiers de la langue active sont présélectionnés, les fallbacks sont clairement signalés et la sélection reste modifiable fichier par fichier. Seuls les fichiers confirmés sont remis au format canonique, via une écriture sécurisée avec copie de récupération, sans toucher au contenu narratif.
 
 > Le graphe et les fichiers JSON sont toujours synchronisés — le graphe est une vue en direct de vos fichiers.

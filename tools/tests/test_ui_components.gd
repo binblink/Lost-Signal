@@ -6,6 +6,9 @@ const NarrativeController = preload("res://scripts/narrative_controller.gd")
 const AudioBubble = preload("res://scripts/ui/audio_bubble.gd")
 const SettingsDialogScene = preload("res://scenes/SettingsDialog.tscn")
 const StoryEditorPanelScene = preload("res://addons/story_editor/StoryEditorPanel.tscn")
+const LanguageSetupWizard = preload("res://addons/story_editor/LanguageSetupWizard.gd")
+const LanguageRemovalWizard = preload("res://addons/story_editor/LanguageRemovalWizard.gd")
+const RecoveryCleanupWizard = preload("res://addons/story_editor/RecoveryCleanupWizard.gd")
 const Assert = preload("res://tools/tests/test_assertions.gd")
 
 
@@ -19,6 +22,9 @@ func run_tests() -> Array:
 
 	_test_message_helpers(display, results)
 	await _test_settings_language_options(results)
+	await _test_language_setup_wizard(results)
+	await _test_language_removal_wizard(results)
+	await _test_recovery_cleanup_wizard(results)
 	await _test_reformat_dialog_actions(results)
 	await _test_history_rendering(display, results)
 	var choices = await _test_choices(display, results)
@@ -60,6 +66,105 @@ func _test_reformat_dialog_actions(results: Array) -> void:
 		Assert.check(results, "json reformat dialog: window height stays compact", dialog.size.y <= 520, "height was %d px" % dialog.size.y)
 		dialog.queue_free()
 	panel.queue_free()
+	await get_tree().process_frame
+
+
+func _test_language_setup_wizard(results: Array) -> void:
+	var wizard := LanguageSetupWizard.new()
+	wizard.configure(
+		["en", "fr"],
+		"fr",
+		func(locale: String, source: String, _dialogues: bool, _story: bool) -> Dictionary:
+			return {
+				"ok": true,
+				"locale": locale,
+				"source_locale": source,
+				"ui_entry_count": 2,
+				"story_copy_count": 0,
+				"dialogue_copies": [],
+				"existing_dialogue_files": [],
+			},
+		func(plan: Dictionary) -> Dictionary: return plan,
+		"fr"
+	)
+	add_child(wizard)
+	wizard.popup_centered()
+	await get_tree().process_frame
+	Assert.equal(results, "language wizard: window has a bounded size", wizard.size, Vector2i(620, 560))
+	var code_edit := wizard.find_child("LanguageCodeEdit", true, false) as LineEdit
+	var next_button := wizard.find_child("LanguageWizardNextButton", true, false) as Button
+	Assert.check(results, "language wizard: language code field is visible", code_edit != null and code_edit.is_visible_in_tree())
+	Assert.check(results, "language wizard: continue starts disabled", next_button != null and next_button.disabled)
+	if code_edit != null and next_button != null:
+		code_edit.text = "es"
+		code_edit.text_changed.emit("es")
+		Assert.check(results, "language wizard: valid locale enables review", not next_button.disabled)
+		next_button.pressed.emit()
+		await get_tree().process_frame
+		var confirm_button := wizard.find_child("LanguageWizardConfirmButton", true, false) as Button
+		Assert.check(results, "language wizard: review exposes final confirmation", confirm_button != null and confirm_button.is_visible_in_tree())
+	wizard.queue_free()
+	await get_tree().process_frame
+
+
+func _test_language_removal_wizard(results: Array) -> void:
+	var wizard := LanguageRemovalWizard.new()
+	wizard.configure(
+		"es",
+		func(locale: String, full_delete: bool) -> Dictionary:
+			return {
+				"ok": true,
+				"locale": locale,
+				"full_delete": full_delete,
+				"story_removal_count": 3 if full_delete else 0,
+				"files_to_archive": ["res://dialogues/act1.es.json"] if full_delete else [],
+			},
+		func(plan: Dictionary) -> Dictionary: return plan,
+		"fr"
+	)
+	add_child(wizard)
+	wizard.popup_centered()
+	await get_tree().process_frame
+	Assert.equal(results, "language removal wizard: window has a bounded size", wizard.size, Vector2i(600, 500))
+	var mode := wizard.find_child("LanguageRemovalMode", true, false) as OptionButton
+	var next_button := wizard.find_child("LanguageRemovalNextButton", true, false) as Button
+	Assert.check(results, "language removal wizard: scope selector is visible", mode != null and mode.is_visible_in_tree())
+	if mode != null and next_button != null:
+		mode.selected = 1
+		mode.item_selected.emit(1)
+		next_button.pressed.emit()
+		await get_tree().process_frame
+		var confirm_button := wizard.find_child("LanguageRemovalConfirmButton", true, false) as Button
+		Assert.check(results, "language removal wizard: complete removal requires final confirmation", confirm_button != null and confirm_button.is_visible_in_tree())
+	wizard.queue_free()
+	await get_tree().process_frame
+
+
+func _test_recovery_cleanup_wizard(results: Array) -> void:
+	var wizard := RecoveryCleanupWizard.new()
+	wizard.configure(
+		func(_backups: bool, _removed: bool) -> Dictionary:
+			return {"ok": true, "entries": [
+				{"path": "res://story.json.bak", "kind": "backup", "size": 100, "protected": false, "reason": ""},
+				{"path": "res://missing.json.bak", "kind": "backup", "size": 50, "protected": true, "reason": "Primary missing"},
+			]},
+		func(paths: Array[String]) -> Dictionary:
+			return {"ok": true, "deleted_paths": paths, "deleted_size": 100, "error": ""},
+		"fr"
+	)
+	add_child(wizard)
+	wizard.popup_centered()
+	await get_tree().process_frame
+	Assert.equal(results, "recovery cleanup wizard: window has a bounded size", wizard.size, Vector2i(640, 560))
+	var next_button := wizard.find_child("RecoveryCleanupNextButton", true, false) as Button
+	Assert.check(results, "recovery cleanup wizard: scan action is visible", next_button != null and next_button.is_visible_in_tree())
+	if next_button != null:
+		next_button.pressed.emit()
+		await get_tree().process_frame
+		var confirm_button := wizard.find_child("RecoveryCleanupConfirmButton", true, false) as Button
+		Assert.check(results, "recovery cleanup wizard: permanent cleanup requires final confirmation", confirm_button != null and confirm_button.is_visible_in_tree())
+		Assert.check(results, "recovery cleanup wizard: selectable recovery enables confirmation", confirm_button != null and not confirm_button.disabled)
+	wizard.queue_free()
 	await get_tree().process_frame
 
 

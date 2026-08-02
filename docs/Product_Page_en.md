@@ -150,6 +150,10 @@ All dropdowns are populated from your actual project. Changes save on focus loss
 
 **Contacts panel** (toolbar button): manage everything in `story.json` without opening the file — add/rename/remove contacts, set avatars, define histories, configure the start scene, configure the end screen. Renaming a contact ID propagates across every dialogue file automatically.
 
+**Language wizards**: choose a locale code and source language, review the changes, then prepare the interface, dialogue files, names, histories, and end screen in one operation. When removing a language, choose between taking it out of the game and a complete, recoverable cleanup confirmed file by file. Existing files are never overwritten, and every affected item is clearly summarized.
+
+**Recovery maintenance**: review and selectively clean `.bak` files and removed-language archives. Orphaned backups are protected automatically, and game-save files are never affected.
+
 **Reformat… button**: shows the exact dialogue files affected before anything is written. Active-language files are preselected, fallbacks are clearly identified, and the selection remains editable file by file. Only confirmed files are restored to canonical formatting through a safe write with a recovery copy, without changing narrative content.
 
 > The graph and the JSON files are always in sync — the graph is a live view of your files.

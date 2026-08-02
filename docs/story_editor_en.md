@@ -240,7 +240,7 @@ On confirmation:
 
 Covered actions for undo: connecting / disconnecting scenes, creating / deleting scenes, editing any field in the detail panel, **Reformat…**, contact rename, all edits in the Contacts panel.
 
-**Exception**: adding and removing languages (Languages section of the Settings panel) are not undoable — those operations modify `ui.csv` and trigger a Godot reimport.
+**Exception**: adding and removing languages (Languages section of the Settings panel) are not undoable — those operations may create several files, modify `story.json` and `ui.csv`, and then trigger a Godot reimport.
 
 > The undo history is scoped to the current editor session.
 
@@ -270,14 +270,59 @@ Configures typing delays in `theme.json`. Changes take effect on the next game l
 
 ### Languages
 
-The **Languages** section lists the language columns declared in `translations/ui.csv` and lets you add new ones. It updates immediately without waiting for Godot to generate the `.translation` files.
+The **Languages** section lists the columns declared in `translations/ui.csv`. It updates immediately without waiting for Godot to generate the `.translation` files.
 
 | Element | Role |
 |---|---|
-| Chip per language + **×** | Each active language is displayed as a chip with a **×** button. Clicking it removes that column from `ui.csv` and keeps a local recovery copy. The **×** is disabled when only one language remains. |
-| Field + **+ Add** | Type an ISO 639-1 code (e.g. `de`) to add a column to `ui.csv`. It initially reuses the English text so the language remains usable until translated. Godot automatically regenerates the matching `.translation` file. |
+| Chip per language + **×** | Each active language is displayed with a **×** button. It opens the removal wizard described below. The button is disabled for the last language and the default language. |
+| **+ Add a language…** | Opens the complete localization wizard described below. Nothing is written before final confirmation. |
 
-> The game's settings language list is rebuilt automatically from `ui.csv` on the next launch. For a new language, fill its column so Godot generates the `.translation`, create the localised dialogue file as well (e.g. `acte1.de.json`), and complete each contact's `history` fields in the editor.
+#### Language setup wizard
+
+The wizard has two steps:
+
+1. **Configuration** — enter a locale code (`es`, `de`, `pt_BR`, etc.), choose a source language, and decide whether to create localized dialogue files and prepare localized `story.json` fields.
+2. **Review** — check the UI string count, project-field count, and exact list of files that will be created before clicking **Add language**.
+
+On confirmation, the wizard:
+
+- adds a column to `translations/ui.csv` and pre-fills it from the selected source language;
+- optionally creates one `name.{locale}.json` file for each available dialogue, using the localized source file or its fallback file;
+- optionally prepares contact `names`, `history` text, and localized end-screen fields in `story.json`;
+- asks Godot to regenerate the `.translation` resources;
+- displays a result summary and reminds you which copied content still needs translation.
+
+Existing localized files are never overwritten, even if they appear between review and confirmation. Writes are transactional and validated. If setup fails partway through, the language is not registered in `ui.csv`; files already prepared are kept, and the wizard can be run again without data loss.
+
+If dialogue creation is disabled, the engine continues to use the default-language files automatically. The wizard does not consider copied text translated: it is only an explicit working base.
+
+> The language list in the game's settings is rebuilt automatically from `ui.csv` on the next launch.
+
+#### Language removal wizard
+
+The **×** button for an unprotected language offers two scopes before anything is written:
+
+- **Remove from the game only** removes its column from `translations/ui.csv`. Dialogue files and localized `story.json` values remain intact so the language can be enabled again later.
+- **Delete the entire language** removes its `ui.csv` column, its entries from contact `names`, `history`, and localized end-screen text, as well as every matching `*.{locale}.json` file and the generated `.translation` resource.
+
+A second step displays the localized-value count and the exact list of affected files. Final confirmation is required before removal is applied.
+
+Complete removal remains recoverable: every removed file is renamed with a `.removed.{timestamp}` suffix together with any temporary and backup files. The engine no longer detects it, but its content remains available locally. These archives are excluded from Git. `story.json` uses the usual transactional write, and the `ui.csv` column is removed last. If setup fails partway through, the wizard can be run again.
+
+The last language can never be removed. The default language is also protected because unsuffixed JSON files use its content as their fallback. To replace it, first configure and prepare another default language.
+
+### Recovery file maintenance
+
+The **File maintenance** section contains the **Clean recovery files…** button. This wizard permanently removes old recovery files once the project has been checked and is working correctly.
+
+Two categories can be scanned independently:
+
+- rotating `.bak`, `.bak.2`, and `.bak.3` backups created by safe writes;
+- `.removed.*` archives kept after completely removing a language.
+
+The wizard only scans project files and displays every affected path, its size, and the exact selection. Individual files can be unchecked before final confirmation. A `.bak` file whose primary file is missing or invalid is automatically protected because it may be the last recoverable copy.
+
+Cleanup is **permanent** and does not create another backup of deleted files. `.tmp` files, `.corrupt.*` quarantines, `.git`, `.godot`, export directories, and game-save backups under `user://` are intentionally excluded.
 
 ### End screen
 

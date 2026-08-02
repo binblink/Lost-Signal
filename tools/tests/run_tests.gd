@@ -32,6 +32,8 @@ func _run_tests() -> void:
         load("res://tools/tests/test_settings_manager.gd"),
         load("res://tools/tests/test_safe_file.gd"),
         load("res://tools/tests/test_json_utils.gd"),
+        load("res://tools/tests/test_language_setup.gd"),
+        load("res://tools/tests/test_recovery_cleanup.gd"),
         load("res://tools/tests/test_scene_parser.gd"),
         load("res://tools/tests/test_analysis_panel.gd"),
         load("res://tools/tests/test_ui_components.gd"),

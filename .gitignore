@@ -8,6 +8,7 @@
 *.tmp
 *.bak
 *.bak.[0-9]*
+*.removed.*
 *.corrupt.*
 *.translation
 
