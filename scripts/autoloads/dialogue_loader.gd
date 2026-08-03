@@ -22,7 +22,7 @@ func _ready() -> void:
 	_load_story()
 	_load_dialogues_dir()
 	print("DialogueLoader: %d scenes, %d contacts loaded." % [_scenes.size(), _contacts.size()])
-	_validate()
+	_validate(not _is_test_run())
 
 func reload_for_locale() -> void:
 	_scenes.clear()
@@ -33,7 +33,11 @@ func reload_for_locale() -> void:
 	_load_errors.clear()
 	_load_story()
 	_load_dialogues_dir()
-	_validate()
+	_validate(not _is_test_run())
+
+
+func _is_test_run() -> bool:
+	return OS.get_environment("LOST_SIGNAL_TEST_MODE") == "1"
 
 func get_validation_report() -> Dictionary:
 	return {

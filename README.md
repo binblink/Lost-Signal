@@ -96,7 +96,7 @@ Le moteur sélectionne automatiquement le bon fichier de dialogue selon la langu
 - `acte1.fr.json` → chargé en français
 - `acte1.en.json` → chargé en anglais
 
-Le joueur change la langue via le menu **Paramètres** (bouton ⚙ en haut à droite). Si la langue système est supportée, elle est appliquée automatiquement au premier lancement.
+Le joueur change la langue via le menu **Paramètres** (bouton ⚙ en haut à droite). Si la langue système est supportée, elle est appliquée automatiquement au premier lancement. **Changer de langue après le début d'une partie réinitialise la progression après confirmation**, puis relance l'histoire depuis sa scène de départ dans la nouvelle langue.
 
 ---
 

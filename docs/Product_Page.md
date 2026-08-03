@@ -110,7 +110,7 @@ Ces mécaniques ouvrent des possibilités narratives spécifiques : hésitation,
 - Retour vers le fichier de base si aucune traduction n'existe encore
 - Tout le texte de l'interface traduit via un seul fichier CSV — ajouter une langue prend quelques minutes
 - Langue détectée automatiquement depuis le système du joueur au premier lancement
-- Les joueurs peuvent changer de langue en jeu à tout moment sans perdre leur progression
+- Les joueurs peuvent changer de langue depuis les paramètres ; si une partie est en cours, une confirmation prévient que la sauvegarde sera supprimée et l'histoire recommencera dans la nouvelle langue
 
 ---
 

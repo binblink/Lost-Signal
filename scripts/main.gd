@@ -32,6 +32,7 @@ var _narrative: Node = null
 var _validation_dialog: Control = null
 var _exit_dialog: Control = null
 var _confirming_lang_change: bool = false
+var _language_before_settings: String = ""
 
 
 func _ready() -> void:
@@ -216,6 +217,7 @@ func _on_photo_overlay_input(event: InputEvent) -> void:
 		photo_overlay.visible = false
 
 func _on_settings_pressed() -> void:
+	_language_before_settings = SettingsManager.language
 	overlay.visible = true
 	settings_dialog.open()
 
@@ -403,6 +405,9 @@ func _on_cancel_pressed() -> void:
 	overlay.visible = false
 	if _confirming_lang_change:
 		_confirming_lang_change = false
+		if not _language_before_settings.is_empty():
+			SettingsManager.language = _language_before_settings
+			SettingsManager.apply_and_save()
 		_confirm_title.text = "CONFIRM_NEWGAME_TITLE"
 		_confirm_body.text  = "CONFIRM_NEWGAME_BODY"
 

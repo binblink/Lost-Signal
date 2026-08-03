@@ -18,7 +18,7 @@ func load_save(log_errors: bool = true) -> Dictionary:
 		if log_errors and result.get("found_invalid", false):
 			push_error("SaveManager: " + result.get("error", "Invalid save file."))
 		return {}
-	if result.get("recovered", false):
+	if log_errors and result.get("recovered", false):
 		push_warning("SaveManager: recovered save from %s%s." % [
 			result.get("recovery_source", "backup"),
 			"" if result.get("repair_succeeded", false) else " (primary file could not be repaired)"

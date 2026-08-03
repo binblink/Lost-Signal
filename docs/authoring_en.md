@@ -145,7 +145,7 @@ A proper first name (`"Maeve"`, `"Alex"`) generally doesn't need to be in `names
 - At startup, the engine reads the active language and looks for the matching key in `names`.
 - If a translation is found, it replaces `name` for the entire session.
 - If the active language has no key in `names` (untranslated language, or `names` absent), `name` is used as the fallback.
-- If the player changes language mid-game, names are updated the next time dialogue files are reloaded.
+- A confirmed language change resets the game. Initial names are then loaded in the new language; narrative renames are applied again when their effects are replayed.
 
 **The language code must match exactly** the suffix used in your dialogue files. If you have `act1.en.json`, the code is `"en"`. If you have `act1.de.json`, the code is `"de"`. A typo in the code (`"EN"` instead of `"en"`, `"fr-FR"` instead of `"fr"`) will silently fall back to `name` — no error is raised.
 
@@ -457,6 +457,8 @@ A message can correct itself or be deleted automatically after a delay — as if
 }
 ```
 
+The bubble's final state is stored in conversation history, so a correction or deletion remains visible after saving, switching contacts, and loading the game again.
+
 ### Corrupted Message (`corrupted`)
 
 A message can arrive in a corrupted state. The typing indicator appears as normal, then instead of text the bubble displays **✗ Corrupted message** in red.
@@ -636,7 +638,7 @@ When the revealed name must itself be translated (e.g. a title like "The Guardia
 { "op": "rename", "contact": "unknown", "value": { "fr": "Le Gardien", "en": "The Guardian" } }
 ```
 
-The engine resolves the dict against the active language at the moment the effect fires, and again if the player changes language after that. If the active language has no key in the dict, the first value in the dict is used as the fallback.
+The engine resolves the dict against the active language when the effect fires. If the active language has no matching key, the first value in the dict is used as the fallback. A confirmed language change restarts the game, so the name is resolved again when this effect is replayed.
 
 A plain string (e.g. `"Maeve"`) remains the right choice for proper names that are the same in all languages — it takes precedence over all locale-specific values.
 
@@ -930,13 +932,14 @@ If the file has no `start_scene`, the value defined in `story.json` is used.
 
 ### Language Change Mid-Game
 
-When the player changes language from Settings, the game reloads the dialogue files and resumes from the save. What is preserved:
+When the player selects another language from Settings:
 
-- The history of messages already played
-- Flags, variables, and contact statuses
-- Contact names renamed via `rename` — if the value is a localized dict, the name is displayed in the new language automatically
+- if no save exists, dialogue files are reloaded and the story starts in the selected language;
+- if a game is in progress, a confirmation warns that changing language will reset progress;
+- if the player confirms, the narrative save is deleted, localized files are reloaded, and the story restarts from its starting scene;
+- if the player cancels, both the save and the previously active language are preserved.
 
-If a scene from the save does not exist in the target locale (two entirely separate scene sets per language), the engine restores the state without replaying the scene — the player finds their conversations as they left them.
+A confirmed change therefore does not preserve message history, flags, variables, contact statuses, or narrative renames. Other player settings, such as volume and display options, remain saved.
 
 ### Adding a Language
 

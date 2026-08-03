@@ -162,17 +162,14 @@ func play_scene(scene_id: String, _skip_delay: bool = false) -> void:
 				var edit = msg.get("edit", null)
 				if edit != null:
 					var edits: Array = edit if edit is Array else [edit]
-					for e in edits:
-						await get_tree().create_timer(e.get("delay", DELAY_EDIT_DEFAULT)).timeout
+					for edit_data: Dictionary in edits:
+						await get_tree().create_timer(edit_data.get("delay", DELAY_EDIT_DEFAULT)).timeout
 						if not is_instance_valid(bubble):
 							break
-						var label = bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message")
-						match e.get("type", ""):
-							"correct":
-								label.text = e.get("corrected_text", "")
-							"delete":
-								label.text = tr("MSG_DELETED")
-								label.add_theme_color_override("font_color", ThemeManager.time_color)
+						var resolved_edit: Dictionary = edit_data.duplicate(true)
+						if resolved_edit.get("type", "") == "correct":
+							resolved_edit["corrected_text"] = _apply_templates(str(resolved_edit.get("corrected_text", "")))
+						message_display.apply_message_edit(bubble, resolved_edit)
 				else:
 					await get_tree().create_timer(DELAY_AFTER_TEXT).timeout
 		if _play_generation != _gen:
@@ -287,7 +284,7 @@ func handle_choice(index: int) -> void:
 		await play_scene(resume_id)
 
 
-func restore_pending_choice_for(contact_id: String) -> void:
+func restore_pending_choice_for(contact_id: String, log_warnings: bool = true) -> void:
 	if pending_choices.has(contact_id):
 		var pending_scene: Dictionary = DialogueLoader.get_scene(pending_choices[contact_id])
 		if pending_scene.has("choices"):
@@ -304,7 +301,8 @@ func restore_pending_choice_for(contact_id: String) -> void:
 					_visible_choices.map(func(c): return c["text"])
 				)
 		else:
-			push_warning("[NarrativeController] pending_choices[%s] points to missing or invalid scene '%s' — clearing." % [contact_id, pending_choices[contact_id]])
+			if log_warnings:
+				push_warning("[NarrativeController] pending_choices[%s] points to missing or invalid scene '%s' — clearing." % [contact_id, pending_choices[contact_id]])
 			pending_choices.erase(contact_id)
 			choices_layer.visible = false
 	else:

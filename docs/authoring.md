@@ -145,7 +145,7 @@ Un prénom propre (`"Maeve"`, `"Alex"`) n'a généralement pas besoin d'être da
 - Au démarrage, le moteur lit la langue active et cherche la clé correspondante dans `names`.
 - Si une traduction est trouvée, elle remplace `name` pour toute la session.
 - Si la langue n'a pas de clé dans `names` (langue non traduite, ou `names` absent), le champ `name` est utilisé comme valeur de secours.
-- Si le joueur change de langue en cours de partie, les noms sont mis à jour au rechargement suivant des fichiers de dialogue.
+- Un changement de langue confirmé réinitialise la partie. Les noms initiaux sont alors chargés dans la nouvelle langue ; les renommages narratifs seront réappliqués lorsque leurs effets seront rejoués.
 
 **Le code langue doit correspondre exactement** au suffixe utilisé dans vos fichiers de dialogue. Si vous avez `acte1.en.json`, le code est `"en"`. Si vous avez `acte1.de.json`, le code est `"de"`. Une coquille dans le code (`"EN"` au lieu de `"en"`, `"fr-FR"` au lieu de `"fr"`) fera silencieusement tomber le moteur sur `name` — aucune erreur n'est levée.
 
@@ -457,6 +457,8 @@ Un message peut se corriger ou se supprimer automatiquement après un délai, co
 }
 ```
 
+L'état final de la bulle est enregistré dans l'historique : une correction ou une suppression reste donc visible après une sauvegarde, un changement de contact et le rechargement de la partie.
+
 ### Message corrompu (`corrupted`)
 
 Un message peut arriver dans un état corrompu. L'indicateur de frappe apparaît normalement, puis la bulle affiche **✗ Message corrompu** en rouge à la place d'un texte.
@@ -636,7 +638,7 @@ Quand le nom révélé doit lui aussi être traduit (ex. un titre comme « Le Ga
 { "op": "rename", "contact": "inconnu", "value": { "fr": "Le Gardien", "en": "The Guardian" } }
 ```
 
-Le moteur résout le dictionnaire selon la langue active au moment où l'effet se déclenche, et recalcule si le joueur change de langue ensuite. Si la langue active n'a pas de clé dans le dictionnaire, la première valeur du dictionnaire est utilisée comme secours.
+Le moteur résout le dictionnaire selon la langue active au moment où l'effet se déclenche. Si la langue active n'a pas de clé dans le dictionnaire, la première valeur du dictionnaire est utilisée comme secours. Un changement de langue confirmé recommence la partie ; le nom sera donc résolu de nouveau lorsque cet effet sera rejoué.
 
 Une chaîne simple (ex. `"Maeve"`) reste le bon choix pour les prénoms identiques dans toutes les langues — elle prend le dessus sur toute valeur localisée.
 
@@ -930,13 +932,14 @@ Si le fichier n'a pas de `start_scene`, la valeur définie dans `story.json` est
 
 ### Changement de langue en cours de partie
 
-Quand le joueur change de langue depuis les Paramètres, le jeu recharge les fichiers de dialogue et reprend depuis la sauvegarde. Ce qui est préservé :
+Quand le joueur sélectionne une autre langue depuis les Paramètres :
 
-- L'historique des messages déjà joués
-- Les flags, variables, et statuts des contacts
-- Les noms de contacts renommés via `rename` — si la valeur est un dictionnaire localisé, le nom s'affiche dans la nouvelle langue automatiquement
+- sans sauvegarde existante, les fichiers de dialogue sont rechargés et l'histoire démarre dans la langue choisie ;
+- avec une partie en cours, une confirmation indique que le changement va réinitialiser la progression ;
+- si le joueur confirme, la sauvegarde narrative est supprimée, les fichiers localisés sont rechargés et l'histoire recommence depuis sa scène de départ ;
+- s'il annule, la sauvegarde et la langue précédemment active sont conservées.
 
-Si une scène de la sauvegarde n'existe pas dans la locale cible (deux jeux de scènes entièrement distincts par langue), le moteur restaure l'état sans relancer la scène — le joueur retrouve ses conversations telles qu'elles étaient.
+Le changement confirmé ne conserve donc ni l'historique des messages, ni les flags, ni les variables, ni les statuts ou renommages obtenus pendant la partie. Les autres paramètres du joueur, comme le volume et l'affichage, restent enregistrés.
 
 ### Ajouter une langue
 

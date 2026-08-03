@@ -47,8 +47,10 @@ if (-not $godot -or -not (Test-Path -LiteralPath $godot -PathType Leaf)) {
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $logPath = Join-Path ([System.IO.Path]::GetTempPath()) ("lost-signal-tests-{0}.log" -f [guid]::NewGuid())
 Push-Location $projectRoot
+$env:LOST_SIGNAL_TEST_MODE = '1'
 & $godot --headless --path "$PWD" --log-file $logPath --script res://tools/tests/run_tests.gd
 $exitCode = $LASTEXITCODE
+Remove-Item Env:LOST_SIGNAL_TEST_MODE -ErrorAction SilentlyContinue
 Pop-Location
 
 $combinedOutput = Get-Content -Raw -LiteralPath $logPath -ErrorAction SilentlyContinue

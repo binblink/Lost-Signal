@@ -27,6 +27,7 @@ func run_tests() -> Array:
 	await _test_recovery_cleanup_wizard(results)
 	await _test_reformat_dialog_actions(results)
 	await _test_history_rendering(display, results)
+	await _test_message_edit_persistence(display, results)
 	var choices = await _test_choices(display, results)
 	await _test_pending_choice_restore(choices, results)
 
@@ -242,6 +243,31 @@ func _test_history_rendering(display, results: Array) -> void:
 	line_edit.free()
 
 
+func _test_message_edit_persistence(display, results: Array) -> void:
+	var corrected_bubble: MarginContainer = await display.receive_message("Typo :(", "2000-01-02 04:00")
+	var deleted_bubble: MarginContainer = await display.receive_message("Regret", "2000-01-02 04:01")
+	Assert.check(results, "message edits: correction is applied", display.apply_message_edit(corrected_bubble, {"type": "correct", "corrected_text": "Fixed :)"}))
+	Assert.check(results, "message edits: deletion is applied", display.apply_message_edit(deleted_bubble, {"type": "delete"}))
+	var corrected_label := corrected_bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message") as Label
+	var deleted_label := deleted_bubble.get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message") as Label
+	Assert.equal(results, "message edits: corrected text is rendered", corrected_label.text, "Fixed 😊")
+	Assert.equal(results, "message edits: deletion marker is rendered", deleted_label.text, tr("MSG_DELETED"))
+
+	var persisted_history: Array = display.collect_messages_data()
+	Assert.equal(results, "message edits: corrected text is stored", persisted_history[0].get("text"), "Fixed :)")
+	Assert.equal(results, "message edits: deletion state is stored", persisted_history[1], {"text": null, "time": "2000-01-02 04:01", "out": false, "deleted": true})
+	display.clear_messages()
+	await get_tree().process_frame
+	await display.render_history(persisted_history)
+	var restored_corrected := display.get_child(0).get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message") as Label
+	var restored_deleted := display.get_child(1).get_node("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message") as Label
+	Assert.equal(results, "message edits: corrected text survives history rendering", restored_corrected.text, "Fixed 😊")
+	Assert.equal(results, "message edits: deletion survives history rendering", restored_deleted.text, tr("MSG_DELETED"))
+	Assert.equal(results, "message edits: edited history round trips", display.collect_messages_data(), persisted_history)
+	display.clear_messages()
+	await get_tree().process_frame
+
+
 func _test_choices(display, results: Array):
 	var layer = ChoicesManager.new()
 	var panel := MarginContainer.new()
@@ -325,7 +351,7 @@ func _test_pending_choice_restore(choices, results: Array) -> void:
 	Assert.check(results, "pending choices: layer remains hidden when nothing is selectable", not choices.visible)
 
 	nc.pending_choices = {"mom": "missing"}
-	await nc.restore_pending_choice_for("mom")
+	await nc.restore_pending_choice_for("mom", false)
 	Assert.check(results, "pending choices: missing saved scene is cleared safely", not nc.pending_choices.has("mom"))
 
 	nc.queue_free()

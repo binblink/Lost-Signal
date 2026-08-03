@@ -242,6 +242,38 @@ func receive_corrupted_message(time: String) -> MarginContainer:
 		await scroll_to_bottom()
 	return bubble
 
+
+func apply_message_edit(bubble: Control, edit: Dictionary) -> bool:
+	if not is_instance_valid(bubble):
+		return false
+	var label := bubble.get_node_or_null("HBoxContainer/Bubble/MarginContainer/VBoxContainer/Message") as Label
+	var stored_data: Variant = bubble.get_meta("msg_data", null)
+	if label == null or not stored_data is Dictionary:
+		return false
+	var message_data: Dictionary = (stored_data as Dictionary).duplicate(true)
+	match str(edit.get("type", "")):
+		"correct":
+			var corrected_text: String = str(edit.get("corrected_text", ""))
+			label.text = _apply_emoticons(corrected_text)
+			label.remove_theme_color_override("font_color")
+			message_data["text"] = corrected_text
+			message_data.erase("deleted")
+		"delete":
+			label.text = tr("MSG_DELETED")
+			label.add_theme_color_override("font_color", ThemeManager.time_color)
+			message_data["text"] = null
+			message_data["deleted"] = true
+		_:
+			return false
+	bubble.set_meta("msg_data", message_data)
+	return true
+
+
+func receive_deleted_message(time: String) -> MarginContainer:
+	var bubble := await receive_message("", time)
+	apply_message_edit(bubble, {"type": "delete"})
+	return bubble
+
 func scroll_to_bottom() -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -277,6 +309,8 @@ func render_history(history: Array) -> void:
 	for msg in history:
 		if msg.get("out", false):
 			await send_message(msg["text"], msg.get("time", ""))
+		elif msg.get("deleted", false):
+			await receive_deleted_message(msg.get("time", ""))
 		elif msg.get("corrupted", false):
 			await receive_corrupted_message(msg.get("time", ""))
 		elif msg.has("media"):

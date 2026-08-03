@@ -110,7 +110,7 @@ These mechanics open specific narrative possibilities: hesitation, regret, secon
 - Falls back to the base file if no translation exists yet
 - All UI text translated via a single CSV file — adding a new language takes minutes
 - Language is auto-detected from the player's system on first launch
-- Players can change language in-game at any time without losing progress
+- Players can change language from Settings; if a game is in progress, a confirmation warns that the save will be deleted and the story restarted in the new language
 
 ---
 

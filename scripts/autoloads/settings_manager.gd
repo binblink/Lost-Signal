@@ -117,7 +117,7 @@ func _load(log_errors: bool = true) -> void:
 		if log_errors:
 			push_error("SettingsManager: " + result.get("error", "Invalid settings file."))
 		return
-	if result.get("recovered", false):
+	if log_errors and result.get("recovered", false):
 		push_warning("SettingsManager: recovered settings from %s." % result.get("recovery_source", "backup"))
 	var data: Dictionary = result.get("data", {})
 	language     = str(data.get("language", "fr"))

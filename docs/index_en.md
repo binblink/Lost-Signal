@@ -64,7 +64,7 @@ The engine automatically picks the right dialogue file based on the active langu
 - `acte1.fr.json` → loaded in French
 - `acte1.en.json` → loaded in English
 
-Players change the language via the **Settings** menu (⚙ button, top right). If the system language is supported, it is applied automatically on first launch.
+Players change the language via the **Settings** menu (⚙ button, top right). If the system language is supported, it is applied automatically on first launch. **Changing language after a game has started resets progress after confirmation**, then restarts the story from its starting scene in the new language.
 
 ---
 

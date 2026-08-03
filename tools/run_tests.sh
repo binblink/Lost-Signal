@@ -19,7 +19,7 @@ fi
 output_file=$(mktemp "${TMPDIR:-/tmp}/lost-signal-tests.XXXXXX") || exit 1
 trap 'rm -f "$output_file"' EXIT HUP INT TERM
 
-"$godot_bin" --headless --path "$repo_root" --script res://tools/tests/run_tests.gd >"$output_file" 2>&1
+LOST_SIGNAL_TEST_MODE=1 "$godot_bin" --headless --path "$repo_root" --script res://tools/tests/run_tests.gd >"$output_file" 2>&1
 exit_code=$?
 cat "$output_file"
 

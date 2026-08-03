@@ -62,7 +62,7 @@ func run_tests() -> Array:
 	manager.language = "en"
 	manager._save()
 	_write_text(path, "{broken")
-	manager._load()
+	manager._load(false)
 	Assert.equal(results, "settings recovery: corrupted primary restores previous settings", manager.language, "fr")
 	Assert.check(results, "settings recovery: primary is repaired", SafeFile.read_json(path).get("ok", false))
 
